@@ -78,10 +78,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="Readme.txt" />
+    <ClCompile Include="WinMain.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WinMain.c" />
+    <Text Include="readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
