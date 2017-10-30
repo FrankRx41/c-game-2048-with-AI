@@ -1,18 +1,20 @@
 #include <windows.h>
 #include <stdio.h>
-
-#define debug(str,...)  printf(str"\n",__VA_ARGS__)
+#include "Option.h"
+#include "resource.h"
 
 #define W   4
 #define H   4
 
 #define padding__ 100
 
-int map[W][H];
+#define forloop(i,time)     for(int i=0;i<(time);i++)
 
-#define forloop(i,time) for(int i=0;i<(time);i++)
+#define _LOOP_VARNAME_(x)   var##x
+#define loop(time)          for(int _LOOP_VARNAME_(__LINE__)=0;_LOOP_VARNAME_(__LINE__)<time;_LOOP_VARNAME_(__LINE__)++)
 
-int CreatNewBlock(){
+int CreatNewBlock(LPOPTION lpOption){
+    int (*map)[5] = lpOption->nMap;
     int x = rand()%W;
     int y = rand()%H;
     while(map[x][y]!=0){
@@ -28,10 +30,10 @@ int CreatNewBlock(){
 
 
 
-int GameKeyHandle(int key){
+int GameKeyHandle(int key,LPOPTION lpOption){
     int haveblank = 0;
     int hadmove = 0;
-
+    int (*map)[5] = lpOption->nMap;
     switch(key){
     case VK_UP:
         forloop(y,W){
@@ -180,7 +182,15 @@ HFONT SetMyFont(HDC hdc,LPCTSTR face,int h,int angle)
         DeleteObject(oldFont);
     }
     HFONT hFont;
-    hFont = CreateFont(h,    //フォント高さ
+    //char str[] = TEXT("Impact");
+    //debug("%s %s",face,str);
+    debug("[%s]",face);
+    //debug("%d",strcmp(str,face));
+    hFont = CreateFont(h,0,angle,0,FW_DONTCARE,FALSE,FALSE,FALSE,ANSI_CHARSET,OUT_OUTLINE_PRECIS,
+               CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,VARIABLE_PITCH,face);
+    /*hFont = CreateFont(48,0,0,0,FW_DONTCARE,FALSE,TRUE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,
+                       CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,VARIABLE_PITCH,face);*/
+    /*hFont = CreateFont(h,    //フォント高さ
                        0,                    //文字幅
                        angle,                    //テキストの角度
                        0,                    //ベースラインとｘ軸との角度
@@ -193,22 +203,30 @@ HFONT SetMyFont(HDC hdc,LPCTSTR face,int h,int angle)
                        CLIP_DEFAULT_PRECIS,//クリッピング精度
                        PROOF_QUALITY,        //出力品質
                        FIXED_PITCH | FF_MODERN,//ピッチとファミリー
-                       face);    //書体名
+                       face);    //書体名*/
     oldFont = SelectObject(hdc,hFont);
     return hFont;
 }
 
-int ColorTable[] = {0xFFFFFF,0xF5F5DC,0x8A2BE2,0xD2691E,0x00FFFF,0x006400,0x9932CC};
+int GetTableColor(int x,LPOPTION lpOption){
+    int i = 0;
+    while(x >>= 1,x != 0){
+        i++;
+    }
+    return lpOption->nColorTable[i];
+}
 
-#define GetTableColor(x) ColorTable[(x)%(sizeof(ColorTable)/sizeof(ColorTable[0]))]
-
-int GameDraw(HDC hdc){
-    char s[3] = {0};
-    RECT rt = {0};
+int GameDraw(HDC hdc,LPOPTION lpOption){
+    char s[1024] = {0};
     int correct = 10;
-    HBRUSH hBrush;
+    HBRUSH hBrush,hOldBrush;
+    int (*map)[5] = lpOption->nMap;
 
-    SetBkColor(hdc,RGB(0,100,231));
+    hBrush = CreateSolidBrush(lpOption->nBgColor);
+    RECT rt = {0,0,lpOption->cxClient,lpOption->cyClient};
+    FillRect(hdc,&rt,hBrush);
+    DeleteObject(hBrush);
+
     SetBkMode(hdc,1);
 
     for(int x=0;x<W;x++){
@@ -219,34 +237,124 @@ int GameDraw(HDC hdc){
             rt.top      = x*padding+correct;
             rt.bottom   = x*padding+padding__-correct;
 
-            SetMyFont(hdc, (LPCTSTR)"Sans-serif", 30, 0);
+            SetMyFont(hdc, (LPCTSTR)lpOption->hFontName, lpOption->iFontSize, 0);
 
-            sprintf(s,"%d",map[x][y]);
+            if(map[x][y] != 0){
+                sprintf(s,"%d",map[x][y]);
+            }
             //debug("color: %x",GetTableColor(map[x][y]));
-            hBrush = CreateSolidBrush(GetTableColor(map[x][y]));
+            hBrush = CreateSolidBrush(GetTableColor(map[x][y],lpOption));
             FillRect(hdc,&rt,hBrush);
             DrawText(hdc,s,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
             //TextOut(hdc,x*100,y*100,s,strlen(s));
             DeleteObject(hBrush);
         }
     }
+    //DeleteObject(hBrush);
+}
+
+int GameInit(LPOPTION lpOption){
+    int (*map)[5] = lpOption->nMap;
+#ifdef _DEBUG
+    map[0][0] = 2;
+    map[1][0] = 4;
+    map[2][0] = 8;
+    map[3][0] = 16;
+    map[0][1] = 32;
+    map[1][1] = 64;
+    map[2][1] = 128;
+    map[3][1] = 256;
+    map[0][2] = 512;
+    map[1][2] = 1024;
+    map[2][2] = 2048;
+    map[3][2] = 4096;
+    map[0][3] = 8192;
+    map[1][3] = 16384;
+    map[2][3] = 32768;
+    map[3][3] = 65536;
+    debug("init");
+#else
+    srand(time(NULL));
+    int x,y;
+    loop(2)
+    while(x=rand()%h,y=rand()%w,map[x][y]==0){
+        map[x][y] = 2<<rand()%2+1;
+    }
+#endif
+    lpOption->nScore[lpOption->iLevel] = 0;
+    lpOption->nStep = 0;
+    lpOption->nTime = 0;
+}
+
+int GameOver(LPOPTION lpOption){
+
+}
+
+int OnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
+    // New Game
+    //GetMenuT
+    int checked;
+
+    switch(LOWORD(wParam)){
+    case MENU_NEW_3:
+        debug("game start 3 * 4");
+        return 0;
+    case MENU_NEW_4:
+        debug("game start 4 * 4");
+        return 0;
+    case MENU_NEW_5:
+        debug("game start 5 * 5");
+        return 0;
+    case MENU_NEW_CUSTOMIZE:
+        debug("game start customize");
+        return 0;
+
+    case MENU_GAME_SAVE:
+        debug("save");
+        return 0;
+    case MENU_GAME_LOAD:
+        debug("load");
+        return 0;
+    case MENU_GAME_EXIT:
+        PostQuitMessage(0);
+        return -1;
+
+    case MENU_OPTION_SOUND:
+        checked = GetMenuState(GetMenu(hWnd),LOWORD(wParam),MF_BYCOMMAND);
+        debug("%lx",checked);
+        CheckMenuItem(GetMenu(hWnd),LOWORD(wParam),!checked?MF_CHECKED:0);
+        return 0;
+    case MENU_OPTION_FULLSCREEN:
+        return 0;
+    case MENU_OPTION_SUGGESTION:
+        return 0;
+
+    }
+
+}
+
+int SysInit(HWND hWnd,LPOPTION lpOption){
+    lpOption->hWnd = hWnd;
+    ReadSetting(lpOption);
 }
 
 long __stdcall WndProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
-    static int  cxClient,cyClient;
     HDC         hdc;
     PAINTSTRUCT ps;
 
+    static OPTION Option;
+    static LPOPTION lpOption = &Option;
+
     switch(message){
     case WM_CREATE:
-        //map[rand()%W][rand()%H] = (rand()%2+1)<<1;
-        map[0][0] = 4;
-        map[1][0] = 2;
-        map[2][0] = 4;
-        map[3][0] = 2;
+        SysInit(hWnd,lpOption);
+        GameInit(lpOption);
         return 0;
+    case WM_COMMAND:
+        OnMenu(hWnd,wParam,lpOption);
+        break;
     case WM_TIMER:
-        CreatNewBlock();
+        CreatNewBlock(lpOption);
         KillTimer(hWnd,0);
         InvalidateRect(hWnd,NULL,TRUE);
         return 0;
@@ -256,7 +364,7 @@ long __stdcall WndProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         case VK_DOWN:
         case VK_LEFT:
         case VK_RIGHT:
-            if(GameKeyHandle(wParam)){
+            if(GameKeyHandle(wParam,lpOption)){
                 InvalidateRect(hWnd,NULL,TRUE);
                 SetTimer(hWnd,0,300,0);
             }
@@ -264,16 +372,18 @@ long __stdcall WndProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         case VK_ESCAPE:
             PostQuitMessage(0);
             return 0;
+        case VK_F3:
+            PrintOption(lpOption);
+            return 0;
         }
         break;
     case WM_SIZE:
-        cxClient = LOWORD(lParam);
-        cyClient = HIWORD(lParam);
-        debug("width: %d height: %d",cxClient,cyClient);
+        lpOption->cxClient = LOWORD(lParam);
+        lpOption->cyClient = HIWORD(lParam);
         return 0;
     case WM_PAINT:
         hdc = BeginPaint(hWnd,&ps);
-        GameDraw(hdc);
+        GameDraw(hdc,lpOption);
         EndPaint(hWnd,&ps);
         return 0;
     case WM_DESTROY:
@@ -288,9 +398,10 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
     wcex.cbSize         = sizeof(wcex);
     wcex.hCursor        = LoadCursor(0,IDC_ARROW);
     wcex.hInstance      = hInstance;
-    wcex.hbrBackground  = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    wcex.hbrBackground  = NULL;
     wcex.lpfnWndProc    = WndProc;
     wcex.lpszClassName  = TEXT("WndClass");
+    wcex.lpszMenuName   = TEXT("MAIN_MENU");
     RegisterClassEx(&wcex);
 
 #ifdef _DEBUG
@@ -300,7 +411,7 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
 
     int x,y,w = 400,h = 400;
     RECT rt = {0,0,w,h};
-    AdjustWindowRectEx(&rt,WS_OVERLAPPEDWINDOW,FALSE,NULL);
+    AdjustWindowRectEx(&rt,WS_OVERLAPPEDWINDOW,TRUE,NULL);
     w = rt.right-rt.left;
     h = rt.bottom-rt.top;
     SystemParametersInfo(SPI_GETWORKAREA,NULL,&rt,NULL);
@@ -309,12 +420,13 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
 
     HWND hWnd = CreateWindow(TEXT("WndClass"),TEXT("2048 with AI"),WS_OVERLAPPEDWINDOW,
                             x,y,w,h,0,0,hInstance,0);
-
     ShowWindow(hWnd,nCmdShow);
     MSG msg = {0};
     while(GetMessage(&msg,0,0,0)){
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+    UnregisterClass("WndClass",hInstance);
+
     return msg.wParam;
 }
