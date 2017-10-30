@@ -180,27 +180,33 @@ HFONT SetMyFont(HDC hdc,LPCTSTR face,int h,int angle)
         DeleteObject(oldFont);
     }
     HFONT hFont;
-    hFont = CreateFont(h,    //ƒtƒHƒ“ƒg‚‚³
-                       0,                    //•¶Žš•
-                       angle,                    //ƒeƒLƒXƒg‚ÌŠp“x
-                       0,                    //ƒx[ƒXƒ‰ƒCƒ“‚Æ‚˜Ž²‚Æ‚ÌŠp“x
-                       FW_REGULAR,            //ƒtƒHƒ“ƒg‚Ìd‚³i‘¾‚³j
-                       FALSE,                //ƒCƒ^ƒŠƒbƒN‘Ì
-                       FALSE,                //ƒAƒ“ƒ_[ƒ‰ƒCƒ“
-                       FALSE,                //‘Å‚¿Á‚µü
-                       SHIFTJIS_CHARSET,    //•¶ŽšƒZƒbƒg
-                       OUT_DEFAULT_PRECIS,    //o—Í¸“x
-                       CLIP_DEFAULT_PRECIS,//ƒNƒŠƒbƒsƒ“ƒO¸“x
-                       PROOF_QUALITY,        //o—Í•iŽ¿
-                       FIXED_PITCH | FF_MODERN,//ƒsƒbƒ`‚Æƒtƒ@ƒ~ƒŠ[
-                       face);    //‘‘Ì–¼
+    hFont = CreateFont(h,    //ãƒ•ã‚©ãƒ³ãƒˆé«˜ã•
+                       0,                    //æ–‡å­—å¹…
+                       angle,                    //ãƒ†ã‚­ã‚¹ãƒˆã®è§’åº¦
+                       0,                    //ãƒ™ãƒ¼ã‚¹ãƒ©ã‚¤ãƒ³ã¨ï½˜è»¸ã¨ã®è§’åº¦
+                       FW_REGULAR,            //ãƒ•ã‚©ãƒ³ãƒˆã®é‡ã•ï¼ˆå¤ªã•ï¼‰
+                       FALSE,                //ã‚¤ã‚¿ãƒªãƒƒã‚¯ä½“
+                       FALSE,                //ã‚¢ãƒ³ãƒ€ãƒ¼ãƒ©ã‚¤ãƒ³
+                       FALSE,                //æ‰“ã¡æ¶ˆã—ç·š
+                       SHIFTJIS_CHARSET,    //æ–‡å­—ã‚»ãƒƒãƒˆ
+                       OUT_DEFAULT_PRECIS,    //å‡ºåŠ›ç²¾åº¦
+                       CLIP_DEFAULT_PRECIS,//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°ç²¾åº¦
+                       PROOF_QUALITY,        //å‡ºåŠ›å“è³ª
+                       FIXED_PITCH | FF_MODERN,//ãƒ”ãƒƒãƒã¨ãƒ•ã‚¡ãƒŸãƒªãƒ¼
+                       face);    //æ›¸ä½“å
     oldFont = SelectObject(hdc,hFont);
     return hFont;
 }
 
 int ColorTable[] = {0xFFFFFF,0xF5F5DC,0x8A2BE2,0xD2691E,0x00FFFF,0x006400,0x9932CC};
 
-#define GetTableColor(x) ColorTable[(x)%(sizeof(ColorTable)/sizeof(ColorTable[0]))]
+int GetTableColor(int x){
+	int i=0;
+	while(x>>=1,x!=0){
+		i++;
+	}
+	return ColorTable[i];
+}
 
 int GameDraw(HDC hdc){
     char s[3] = {0};
