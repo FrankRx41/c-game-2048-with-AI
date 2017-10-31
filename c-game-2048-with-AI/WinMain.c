@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "Option.h"
 #include "Game.h"
+#include "AI.h"
 #include "resource.h"
 #include "Macro.h"
 
@@ -11,6 +12,10 @@ int WinKeyHandle(int key,LPOPTION lpOption){
     {
         PostQuitMessage(0);
         return -1;
+    }
+    else if(lpOption->iGameState == GS_ONAI)
+    {
+        return 0;
     }
     else if(key == lpOption->key_up)
     {
@@ -179,6 +184,27 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         CheckMenuItem(GetMenu(hWnd),LOWORD(wParam),lpOption->fAnimation?MF_CHECKED:0);
         return 0;
 
+    case MENU_AI_1:
+    case MENU_AI_2:
+    case MENU_AI_3:
+        if(lpOption->AI[LOWORD(wParam) - MENU_AI_1] != 1){
+            forloop(i,3)
+            lpOption->AI[i] = 0;
+            lpOption->AI[LOWORD(wParam) - MENU_AI_1] = 1;
+            lpOption->iGameState = GS_ONAI;
+            SetTimer(hWnd,0,300,0);
+        }else{
+            lpOption->AI[LOWORD(wParam) - MENU_AI_1] = 0;
+            lpOption->iGameState = GS_RUNNING;
+            KillTimer(hWnd,0,300,0);
+        }
+        debug("AI: %d",LOWORD(wParam) - MENU_AI_1);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[0]?MF_CHECKED:0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[1]?MF_CHECKED:0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_3,lpOption->AI[2]?MF_CHECKED:0);
+
+        break;
+
     case MENU_HELP_ABOUT:
         return MessageBox(0,"EiSnow\n\n(C)CopyRight  2017.10.31","2048",0);
     }
@@ -242,20 +268,20 @@ int WinMenuInit(LPOPTION lpOption){
         }
     }
 
-    hMenu = GetSubMenu(hMenu,4);
-    cMenuItems = GetMenuItemCount(hMenu);
-    for(int nPos = 0; nPos < cMenuItems; nPos++)
-    {
-        UINT id = GetMenuItemID(hMenu,nPos);
-
-        switch(id){
-        case MENU_AI_1:
-        case MENU_AI_2:
-        case MENU_AI_3:
-            EnableMenuItem(hMenu,id,MF_GRAYED);
-            break;
-        }
-    }
+    //hMenu = GetSubMenu(hMenu,4);
+    //cMenuItems = GetMenuItemCount(hMenu);
+    //for(int nPos = 0; nPos < cMenuItems; nPos++)
+    //{
+    //    UINT id = GetMenuItemID(hMenu,nPos);
+    //
+    //    switch(id){
+    //    case MENU_AI_1:
+    //    case MENU_AI_2:
+    //    case MENU_AI_3:
+    //        EnableMenuItem(hMenu,id,MF_GRAYED);
+    //        break;
+    //    }
+    //}
 }
 
 int WinSysInit(HWND hWnd,LPOPTION lpOption){
@@ -270,6 +296,7 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
 
     static OPTION   Option;
     static LPOPTION lpOption = &Option;
+    int map[5][5];
 
     switch(message){
     case WM_CREATE:
@@ -281,9 +308,14 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         WinOnMenu(hWnd,wParam,lpOption);
         break;
     case WM_TIMER:
+        // AI timer:
+        memcpy(map,lpOption->nMap,sizeof(map));
+        GameDirKey(AI1(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+        InvalidateRect(hWnd,NULL,FALSE);
+
         //CreatNewBlock(lpOption);
-        KillTimer(hWnd,0);
-        InvalidateRect(hWnd,NULL,TRUE);
+        //KillTimer(hWnd,0);
+        //InvalidateRect(hWnd,NULL,TRUE);
         return 0;
     case WM_KEYDOWN:
         switch(wParam){
@@ -292,7 +324,7 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
             return 0;
         default:
             if(WinKeyHandle(wParam,lpOption)){
-                InvalidateRect(hWnd,NULL,TRUE);
+                InvalidateRect(hWnd,NULL,FALSE);
                 //SetTimer(hWnd,0,300,0);
             }
             if(lpOption->iGameState == GS_OVER){

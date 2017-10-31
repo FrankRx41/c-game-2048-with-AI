@@ -4,7 +4,7 @@
 #include <Windows.h>
 
 enum{
-    /*GS_OP,GS_ED,GS_HEIGHT_SCORE,*/GS_RUNNING,GS_OVER
+    /*GS_OP,GS_ED,GS_HEIGHT_SCORE,*/GS_RUNNING,GS_OVER,GS_ONAI
 };
 
 typedef struct OPTION{
@@ -17,6 +17,7 @@ typedef struct OPTION{
     int nMap[5][5];
 
     int iGameState;
+    int AI[3];
 
     // System Setting
     int fSound;

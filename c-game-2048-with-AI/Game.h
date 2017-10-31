@@ -18,4 +18,6 @@ int CheckBlank(int (*)[5]);
 int CheckNearby(int (*map)[5],int w,int h,int x,int y,int dir);
 int CheckALLDirNearby(int (*map)[5],int w,int h,int dir);
 
+int CheckIfDir(int (*)[5],int w,int h,int dir);
+
 #endif
