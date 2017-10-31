@@ -152,6 +152,7 @@ int ReadSetting(LPOPTION lpOption){
     SetOptionVal("Suggestion",  &lpOption->fSuggestion,     0);
     SetOptionVal("GaryMode",    &lpOption->fGaryMode,       0);
     SetOptionVal("Animation",   &lpOption->fAnimation,      1);
+    SetOptionVal("AISleep",     &lpOption->iAISleep,        300);
     
     return 0;
 }

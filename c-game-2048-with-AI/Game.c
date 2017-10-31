@@ -220,7 +220,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     MoveWindow(lpOption->hWnd,x,y,w,h,FALSE);
 
 #ifdef _DEBUG1
-    /*map[0][0] = 2;
+    /*map[0][0] = 2048;
         map[1][0] = 16    ;
         map[2][0] = 4     ;
         map[3][0] = 2     ;

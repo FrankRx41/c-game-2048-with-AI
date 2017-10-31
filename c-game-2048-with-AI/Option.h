@@ -22,6 +22,7 @@ typedef struct OPTION{
 
     int iGameState;
     int AI[3];
+    int iAISleep;
 
     // System Setting
     int fSound;

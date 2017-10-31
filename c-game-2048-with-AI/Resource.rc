@@ -1,6 +1,7 @@
 #include "resource.h"
+#include "windows.h"
 
-MAIN_MENU   MENU PRELOAD FIXED
+2048GAMEWITHAI  MENU PRELOAD FIXED
 BEGIN
     POPUP "&Game"
     BEGIN
@@ -13,12 +14,13 @@ BEGIN
         END
         MENUITEM "&Save"                MENU_GAME_SAVE
         MENUITEM "&Load"                MENU_GAME_LOAD
+        MENUITEM "&Pause\tSpace"        MENU_GAME_PAUSE
         MENUITEM SEPARATOR
         POPUP "A&I"
         BEGIN
-            MENUITEM "&AI0"             MENU_AI_0
-            MENUITEM "&AI1"             MENU_AI_1
-            MENUITEM "&AI2"             MENU_AI_2
+            MENUITEM "&AI0\tF1"         MENU_AI_0
+            MENUITEM "&AI1\tF2"         MENU_AI_1
+            MENUITEM "&AI2\tF3"         MENU_AI_2
         END
         MENUITEM SEPARATOR
         MENUITEM "S&ound"               MENU_OPTION_SOUND
@@ -35,4 +37,11 @@ BEGIN
     BEGIN
         MENUITEM "&About"               MENU_HELP_ABOUT
     END
+END
+
+2048GAMEWITHAI  ACCELERATORS    DISCARDABLE
+BEGIN
+    VK_F1,  MENU_AI_0,  VIRTKEY,    NOINVERT
+    VK_F2,  MENU_AI_1,  VIRTKEY,    NOINVERT
+    VK_F3,  MENU_AI_2,  VIRTKEY,    NOINVERT
 END

@@ -14,6 +14,7 @@ int WinKeyHandle(int key,LPOPTION lpOption){
     }
     if(key == lpOption->key_pause){
         lpOption->iGameState ^= GS_PAUSE;
+        CheckMenuItem(GetMenu(lpOption->hWnd),MENU_GAME_PAUSE,lpOption->iGameState&GS_PAUSE?MF_CHECKED:0);
     }
     else if(lpOption->iGameState & GS_ONAI || lpOption->iGameState & GS_PAUSE)
     {
@@ -161,6 +162,11 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         EnableMenuItem(GetMenu(hWnd),MENU_GAME_LOAD,MF_ENABLED);
         InvalidateRect(hWnd,NULL,FALSE);
         return 0;
+    case MENU_GAME_PAUSE:
+        lpOption->iGameState ^= GS_PAUSE;
+        CheckMenuItem(GetMenu(hWnd),MENU_GAME_PAUSE,lpOption->iGameState&GS_PAUSE?MF_CHECKED:0);
+        break;
+
     case MENU_GAME_EXIT:
         PostQuitMessage(0);
         return -1;
@@ -190,22 +196,24 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
     case MENU_AI_0:
     case MENU_AI_1:
     case MENU_AI_2:
-        KillTimer(hWnd,0);
         if(lpOption->AI[LOWORD(wParam) - MENU_AI_0] != 1){
             forloop(i,3)
             lpOption->AI[i] = 0;
             lpOption->AI[LOWORD(wParam) - MENU_AI_0] = 1;
-            lpOption->iGameState += GS_ONAI;
-            SetTimer(hWnd,0,300,0);
+            lpOption->iGameState |= GS_ONAI;
+            //SetTimer(hWnd,LOWORD(wParam) - MENU_AI_0,lpOption->iAISleep,0);
+            SetTimer(hWnd,0,lpOption->iAISleep,0);
+            debug("start AI: %d",LOWORD(wParam) - MENU_AI_0);
         }else{
+            KillTimer(hWnd,0);
             lpOption->AI[LOWORD(wParam) - MENU_AI_0] = 0;
             lpOption->iGameState -= GS_ONAI;
+            debug("stop AI: %d",LOWORD(wParam) - MENU_AI_0);
         }
-        debug("AI: %d",LOWORD(wParam) - MENU_AI_0);
+        //debug("AI: %d",LOWORD(wParam) - MENU_AI_0);
         CheckMenuItem(GetMenu(hWnd),MENU_AI_0,lpOption->AI[0]?MF_CHECKED:0);
         CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[1]?MF_CHECKED:0);
         CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[2]?MF_CHECKED:0);
-
         break;
 
     case MENU_HELP_ABOUT:
@@ -315,6 +323,7 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         // AI timer:
         if(lpOption->iGameState & GS_PAUSE)return 0;
         memcpy(map,lpOption->nMap,sizeof(map));
+        debug("On AI %d %d %d command",lpOption->AI[0],lpOption->AI[1],lpOption->AI[2]);
         if(lpOption->AI[0]){
             GameDirKey(AI0(map,lpOption->nWidth,lpOption->nHeight),lpOption);
         }
@@ -369,8 +378,8 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
     wcex.hInstance      = hInstance;
     wcex.hbrBackground  = NULL;
     wcex.lpfnWndProc    = WinProc;
-    wcex.lpszClassName  = TEXT("WndClass");
-    wcex.lpszMenuName   = TEXT("MAIN_MENU");
+    wcex.lpszClassName  = TEXT("2048GAMEWITHAI");
+    wcex.lpszMenuName   = TEXT("2048GAMEWITHAI");
     wcex.style          = CS_OWNDC;
     RegisterClassEx(&wcex);
 
@@ -388,13 +397,16 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
     x = rt.left + (rt.right - rt.left - w) / 2;
     y = rt.top  + (rt.bottom - rt.top - h) / 2;
 
-    HWND hWnd = CreateWindow(TEXT("WndClass"),TEXT("2048 with AI"),WS_OVERLAPPEDWINDOW&~WS_THICKFRAME&~WS_MAXIMIZEBOX,
+    HWND hWnd = CreateWindow(TEXT("2048GAMEWITHAI"),TEXT("2048 with AI"),WS_OVERLAPPEDWINDOW&~WS_THICKFRAME&~WS_MAXIMIZEBOX,
                             x,y,w,h,0,0,hInstance,0);
     ShowWindow(hWnd,nCmdShow);
     MSG msg = {0};
+    HANDLE hAccel = LoadAccelerators(hInstance,TEXT("2048GAMEWITHAI"));
     while(GetMessage(&msg,0,0,0)){
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        if(!TranslateAccelerator(hWnd,hAccel,&msg)){
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
     UnregisterClass("WndClass",hInstance);
 
