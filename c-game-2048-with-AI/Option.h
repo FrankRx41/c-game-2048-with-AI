@@ -4,7 +4,11 @@
 #include <Windows.h>
 
 enum{
-    /*GS_OP,GS_ED,GS_HEIGHT_SCORE,*/GS_RUNNING,GS_OVER,GS_ONAI
+    /*GS_OP,GS_ED,GS_HEIGHT_SCORE,*/
+    GS_RUNNING  = 0x0001,
+    GS_OVER     = 0x0000,
+    GS_ONAI     = 0x4000,
+    GS_PAUSE    = 0x8000,
 };
 
 typedef struct OPTION{

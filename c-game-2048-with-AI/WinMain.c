@@ -7,13 +7,15 @@
 #include "Macro.h"
 
 int WinKeyHandle(int key,LPOPTION lpOption){
-
     if(key == lpOption->key_esc)
     {
         PostQuitMessage(0);
         return -1;
     }
-    else if(lpOption->iGameState == GS_ONAI)
+    if(key == lpOption->key_pause){
+        lpOption->iGameState ^= GS_PAUSE;
+    }
+    else if(lpOption->iGameState & GS_ONAI || lpOption->iGameState & GS_PAUSE)
     {
         return 0;
     }
@@ -119,6 +121,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
         rt.right    = cxClient;
         rt.top      = 0;
         rt.bottom   = cxClient;
+        SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize*2,0);
         sprintf(s,"%s","Game Over");
         DrawText(hdc,s,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
     }
@@ -184,24 +187,24 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         CheckMenuItem(GetMenu(hWnd),LOWORD(wParam),lpOption->fAnimation?MF_CHECKED:0);
         return 0;
 
+    case MENU_AI_0:
     case MENU_AI_1:
     case MENU_AI_2:
-    case MENU_AI_3:
-        if(lpOption->AI[LOWORD(wParam) - MENU_AI_1] != 1){
+        KillTimer(hWnd,0);
+        if(lpOption->AI[LOWORD(wParam) - MENU_AI_0] != 1){
             forloop(i,3)
             lpOption->AI[i] = 0;
-            lpOption->AI[LOWORD(wParam) - MENU_AI_1] = 1;
-            lpOption->iGameState = GS_ONAI;
+            lpOption->AI[LOWORD(wParam) - MENU_AI_0] = 1;
+            lpOption->iGameState += GS_ONAI;
             SetTimer(hWnd,0,300,0);
         }else{
-            lpOption->AI[LOWORD(wParam) - MENU_AI_1] = 0;
-            lpOption->iGameState = GS_RUNNING;
-            KillTimer(hWnd,0,300,0);
+            lpOption->AI[LOWORD(wParam) - MENU_AI_0] = 0;
+            lpOption->iGameState -= GS_ONAI;
         }
-        debug("AI: %d",LOWORD(wParam) - MENU_AI_1);
-        CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[0]?MF_CHECKED:0);
-        CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[1]?MF_CHECKED:0);
-        CheckMenuItem(GetMenu(hWnd),MENU_AI_3,lpOption->AI[2]?MF_CHECKED:0);
+        debug("AI: %d",LOWORD(wParam) - MENU_AI_0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_0,lpOption->AI[0]?MF_CHECKED:0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[1]?MF_CHECKED:0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[2]?MF_CHECKED:0);
 
         break;
 
@@ -286,6 +289,7 @@ int WinMenuInit(LPOPTION lpOption){
 
 int WinSysInit(HWND hWnd,LPOPTION lpOption){
     lpOption->hWnd = hWnd;
+    lpOption->iGameState = GS_RUNNING;
     ReadSetting(lpOption);
     WinMenuInit(lpOption);
 }
@@ -309,8 +313,17 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         break;
     case WM_TIMER:
         // AI timer:
+        if(lpOption->iGameState & GS_PAUSE)return 0;
         memcpy(map,lpOption->nMap,sizeof(map));
-        GameDirKey(AI1(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+        if(lpOption->AI[0]){
+            GameDirKey(AI0(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+        }
+        else if(lpOption->AI[1]){
+            GameDirKey(AI1(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+        }
+        else if(lpOption->AI[2]){
+            GameDirKey(AI2(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+        }
         InvalidateRect(hWnd,NULL,FALSE);
 
         //CreatNewBlock(lpOption);

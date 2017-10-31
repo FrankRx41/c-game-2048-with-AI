@@ -6,7 +6,7 @@ BEGIN
     BEGIN
         POPUP "&New"
         BEGIN
-            MENUITEM "&5 * 5"           MENU_NEW_5
+            MENUITEM "&5 * 4"           MENU_NEW_5
             MENUITEM "&4 * 4"           MENU_NEW_4
             MENUITEM "&3 * 4"           MENU_NEW_3
             //MENUITEM "&Customize"       MENU_NEW_CUSTOMIZE
@@ -16,9 +16,9 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "A&I"
         BEGIN
-            MENUITEM "&1"               MENU_AI_1
-            MENUITEM "&2"               MENU_AI_2
-            MENUITEM "&3"               MENU_AI_3
+            MENUITEM "&AI0"             MENU_AI_0
+            MENUITEM "&AI1"             MENU_AI_1
+            MENUITEM "&AI2"             MENU_AI_2
         END
         MENUITEM SEPARATOR
         MENUITEM "S&ound"               MENU_OPTION_SOUND

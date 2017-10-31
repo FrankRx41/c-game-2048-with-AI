@@ -80,10 +80,12 @@ int GameCreatNewBlock(LPOPTION lpOption){
     }
     if(!CheckALLDirNearby(map,lpOption->nWidth,lpOption->nHeight,0) && !CheckBlank(map,lpOption->nWidth,lpOption->nHeight))
     {
-        if(lpOption->iGameState == GS_RUNNING){
+        if((lpOption->iGameState & 0x0F) == GS_RUNNING){
             //MessageBox(0,"Game Over","2048",0);
             lpOption->iGameState = GS_OVER;
             //PlaySound(TEXT("2.wav"),0,SND_FILENAME|SND_ASYNC);
+            // clear AI timer
+            KillTimer(lpOption->hWnd,0);
         }
         debug("______________GAME_OVER________________");
     }
@@ -438,5 +440,5 @@ int CheckIfDir(int (*map)[5],int w,int h,int dir){
         }
         break;
     }
-    return fHadmove<<1|fUniting;
+    return fHadmove;
 }
