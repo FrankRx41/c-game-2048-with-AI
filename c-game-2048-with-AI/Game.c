@@ -83,7 +83,7 @@ int GameCreatNewBlock(LPOPTION lpOption){
         if(lpOption->iGameState == GS_RUNNING){
             //MessageBox(0,"Game Over","2048",0);
             lpOption->iGameState = GS_OVER;
-            PlaySound(TEXT("2.wav"),0,SND_FILENAME|SND_ASYNC);
+            //PlaySound(TEXT("2.wav"),0,SND_FILENAME|SND_ASYNC);
         }
         debug("______________GAME_OVER________________");
     }
@@ -176,9 +176,13 @@ int GameDirKey(int dir,LPOPTION lpOption){
     if(fHadmove){
         GameCreatNewBlock(lpOption);
         lpOption->nStep++;
-        if(fUniting){
-            debug("playsound");
-            PlaySound(TEXT("1.wav"),0,SND_FILENAME|SND_ASYNC);
+        if(lpOption->fSound){
+            if(fUniting){
+                debug("playsound");
+                PlaySound(TEXT("1.wav"),0,SND_FILENAME|SND_ASYNC);
+            }else{
+                PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
+            }
         }
     }
     return fHadmove;
@@ -213,8 +217,8 @@ int GameInit(LPOPTION lpOption,int w,int h){
     }
     MoveWindow(lpOption->hWnd,x,y,w,h,FALSE);
 
-#ifdef _DEBUG
-    map[0][0] = 2;
+#ifdef _DEBUG1
+    /*map[0][0] = 2;
         map[1][0] = 16    ;
         map[2][0] = 4     ;
         map[3][0] = 2     ;
