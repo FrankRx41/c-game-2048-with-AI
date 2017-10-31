@@ -6,24 +6,27 @@ BEGIN
     BEGIN
         POPUP "&New"
         BEGIN
-            MENUITEM "5 * 5"            MENU_NEW_5
-            MENUITEM "4 * 4"            MENU_NEW_4
-            MENUITEM "3 * 4"            MENU_NEW_3
-            MENUITEM "&Customize"       MENU_NEW_CUSTOMIZE
+            MENUITEM "&5 * 5"           MENU_NEW_5
+            MENUITEM "&4 * 4"           MENU_NEW_4
+            MENUITEM "&3 * 4"           MENU_NEW_3
+            //MENUITEM "&Customize"       MENU_NEW_CUSTOMIZE
         END
         MENUITEM "&Save"                MENU_GAME_SAVE
         MENUITEM "&Load"                MENU_GAME_LOAD
         MENUITEM SEPARATOR
-        POPUP "&AI"
+        POPUP "A&I"
         BEGIN
-            MENUITEM "1"                MENU_AI_1
-            MENUITEM "2"                MENU_AI_2
-            MENUITEM "3"                MENU_AI_3
+            MENUITEM "&1"               MENU_AI_1
+            MENUITEM "&2"               MENU_AI_2
+            MENUITEM "&3"               MENU_AI_3
         END
         MENUITEM SEPARATOR
-        MENUITEM "S&ound"               MENU_OPTION_SOUND   CHECKED
+        MENUITEM "S&ound"               MENU_OPTION_SOUND
         MENUITEM "&Fullscreen"          MENU_OPTION_FULLSCREEN
         MENUITEM "S&uggestion"          MENU_OPTION_SUGGESTION
+        MENUITEM "&GaryMode"            MENU_OPTION_GARYMODE
+        MENUITEM "&Animation"           MENU_OPTION_ANIMATION
+        
         MENUITEM SEPARATOR
         MENUITEM "E&xit"                MENU_GAME_EXIT
     END

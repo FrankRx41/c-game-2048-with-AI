@@ -78,12 +78,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AI.c" />
+    <ClCompile Include="Game.c" />
+    <ClCompile Include="Option.c" />
     <ClCompile Include="WinMain.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AI.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="log.txt" />
+    <ClInclude Include="Macro.h" />
     <ClInclude Include="Option.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
