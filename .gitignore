@@ -187,3 +187,6 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/.localhistory
+/c-game-2048-with-AI/2048.dat
+/c-game-2048-with-AI/config.ini
