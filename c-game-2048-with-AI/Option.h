@@ -26,7 +26,7 @@ typedef struct OPTION{
 
     // System Setting
     int fSound;
-    int fFullScreen;
+    int fFullScreen;                    // XXX: delete it?
     int fSuggestion;
     int fGaryMode;
     int fAnimation;

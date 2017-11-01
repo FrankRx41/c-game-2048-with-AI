@@ -180,6 +180,22 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
     DeleteDC(hdc);
 }
 
+int __stdcall AboutDlgProc(HWND hDlg,UINT message,WPARAM wParam,LPARAM lParam){
+    switch(message){
+    case WM_INITDIALOG:
+        return 1;
+    case WM_COMMAND:
+        switch(LOWORD(wParam)){
+        case IDOK:
+        case IDCANCEL:
+            EndDialog(hDlg,0);
+            return 1;
+        }
+        break;
+    }
+    return 0;
+}
+
 int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
     switch(LOWORD(wParam)){
     case MENU_NEW_3:
@@ -269,7 +285,9 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         SaveOption(lpOption);
         break;
     case MENU_HELP_ABOUT:
-        return MessageBox(0,"EiSnow\n\n(C)CopyRight  2017.10.31","2048",0);
+        DialogBox(NULL,TEXT("ABOUTBOX"),hWnd,AboutDlgProc);
+        //return MessageBox(0,"EiSnow\n\n(C)CopyRight  2017.10.31","2048",0);
+        return 0;
     }
 }
 
