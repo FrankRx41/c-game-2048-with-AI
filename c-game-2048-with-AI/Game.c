@@ -69,6 +69,11 @@ int GameCreatNewBlock(LPOPTION lpOption){
     }
 
     int v = (rand()%2+1)<<1;
+    if(rand()%5==0){
+        v = 4;
+    }else{
+        v = 2;
+    }
     if(map[x][y] == 0){
         map[x][y] = v;
     }
@@ -84,8 +89,13 @@ int GameCreatNewBlock(LPOPTION lpOption){
             //MessageBox(0,"Game Over","2048",0);
             lpOption->iGameState = GS_OVER;
             //PlaySound(TEXT("2.wav"),0,SND_FILENAME|SND_ASYNC);
+
             // clear AI timer
             KillTimer(lpOption->hWnd,0);
+            lpOption->AI[0] = 0;
+            lpOption->AI[1] = 0;
+            lpOption->AI[2] = 0;
+            WinMenuInit(lpOption);
         }
         debug("______________GAME_OVER________________");
     }
@@ -254,7 +264,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     map[2][3] = 32768;
     map[3][3] = 65536;*/
 #else
-    //srand(time(NULL));
+    srand(time(NULL));
     loop(2)while(x=rand()%lpOption->nHeight,y=rand()%lpOption->nWidth,map[x][y]==0){
         int v = 2<<rand()%2;
         map[x][y] = v;

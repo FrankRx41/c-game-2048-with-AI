@@ -277,6 +277,10 @@ int WinMenuInit(LPOPTION lpOption){
             break;
 
         }
+
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_0,lpOption->AI[0]?MF_CHECKED:0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[1]?MF_CHECKED:0);
+        CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[2]?MF_CHECKED:0);
     }
 
     //hMenu = GetSubMenu(hMenu,4);
@@ -341,7 +345,7 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         return 0;
     case WM_KEYDOWN:
         switch(wParam){
-        case VK_F3:
+        case VK_F9:
             PrintOption(lpOption);
             return 0;
         default:
