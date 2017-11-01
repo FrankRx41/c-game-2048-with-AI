@@ -1,6 +1,8 @@
 #include "resource.h"
 #include "windows.h"
 
+2048GAMEWITHAI  ICON    DISCARDABLE         "2048GAMEWITHAI.ico"
+
 2048GAMEWITHAI  MENU PRELOAD FIXED
 BEGIN
     POPUP "&Game"

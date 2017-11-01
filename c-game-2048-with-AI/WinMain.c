@@ -385,6 +385,7 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
     wcex.lpszClassName  = TEXT("2048GAMEWITHAI");
     wcex.lpszMenuName   = TEXT("2048GAMEWITHAI");
     wcex.style          = CS_OWNDC;
+    wcex.hIcon          = LoadIcon(hInstance,TEXT("2048GAMEWITHAI"));
     RegisterClassEx(&wcex);
 
 #ifdef _DEBUG

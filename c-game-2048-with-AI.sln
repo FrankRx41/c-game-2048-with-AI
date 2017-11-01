@@ -5,11 +5,9 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "c-game-2048-with-AI", "c-game-2048-with-AI\c-game-2048-with-AI.vcxproj", "{08D2880E-B142-4769-9E0F-D4C4DEC9187A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleApplication1", "ConsoleApplication1\ConsoleApplication1.vcxproj", "{50AD8F63-9923-45A0-A3A7-F777AA5C93A1}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataViewer", "DataViewer\DataViewer.vcxproj", "{C8127AFC-95DD-4DE8-86FD-C5BAEA993230}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataCreater", "DataCreater\DataCreater.vcxproj", "{C66524D0-15FC-4E09-BCE7-89B2D5C566D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataCreator", "DataCreater\DataCreater.vcxproj", "{C66524D0-15FC-4E09-BCE7-89B2D5C566D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		{08D2880E-B142-4769-9E0F-D4C4DEC9187A}.Debug|Win32.Build.0 = Debug|Win32
 		{08D2880E-B142-4769-9E0F-D4C4DEC9187A}.Release|Win32.ActiveCfg = Release|Win32
 		{08D2880E-B142-4769-9E0F-D4C4DEC9187A}.Release|Win32.Build.0 = Release|Win32
-		{50AD8F63-9923-45A0-A3A7-F777AA5C93A1}.Debug|Win32.ActiveCfg = Debug|Win32
-		{50AD8F63-9923-45A0-A3A7-F777AA5C93A1}.Debug|Win32.Build.0 = Debug|Win32
-		{50AD8F63-9923-45A0-A3A7-F777AA5C93A1}.Release|Win32.ActiveCfg = Release|Win32
-		{50AD8F63-9923-45A0-A3A7-F777AA5C93A1}.Release|Win32.Build.0 = Release|Win32
 		{C8127AFC-95DD-4DE8-86FD-C5BAEA993230}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C8127AFC-95DD-4DE8-86FD-C5BAEA993230}.Debug|Win32.Build.0 = Debug|Win32
 		{C8127AFC-95DD-4DE8-86FD-C5BAEA993230}.Release|Win32.ActiveCfg = Release|Win32
