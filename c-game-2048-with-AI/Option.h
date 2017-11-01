@@ -39,23 +39,29 @@ typedef struct OPTION{
     int     iFontSize;
     int     cxClient;
     int     cyClient;
-    int     nPadding;
-    int     nCorrect;
+    int     nTileWidth;
+    int     nMargin ;
     char    sSaveDate[30];
+    long    iRandseek;
 
     // Key
-    int     key_up;
-    int     key_down;
-    int     key_left;
-    int     key_right;
-    int     key_esc;
-    int     key_pause;
+    int     vKeyUp;
+    int     vKeyDown;
+    int     vKeyLeft;
+    int     vKeyRight;
+    int     vKeyEscape;
+    int     vKeyPause;
+    int     vKeyAISpeedUp;
+    int     vKeyAISpeedDown;
+
+    int     nWinPosX;
+    int     nWinPosY;
 
     // score
     unsigned int nScore[3];
 }* LPOPTION, OPTION;
 
-void PrintOption(LPOPTION lpOption);
+int PrintOption(LPOPTION lpOption);
 int ReadOption(LPOPTION lpOption);
 int SaveOption(LPOPTION lpOption);
 

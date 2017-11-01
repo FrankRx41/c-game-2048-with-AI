@@ -1,31 +1,20 @@
 #include "Macro.h"
 #include "Game.h"
-#include "AI.h"
 
-int AI0(int map[5][5],int w,int h){
-    // random AI
-    int dir = rand()%4+1;
-    int map2[5][5];
-    memcpy(map2,map,sizeof(map2));
-    while(1){
-        int v = CheckIfDir(map2,w,h,dir);
-        debug("random dir: %d v:%d",dir,v);
-        if(v){
-            break;
+static int CheckBlank(const int(*map)[5],int w,int h){
+    int sum = 0;
+    for(int x=0;x<h;x++){
+        for(int y=0;y<w;y++){
+            if(map[x][y] == 0)
+                sum++;
         }
-        memcpy(map2,map,sizeof(map2));
-        dir = rand()%4+1;
     }
-    return dir;
-}
-
-int AI1(int map[5][5],int w,int h){
-    // TODO: add your code here
-    // example: 
-    return rand()%4;
+    debug("%s: %d",__FUNCTION__,sum);
+    return sum;
 }
 
 int AI2(int map[5][5],int w,int h){
+    debug("--------------------AI--------------------");
     // some AI, I hadn't named it :)
     int x[5] = {-1,-1,-1,-1,-1};
     int map2[5][5];
@@ -60,6 +49,7 @@ int AI2(int map[5][5],int w,int h){
         debug("x[%d]=%d k=%d",i,x[i],k);
     }
     debug("AI go: %d",k);
+    debug("--------------------AI--------------------");
     return k;
 }
 

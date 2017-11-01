@@ -2,66 +2,84 @@
 #include "Macro.h"
 #include <stdio.h>
 
-FILE * fp;
+static FILE * fp;
+static int fCreateFile  = 0;
+static int fSaveOption  = 0;
+static int fHaveSeek    = 1;
 
-void PrintOption(LPOPTION lpOption){
-    printf("----------------------------------------------------------------\n");
-    printf("GameState:%04X\n",lpOption->iGameState);
-    printf("Sound:%d   FullScreen:%d   Suggestion:%d   GaryMode:%d\n",lpOption->fSound,lpOption->fFullScreen,lpOption->fSuggestion,lpOption->fGaryMode);
-    printf("Width:%d   Height:%d\n",lpOption->nWidth,lpOption->nHeight);
-    printf("Score:%d   %d   %d\n",lpOption->nScore[0],lpOption->nScore[1],lpOption->nScore[2]);
-    printf("Level:%d \n",lpOption->iLevel);
-    //printf("ColorTable:\n");
+int PrintOption(LPOPTION lpOption){
+    debug("--------------------Option--------------------");
+    debug("GameState:%04X",lpOption->iGameState);
+    debug("Sound:%d   FullScreen:%d   Suggestion:%d   GaryMode:%d",lpOption->fSound,lpOption->fFullScreen,lpOption->fSuggestion,lpOption->fGaryMode);
+    debug("Width:%d   Height:%d   Level:%d",lpOption->nWidth,lpOption->nHeight,lpOption->iLevel);
+    debug("Score:%d   %d   %d",lpOption->nScore[0],lpOption->nScore[1],lpOption->nScore[2]);
+    //debug("ColorTable:\n");
     //for(int i=0;i<sizeof(lpOption->nColorTable)/sizeof(lpOption->nColorTable[0]);i++){
-    //    printf("[%d] 0x%06X\t",1<<i,lpOption->nColorTable[i]);
+    //    debug("[%d] 0x%06X\t",1<<i,lpOption->nColorTable[i]);
     //}
-    printf("BgColor:0x%X\n",lpOption->nBgColor);
-    //printf("\n");
-    printf("FontName:%s   FontSize:%d\n",lpOption->hFontName,lpOption->iFontSize);
-    printf("----------------------------------------------------------------\n");
+    //debug("BgColor:0x%X",lpOption->nBgColor);
+    debug("FontName:%s   FontSize:%d\n",lpOption->hFontName,lpOption->iFontSize);
+    debug("--------------------Option--------------------");
 }
 
-int WriteOptionHex(int *pointer,int value){
-    fprintf(fp,"%#X\n",value);
-    *pointer = value;
-}
-int ReadOptionHex(int *pointer){
-    char str[MAX];
-    fgets(str,MAX,fp);
-    sscanf(str,"%X",pointer);
-    debug("%s:[%x]",__FUNCTION__,*pointer);
-}
-
-int WriteOptionDec(int *pointer,int value){
-    fprintf(fp,"%d\n",value);
-    *pointer = value;
-}
-int ReadOptionDec(int *pointer){
-    char str[MAX];
-    fgets(str,MAX,fp);
-    sscanf(str,"%d",pointer);
-}
-
-int WriteOptionStr(char *pointer,char *value){
-    fprintf(fp,"%s\n",value);
-    strcpy(pointer,value);
-}
-int SkipSpace(char * str){
+static int SkipSpace(char * str){
     int i=0;
     while(str[i]==' ' || str[i]=='\t'){
         i++;
     }
     return i;
 }
-int ReadOptionStr(char *pointer){
+static int ReadOptionStr(char *pointer){
     char str[MAX];
     fgets(str,MAX,fp);
     int i = SkipSpace(str);
     strncpy(pointer,str+i,strlen(str)-1-i);
     //debug("%s:[%s]",__FUNCTION__,pointer);
 }
+static int ReadOptionHex(int *pointer){
+    char str[MAX];
+    fgets(str,MAX,fp);
+    sscanf(str,"%X",pointer);
+    //debug("%s:[%x]",__FUNCTION__,*pointer);
+}
+static int ReadOptionDec(int *pointer){
+    char str[MAX];
+    fgets(str,MAX,fp);
+    if(sscanf(str,"%d",pointer) != 1){
+        fHaveSeek = 0;
+        srand(time(NULL));
+        int x = rand();
+        debug("i guess it is rand seek, i random it: %d",x);
+        *pointer = x;
+    }
+}
 
-int FindHeader(char *m1){
+static int WriteOptionStr(char *pointer,char *value){
+    if(fSaveOption){
+        fprintf(fp,"%s\n",pointer);
+    }else{
+        fprintf(fp,"%s\n",value);
+        strcpy(pointer,value);
+    }
+}
+static int WriteOptionHex(int *pointer,int value){
+    if(fSaveOption){
+        fprintf(fp,"%#X\n",*pointer);
+    }else{
+        fprintf(fp,"%#X\n",value);
+        *pointer = value;
+    }
+}
+static int WriteOptionDec(int *pointer,int value){
+    if(fSaveOption){
+        fprintf(fp,"%d\n",*pointer);
+    }else{
+        fprintf(fp,"%d\n",value);
+        *pointer = value;
+    }
+}
+
+static int FindHeader(char *header){
     char str[MAX];
     while(fgets(str,MAX,fp))
     {
@@ -71,19 +89,18 @@ int FindHeader(char *m1){
         strcpy(str1,str);
 
         char *str2 = strtok(str1,"=");
-        if(strncmp(m1,str2,strlen(m1)) == 0){
+        if(strncmp(header,str2,strlen(header)) == 0){
             int back = strlen(str2)-strlen(str);
             fseek(fp,back,SEEK_CUR);
             return 1;
         }
     }
     fseek(fp,0,SEEK_END);
-    //debug("no find m2: %s!",m2);
-    fprintf(fp,"%s\t= ",m1);
+    fprintf(fp,"%s\t= ",header);
     return 0;
 }
 
-int OptionHex(char *header,int *pointer,int value){
+static int OptionHex(char *header,int *pointer,int value){
     fp = fopen("config.ini","r+");
     if(FindHeader(header)){
         ReadOptionHex(pointer);
@@ -93,8 +110,7 @@ int OptionHex(char *header,int *pointer,int value){
     }
     fclose(fp);
 }
-
-int OptionDec(char *header,int *pointer,int value){
+static int OptionDec(char *header,int *pointer,int value){
     fp = fopen("config.ini","r+");
     if(FindHeader(header)){
         ReadOptionDec(pointer);
@@ -104,8 +120,7 @@ int OptionDec(char *header,int *pointer,int value){
     }
     fclose(fp);
 }
-
-int OptionStr(char *header,char *pointer,char *value){
+static int OptionStr(char *header,char *pointer,char *value){
     fp = fopen("config.ini","r+");
     if(FindHeader(header)){
         ReadOptionStr(pointer);
@@ -113,28 +128,33 @@ int OptionStr(char *header,char *pointer,char *value){
     else{
         WriteOptionStr(pointer,value);
     }
-    fseek(fp,0,SEEK_SET);
     fclose(fp);
 }
 
-int ReadOption(LPOPTION lpOption){
-    char filename[] = "config.ini";
-    fp = fopen(filename,"r+");
-    if(!fp){
-        debug("new file");
-        fp = fopen(filename,"w+");
-        if(!fp){
-            MessageBox(0,"Create Config File Error!",0,0);
-            PostQuitMessage(0);
-        }
-    }
-    fprintf(fp,"# this file create by 2048\n");
+static int WriteComment(char *str){
+    fp = fopen("config.ini","r+");
+    fseek(fp,0,SEEK_END);
+    if(str[0] == '[')fprintf(fp,"\n");
+    fprintf(fp,"%s\n",str);
     fclose(fp);
+}
 
+static int CreateRandSeek(LPOPTION lpOption){
+    fHaveSeek = 0;
+    srand(time(NULL));
+    int x = rand();
+    debug("old random seek: %d\nnew random seek: %d",lpOption->iRandseek,x);
+    lpOption->iRandseek = x;
+}
+
+static int ReadAndSaveOption(LPOPTION lpOption){
+    if(fCreateFile)WriteComment("# this file create by 2048");
+    if(fCreateFile)WriteComment("[FONT]");
     OptionStr("FomtName",   &lpOption->hFontName,       "Impact");
-    OptionStr("SaveDate",   &lpOption->sSaveDate,       "2048.dat");
     OptionDec("FontSize",   &lpOption->iFontSize,       34);
 
+    if(fCreateFile)WriteComment("[COLOR]");
+    if(fCreateFile)WriteComment("# format: BBGGRR");
     OptionHex("0",          &lpOption->nColorTable[0],  0x1A2A3A);
     OptionHex("2",          &lpOption->nColorTable[1],  0x106475);
     OptionHex("4",          &lpOption->nColorTable[2],  0x106C7D);
@@ -155,103 +175,94 @@ int ReadOption(LPOPTION lpOption){
     OptionHex("131072",     &lpOption->nColorTable[17], 0x5E12ED);
     OptionHex("262144",     &lpOption->nColorTable[18], 0x5E12ED);
     OptionHex("524288",     &lpOption->nColorTable[19], 0x5E12ED);
-    OptionHex("10485796",   &lpOption->nColorTable[20], 0x5E12ED);
+    OptionHex("10485..",   &lpOption->nColorTable[20], 0x5E12ED);
 
-    OptionHex("bgColor",    &lpOption->nBgColor,        0x111240);
-    OptionHex("textColor",  &lpOption->nTextColor,      0x9A9C9B);
+    OptionHex("bground",    &lpOption->nBgColor,        0x111240);
+    OptionHex("text",       &lpOption->nTextColor,      0x9A9C9B);
 
-    OptionDec("padding",    &lpOption->nPadding,        100);
-    OptionDec("correct",    &lpOption->nCorrect,        5);
+    if(fCreateFile)WriteComment("[SIZE]");
+    OptionDec("width",      &lpOption->nTileWidth,      100);
+    OptionDec("margin",     &lpOption->nMargin,         5);
+    OptionDec("posX",       &lpOption->nWinPosX,        -1);
+    OptionDec("posY",       &lpOption->nWinPosY,        -1);
 
-    OptionDec("key_up",     &lpOption->key_up,          VK_UP);
-    OptionDec("key_down",   &lpOption->key_down,        VK_DOWN);
-    OptionDec("key_left",   &lpOption->key_left,        VK_LEFT);
-    OptionDec("key_right",  &lpOption->key_right,       VK_RIGHT);
-    OptionDec("key_esc",    &lpOption->key_esc,         VK_ESCAPE);
-    OptionDec("key_pause",  &lpOption->key_pause,       VK_SPACE);
-    
-    OptionDec("score3",     &lpOption->nScore[0],       0);
-    OptionDec("score4",     &lpOption->nScore[1],       0);
-    OptionDec("score5",     &lpOption->nScore[2],       0);
+    if(fCreateFile)WriteComment("[KEY]");
+    OptionDec("Up",         &lpOption->vKeyUp,          VK_UP);
+    OptionDec("Down",       &lpOption->vKeyDown,        VK_DOWN);
+    OptionDec("Left",       &lpOption->vKeyLeft,        VK_LEFT);
+    OptionDec("Right",      &lpOption->vKeyRight,       VK_RIGHT);
+    OptionDec("Exit",       &lpOption->vKeyEscape,      VK_ESCAPE);
+    OptionDec("Pause",      &lpOption->vKeyPause,       VK_SPACE);
+    OptionDec("AISpeedUp",  &lpOption->vKeyAISpeedUp,   VK_SUBTRACT);
+    OptionDec("AISpeedDown",&lpOption->vKeyAISpeedDown, VK_ADD);
 
-    OptionDec("sound",      &lpOption->fSound,          1);
+    if(fCreateFile)WriteComment("[SCORE]");
+    OptionDec("score3*4",   &lpOption->nScore[0],       0);
+    OptionDec("score4*4",   &lpOption->nScore[1],       0);
+    OptionDec("score5*4",   &lpOption->nScore[2],       0);
+
+    if(fCreateFile)WriteComment("[OPTION]");
+    OptionStr("SaveDate",   &lpOption->sSaveDate,       "2048.dat");
+    OptionDec("PlaySound",  &lpOption->fSound,          1);
     OptionDec("FullScreen", &lpOption->fFullScreen,     0);
     OptionDec("Suggestion", &lpOption->fSuggestion,     0);
     OptionDec("GaryMode",   &lpOption->fGaryMode,       0);
     OptionDec("Animation",  &lpOption->fAnimation,      1);
 
-    OptionDec("AISleep",    &lpOption->iAISleep,        300);
+    OptionDec("AISleepTime",&lpOption->iAISleep,        300);
+
+    if(fCreateFile)WriteComment("# keep rand seek null to random it");
+    fp = fopen("config.ini","r+");
+    if(FindHeader("RandSeek")){
+        char str[MAX];
+        fgets(str,MAX,fp);
+        if(sscanf(str,"%d",&lpOption->iRandseek) != 1){
+            CreateRandSeek(lpOption);
+        }
+    }
+    else{
+        if(fSaveOption && fHaveSeek){
+            fprintf(fp,"%d\n",lpOption->iRandseek);
+        }
+        else{
+            fprintf(fp,"\n");
+            CreateRandSeek(lpOption);
+        }
+    }
+    fclose(fp);
     
     return 0;
 }
 
-int SaveOptionHex(char *header,int *pointer){
-    OptionHex(header,pointer,*pointer);
-}
-int SaveOptionDec(char *header,int *pointer){
-    OptionDec(header,pointer,*pointer);
-}
-int SaveOptionStr(char *header,int *pointer){
-    OptionStr(header,pointer,pointer);
+int ReadOption(LPOPTION lpOption){
+    fCreateFile = 0;
+    char filename[] = "config.ini";
+    fp = fopen(filename,"r+");
+    if(!fp){
+        debug("create new config file");
+        fCreateFile = 1;
+        fp = fopen(filename,"w+");
+        if(!fp){
+            MessageBox(0,"Create Config File Error!",0,0);
+            PostQuitMessage(0);
+        }
+    }
+    fclose(fp);
+    ReadAndSaveOption(lpOption);
+    return 1;
 }
 
 int SaveOption(LPOPTION lpOption){
+    fCreateFile = 1;
+    fSaveOption = 1;
     char filename[] = "config.ini";
     fp = fopen(filename,"w");
     if(!fp){
         MessageBox(0,"Open Config File Error!",0,0);
+        return 0;
     }
-    fprintf(fp,"# this file create by 2048\n");
+    //fprintf(fp,"# this file create by 2048\n");
     fclose(fp);
-
-    SaveOptionStr("FomtName",   &lpOption->hFontName);
-    SaveOptionStr("SaveDate",   &lpOption->sSaveDate);
-    SaveOptionDec("FontSize",   &lpOption->iFontSize);
-
-    SaveOptionHex("0",          &lpOption->nColorTable[0]);
-    SaveOptionHex("2",          &lpOption->nColorTable[1]);
-    SaveOptionHex("4",          &lpOption->nColorTable[2]);
-    SaveOptionHex("8",          &lpOption->nColorTable[3]);
-    SaveOptionHex("16",         &lpOption->nColorTable[4]);
-    SaveOptionHex("32",         &lpOption->nColorTable[5]);
-    SaveOptionHex("64",         &lpOption->nColorTable[6]);
-    SaveOptionHex("128",        &lpOption->nColorTable[7]);
-    SaveOptionHex("256",        &lpOption->nColorTable[8]);
-    SaveOptionHex("512",        &lpOption->nColorTable[9]);
-    SaveOptionHex("1024",       &lpOption->nColorTable[10]);
-    SaveOptionHex("2048",       &lpOption->nColorTable[11]);
-    SaveOptionHex("4096",       &lpOption->nColorTable[12]);
-    SaveOptionHex("8192",       &lpOption->nColorTable[13]);
-    SaveOptionHex("16384",      &lpOption->nColorTable[14]);
-    SaveOptionHex("32768",      &lpOption->nColorTable[15]);
-    SaveOptionHex("65536",      &lpOption->nColorTable[16]);
-    SaveOptionHex("131072",     &lpOption->nColorTable[17]);
-    SaveOptionHex("262144",     &lpOption->nColorTable[18]);
-    SaveOptionHex("524288",     &lpOption->nColorTable[19]);
-    SaveOptionHex("10485796",   &lpOption->nColorTable[20]);
-
-    SaveOptionHex("bgColor",    &lpOption->nBgColor);
-    SaveOptionHex("textColor",  &lpOption->nTextColor);
- 
-    SaveOptionDec("padding",    &lpOption->nPadding);
-    SaveOptionDec("correct",    &lpOption->nCorrect);
-  
-    SaveOptionDec("key_up",     &lpOption->key_up);
-    SaveOptionDec("key_down",   &lpOption->key_down);
-    SaveOptionDec("key_left",   &lpOption->key_left);
-    SaveOptionDec("key_right",  &lpOption->key_right);
-    SaveOptionDec("key_esc",    &lpOption->key_esc);
-    SaveOptionDec("key_pause",  &lpOption->key_pause);
-
-    SaveOptionDec("score3",     &lpOption->nScore[0]);
-    SaveOptionDec("score4",     &lpOption->nScore[1]);
-    SaveOptionDec("score5",     &lpOption->nScore[2]);
-
-    SaveOptionDec("sound",      &lpOption->fSound);
-    SaveOptionDec("FullScreen", &lpOption->fFullScreen);
-    SaveOptionDec("Suggestion", &lpOption->fSuggestion);
-    SaveOptionDec("GaryMode",   &lpOption->fGaryMode);
-    SaveOptionDec("Animation",  &lpOption->fAnimation);
-
-    SaveOptionDec("AISleep",&lpOption->iAISleep);
+    ReadAndSaveOption(lpOption);
+    return 1;
 }

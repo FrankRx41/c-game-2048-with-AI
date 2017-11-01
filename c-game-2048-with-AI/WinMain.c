@@ -6,36 +6,54 @@
 #include "resource.h"
 #include "Macro.h"
 
+#define _AI_TIMER_  0
+
 int WinKeyHandle(int key,LPOPTION lpOption){
-    if(key == lpOption->key_esc)
+    if(key == lpOption->vKeyEscape)
     {
         DestroyWindow(lpOption->hWnd);
         return -1;
     }
-    if(key == lpOption->key_pause){
+    else if(key == lpOption->vKeyAISpeedDown)
+    {
+        lpOption->iAISleep -= 10;
+        if(lpOption->iAISleep < 0){
+            lpOption->iAISleep = 0;
+        }
+        return 0;
+    }
+    else if(key == lpOption->vKeyAISpeedDown)
+    {
+        lpOption->iAISleep += 10;
+        return 0;
+    }
+    else if(key == lpOption->vKeyPause)
+    {
+        debug("KEY: pause");
         GamePause(lpOption);
+        return 0;
     }
     else if(lpOption->iGameState & GS_ONAI || lpOption->iGameState & GS_PAUSE)
     {
         return 0;
     }
-    else if(key == lpOption->key_up)
+    else if(key == lpOption->vKeyUp)
     {
         return GameDirKey(DIR_UP,lpOption);
     }
-    else if(key == lpOption->key_down)
+    else if(key == lpOption->vKeyDown)
     {
         return GameDirKey(DIR_DOWN,lpOption);
     }        
-    else if(key == lpOption->key_left)
+    else if(key == lpOption->vKeyLeft)
     {
         return GameDirKey(DIR_LEFT,lpOption);
     }
-    else if(key == lpOption->key_right)
+    else if(key == lpOption->vKeyRight)
     {
         return GameDirKey(DIR_RIGHT,lpOption);
     }
-    debug("inefficacy key %d %X",key);
+    debug("KEY: inefficacy (%d) (%X)",key);
     return 0;
 }
 
@@ -61,8 +79,8 @@ int GetTableColor(int x,LPOPTION lpOption){
 
 int WinDraw(HDC srchdc,LPOPTION lpOption){
     char szString[MAX] = {0};
-    int correct = lpOption->nCorrect;
-    int padding = lpOption->nPadding;
+    int correct = lpOption->nMargin ;
+    int padding = lpOption->nTileWidth;
     HBRUSH  hBrush;
     int (*map)[5] = lpOption->nMap;
     int w = lpOption->nWidth,h = lpOption->nHeight;
@@ -111,9 +129,9 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
     }
 
     SetTextColor(hdc,RGB(230,230,230));
-    sprintf(szString," score: %d",lpOption->nCurScore);
+    sprintf(szString," Score: %d",lpOption->nCurScore);
     TextOut(hdc,0,h*padding,szString,strlen(szString));
-    sprintf(szString," Step: %d",lpOption->nStep);
+    sprintf(szString," Steps: %d",lpOption->nStep);
     TextOut(hdc,lpOption->cxClient/2,h*padding,szString,strlen(szString));
 
     if(lpOption->iGameState == GS_OVER){
@@ -132,18 +150,21 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
         SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
         rt.top      += h;
         rt.bottom   += h;
-        sprintf(szString,"%s","Hight Score");
+        sprintf(szString,"%s","Height  Score");
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 
         h = 25;
         rt.top      += h;
         rt.bottom   += h;
-        SetMyFont(hdc,TEXT("MSYaHei"),lpOption->iFontSize,0);
+        //SetMyFont(hdc,TEXT("MSYaHei"),lpOption->iFontSize,0);
         forloop(i,3){
             rt.top      += h;
             rt.bottom   += h;
 
-            sprintf(szString,"%d  *  4  :  %07d",i+3,lpOption->nScore[i]);
+            sprintf(szString,"%d  *  4  :             ",i+3);
+            DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+            
+            sprintf(szString,"                 %d",lpOption->nScore[i]);
             DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
         }
     }
@@ -199,19 +220,15 @@ int __stdcall AboutDlgProc(HWND hDlg,UINT message,WPARAM wParam,LPARAM lParam){
 int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
     switch(LOWORD(wParam)){
     case MENU_NEW_3:
-        debug("game start 3 * 4");
         GameInit(lpOption,4,3);
         return 0;
     case MENU_NEW_4:
-        debug("game start 4 * 4");
         GameInit(lpOption,4,4);
         return 0;
     case MENU_NEW_5:
-        debug("game start 5 * 5");
         GameInit(lpOption,4,5);
         return 0;
     case MENU_NEW_CUSTOMIZE:
-        debug("game start customize");
         return 0;
 
     case MENU_GAME_SAVE:
@@ -265,7 +282,7 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
             lpOption->AI[LOWORD(wParam) - MENU_AI_0] = 1;
             lpOption->iGameState |= GS_ONAI;
             //SetTimer(hWnd,LOWORD(wParam) - MENU_AI_0,lpOption->iAISleep,0);
-            SetTimer(hWnd,0,lpOption->iAISleep,0);
+            SetTimer(hWnd,_AI_TIMER_,lpOption->iAISleep,NULL);
             debug("start AI: %d",LOWORD(wParam) - MENU_AI_0);
         }else{
             KillTimer(hWnd,0);
@@ -299,7 +316,7 @@ int WinMenuInit(LPOPTION lpOption){
 
     hMenu = GetSubMenu(hMenu,0);
     cMenuItems = GetMenuItemCount(hMenu);
-    debug("cMenuItems: %d",cMenuItems);
+    //debug("cMenuItems: %d",cMenuItems);
 
     for(int nPos = 0; nPos < cMenuItems; nPos++)
     {
@@ -309,7 +326,6 @@ int WinMenuInit(LPOPTION lpOption){
         {
         case MENU_OPTION_SOUND:
             CheckMenuItem(hMenu,id,lpOption->fSound?MF_CHECKED:0);
-            debug("1");
             break;
         case MENU_OPTION_FULLSCREEN:
             CheckMenuItem(hMenu,id,lpOption->fFullScreen?MF_CHECKED:0);
@@ -374,45 +390,70 @@ int WinSysInit(HWND hWnd,LPOPTION lpOption){
     lpOption->iGameState = GS_RUNNING;
     ReadOption(lpOption);
     WinMenuInit(lpOption);
+    if(lpOption->nWinPosX!=-1 && lpOption->nWinPosY!=-1){
+        MoveWindow(hWnd,lpOption->nWinPosX,lpOption->nWinPosY,0,0,FALSE);
+    }
+}
+
+int OnAITimer(LPOPTION lpOption){
+    // for AI
+    int map[5][5];
+    // AI timer:
+    if(lpOption->iGameState & GS_PAUSE)return 0;
+    if(lpOption->iGameState == GS_OVER){
+        KillTimer(lpOption->hWnd,_AI_TIMER_);
+        lpOption->AI[0] = 0;
+        lpOption->AI[1] = 0;
+        lpOption->AI[2] = 0;
+        WinMenuInit(lpOption);
+        return 0;
+    }
+
+    //debug("AI sleep: %d",lpOption->iAISleep);
+    memcpy(map,lpOption->nMap,sizeof(map));
+    KillTimer(lpOption->hWnd,_AI_TIMER_);
+    //debug("On AI %d %d %d command",lpOption->AI[0],lpOption->AI[1],lpOption->AI[2]);
+    if(lpOption->AI[0]){
+        GameDirKey(AI0(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+    }
+    else if(lpOption->AI[1]){
+        GameDirKey(AI1(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+    }
+    else if(lpOption->AI[2]){
+        GameDirKey(AI2(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+    }
+
+    InvalidateRect(lpOption->hWnd,NULL,FALSE);
+    SetTimer(lpOption->hWnd,_AI_TIMER_,lpOption->iAISleep,NULL);
+    //CreatNewBlock(lpOption);
+    //KillTimer(hWnd,0);
+    //InvalidateRect(hWnd,NULL,TRUE);
+    return 0;
 }
 
 long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
     HDC         hdc;
     PAINTSTRUCT ps;
+    RECT        rt;
 
-    static OPTION   Option;
+    static OPTION   Option = {0};
     static LPOPTION lpOption = &Option;
-    int map[5][5];
 
     switch(message){
     case WM_CREATE:
         WinSysInit(hWnd,lpOption);
         GameInit(lpOption,4,4);
-        //GameInit(lpOption);
         return 0;
     case WM_COMMAND:
         WinOnMenu(hWnd,wParam,lpOption);
         break;
     case WM_TIMER:
-        // AI timer:
-        if(lpOption->iGameState & GS_PAUSE)return 0;
-        memcpy(map,lpOption->nMap,sizeof(map));
-        debug("On AI %d %d %d command",lpOption->AI[0],lpOption->AI[1],lpOption->AI[2]);
-        if(lpOption->AI[0]){
-            GameDirKey(AI0(map,lpOption->nWidth,lpOption->nHeight),lpOption);
+        switch(wParam){
+        case _AI_TIMER_:
+            OnAITimer(lpOption);
+            return 0;
         }
-        else if(lpOption->AI[1]){
-            GameDirKey(AI1(map,lpOption->nWidth,lpOption->nHeight),lpOption);
-        }
-        else if(lpOption->AI[2]){
-            GameDirKey(AI2(map,lpOption->nWidth,lpOption->nHeight),lpOption);
-        }
-        InvalidateRect(hWnd,NULL,FALSE);
-
-        //CreatNewBlock(lpOption);
-        //KillTimer(hWnd,0);
-        //InvalidateRect(hWnd,NULL,TRUE);
-        return 0;
+        break;
     case WM_KEYDOWN:
         switch(wParam){
         case VK_F9:
@@ -429,6 +470,12 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
             return 0;
         }
         break;
+    case WM_MOVE:
+        GetWindowRect(hWnd,&rt);
+        //debug("windows x y: %d %d",rt.left,rt.top);
+        lpOption->nWinPosX = rt.left;
+        lpOption->nWinPosY = rt.top;
+        return 0;
     case WM_SIZE:
         lpOption->cxClient = LOWORD(lParam);
         lpOption->cyClient = HIWORD(lParam);
@@ -474,7 +521,7 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
     y = rt.top  + (rt.bottom - rt.top - h) / 2;
 
     HWND hWnd = CreateWindow(TEXT("2048GAMEWITHAI"),TEXT("2048 with AI"),WS_OVERLAPPEDWINDOW&~WS_THICKFRAME&~WS_MAXIMIZEBOX,
-                            x,y,w,h,0,0,hInstance,0);
+                            x,y,0,0,0,0,hInstance,0);
     ShowWindow(hWnd,nCmdShow);
     MSG msg = {0};
     HANDLE hAccel = LoadAccelerators(hInstance,TEXT("2048GAMEWITHAI"));

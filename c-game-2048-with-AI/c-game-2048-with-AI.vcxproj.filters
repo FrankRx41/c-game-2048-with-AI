@@ -18,13 +18,19 @@
     <ClCompile Include="WinMain.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AI.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Option.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Game.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AI0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AI1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AI2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

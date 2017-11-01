@@ -78,7 +78,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AI.c" />
+    <ClCompile Include="AI0.c" />
+    <ClCompile Include="AI1.c" />
+    <ClCompile Include="AI2.c" />
     <ClCompile Include="Game.c" />
     <ClCompile Include="Option.c" />
     <ClCompile Include="WinMain.c" />

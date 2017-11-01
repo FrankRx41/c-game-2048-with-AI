@@ -37,7 +37,7 @@ int GameLoad(LPOPTION lpOption){
     fread(&lpOption->nMap,sizeof(lpOption->nMap),1,fp);
     //debug("lp->iLevel: %d",lpOption->iLevel);
     if(lpOption->iLevel != iLevel){
-        int padding = lpOption->nPadding;
+        int padding = lpOption->nTileWidth;
         int w = lpOption->nWidth * padding;
         int h = lpOption->nHeight * padding + 50;
         RECT rt = {0,0,w,h};
@@ -58,7 +58,7 @@ int GameLoad(LPOPTION lpOption){
     WinMenuInit(lpOption);
 }
 
-int GameCreatNewBlock(LPOPTION lpOption){
+static int GameCreatNewBlock(LPOPTION lpOption){
     int (*map)[5] = lpOption->nMap;
     int x = rand()%lpOption->nWidth;
     int y = rand()%lpOption->nHeight;
@@ -77,7 +77,7 @@ int GameCreatNewBlock(LPOPTION lpOption){
     if(map[x][y] == 0){
         map[x][y] = v;
     }
-    debug("create new %d in (%d,%d)",v,x,y);
+    debug("create new (%d) in [%d,%d]",v,x,y);
     lpOption->nCurScore += v;
     
     for(int y=0;y<lpOption->nWidth;y++){
@@ -178,7 +178,7 @@ int GameDirKey(int dir,LPOPTION lpOption){
         lpOption->nStep++;
         if(lpOption->fSound){
             if(fUniting){
-                debug("playsound");
+                //debug("playsound");
                 PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
             }else{
                 //PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
@@ -202,6 +202,9 @@ int GamePause(LPOPTION lpOption){
 
 int GameInit(LPOPTION lpOption,int w,int h){
     lpOption->nWidth    = w;
+    debug("--------------------init--------------------");
+    debug("game start %d * %d",w,h);
+
     lpOption->nHeight   = h;
     lpOption->iLevel    = h-3;
     lpOption->iGameState = GS_RUNNING;
@@ -213,7 +216,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
         }
     }
     
-    int padding = lpOption->nPadding;
+    int padding = lpOption->nTileWidth;
     w = w * padding;
     h = h * padding + 50;
     RECT rt = {0,0,w,h};
@@ -264,33 +267,30 @@ int GameInit(LPOPTION lpOption,int w,int h){
     map[2][3] = 32768;
     map[3][3] = 65536;*/
 #else
-    srand(time(NULL));
-    loop(2)while(x=rand()%lpOption->nHeight,y=rand()%lpOption->nWidth,map[x][y]==0){
+    srand(lpOption->iRandseek);
+    loop(2){
+        while(x=rand()%lpOption->nHeight,y=rand()%lpOption->nWidth,map[x][y]!=0);
         int v = 2<<rand()%2;
         map[x][y] = v;
-        debug("map[%d][%d] = %d",x,y,v);
-        break;
+        debug("create new (%d) in [%d,%d]",v,x,y);
     }
 #endif
-    debug("init");
     lpOption->nCurScore = 0;
     lpOption->nStep = 0;
 
+    lpOption->AI[0] = 0;
+    lpOption->AI[1] = 0;
+    lpOption->AI[2] = 0;
+    WinMenuInit(lpOption);
+
     InvalidateRect(lpOption->hWnd,NULL,TRUE);
+    debug("--------------------init--------------------");
 }
 
 int GameOver(LPOPTION lpOption){
     if((lpOption->iGameState & 0x0F) & GS_RUNNING){
 
         lpOption->iGameState = GS_OVER;
-
-        // clear AI timer
-        KillTimer(lpOption->hWnd,0);
-        lpOption->AI[0] = 0;
-        lpOption->AI[1] = 0;
-        lpOption->AI[2] = 0;
-        WinMenuInit(lpOption);
-
         if(lpOption->nCurScore > lpOption->nScore[lpOption->iLevel]){
             lpOption->nScore[lpOption->iLevel] = lpOption->nCurScore;
         }
@@ -300,8 +300,10 @@ int GameOver(LPOPTION lpOption){
     SaveOption(lpOption);
 }
 
+
+/*
 int GameMove(int dir,LPOPTION lpOption){
-    /*if(CheckCanMove(dir,lpOption))
+    if(CheckCanMove(dir,lpOption))
     {
         int w = lpOption->nWidth;
         int h = lpOption->nHeight;
@@ -337,10 +339,11 @@ int GameMove(int dir,LPOPTION lpOption){
     }
     else{
         return 0;
-    }*/
+    }
 }
+*/
 
-int CheckBlank(int (*map)[5],int w,int h){
+static int CheckBlank(const int (*map)[5],int w,int h){
     int sum = 0;
     for(int x=0;x<h;x++){
         for(int y=0;y<w;y++){
@@ -348,11 +351,11 @@ int CheckBlank(int (*map)[5],int w,int h){
                 sum ++;
         }
     }
-    debug("CheckBlank: %d",sum);
+    //debug("CheckBlank: %d",sum);
     return sum;
 }
 
-int CheckNearby(int (*map)[5],int w,int h,int x,int y,int dir){
+static int CheckNearby(const int (*map)[5],int w,int h,int x,int y,int dir){
     if(map[x][y] == 0)return 4;
 
     int sum = 0;
@@ -397,12 +400,12 @@ int CheckNearby(int (*map)[5],int w,int h,int x,int y,int dir){
     return sum;
 }
 
-int CheckALLDirNearby(int (*map)[5],int w,int h,int dir){
+static int CheckALLDirNearby(const int (*map)[5],int w,int h,int dir){
     int sum = 0;
     for(int i=0;i<h;i++)
     for(int j=0;j<w;j++)
         sum += CheckNearby(map,w,h,i,j,dir);
-    debug("CheckALLDirNearby: %d",sum);
+    //debug("CheckALLDirNearby: %d",sum);
     return sum;
 }
 
