@@ -68,12 +68,12 @@ static int GameCreatNewBlock(LPOPTION lpOption){
         y = rand()%lpOption->nHeight;
     }
 
-    int v = (rand()%2+1)<<1;
-    if(rand()%5==0){
-        v = 4;
-    }else{
+    int v = rand()%2+1;
+    /*if(rand()%5==0){
         v = 2;
-    }
+    }else{
+        v = 1;
+    }*/
     if(map[x][y] == 0){
         map[x][y] = v;
     }
@@ -81,7 +81,7 @@ static int GameCreatNewBlock(LPOPTION lpOption){
     lpOption->nCurScore += v;
     
     for(int y=0;y<lpOption->nWidth;y++){
-        debug("%4d %4d %4d %4d",map[y][0],map[y][1],map[y][2],map[y][3]);
+        debug("[ %-4d %-4d %-4d %-4d]",map[y][0],map[y][1],map[y][2],map[y][3]);
     }
     if(!CheckALLDirNearby(map,lpOption->nWidth,lpOption->nHeight,0) && !CheckBlank(map,lpOption->nWidth,lpOption->nHeight))
     {
@@ -97,7 +97,7 @@ static int GameCreatNewBlock(LPOPTION lpOption){
                                     fHadmove = 1;           \
                                 }                           \
                                 else if(*F == *S){          \
-                                    *F = *F<<1;             \
+                                    *F = *F+1;              \
                                     *S = 0;                 \
                                     fHadmove = 1;           \
                                     fUniting = 1;           \
@@ -116,7 +116,7 @@ int GameDirKey(int dir,LPOPTION lpOption){
 
     switch(dir){
     case DIR_UP:
-        forloop(i,lpOption->nWidth){
+        forp(i,lpOption->nWidth){
             for(int j=0;j<lpOption->nHeight-1;j++){
                 int *F = &map[j][i];
                 int *S = NULL;
@@ -130,7 +130,7 @@ int GameDirKey(int dir,LPOPTION lpOption){
         }
         break;
     case DIR_DOWN:
-        forloop(y,lpOption->nWidth){
+        forp(y,lpOption->nWidth){
             for(int x=lpOption->nHeight-1;x>0;x--){
                 int *F = &map[x][y];
                 int *S = NULL;
@@ -144,7 +144,7 @@ int GameDirKey(int dir,LPOPTION lpOption){
         }
         break;
     case DIR_LEFT:
-        forloop(x,lpOption->nHeight){
+        forp(x,lpOption->nHeight){
             for(int y=0;y<lpOption->nWidth-1;y++){
                 int *F = &map[x][y];
                 int *S = NULL;
@@ -158,7 +158,7 @@ int GameDirKey(int dir,LPOPTION lpOption){
         }
         break;
     case DIR_RIGHT:
-        forloop(x,lpOption->nHeight){
+        forp(x,lpOption->nHeight){
             for(int y=lpOption->nWidth-1;y>0;y--){
                 int *F = &map[x][y];
                 int *S = NULL;
@@ -270,7 +270,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     srand(lpOption->iRandseek);
     loop(2){
         while(x=rand()%lpOption->nHeight,y=rand()%lpOption->nWidth,map[x][y]!=0);
-        int v = 2<<rand()%2;
+        int v = rand()%2+1;
         map[x][y] = v;
         debug("create new (%d) in [%d,%d]",v,x,y);
     }
@@ -414,7 +414,7 @@ int CheckIfDir(int (*map)[5],int w,int h,int dir){
     int fUniting = 0;
     switch(dir){
     case DIR_UP:
-        forloop(i,w){
+        forp(i,w){
             for(int j=0;j<h-1;j++){
                 int *F = &map[j][i];
                 int *S = NULL;
@@ -428,7 +428,7 @@ int CheckIfDir(int (*map)[5],int w,int h,int dir){
         }
         break;
     case DIR_DOWN:
-        forloop(y,w){
+        forp(y,w){
             for(int x=h-1;x>0;x--){
                 int *F = &map[x][y];
                 int *S = NULL;
@@ -442,7 +442,7 @@ int CheckIfDir(int (*map)[5],int w,int h,int dir){
         }
         break;
     case DIR_LEFT:
-        forloop(x,h){
+        forp(x,h){
             for(int y=0;y<w-1;y++){
                 int *F = &map[x][y];
                 int *S = NULL;
@@ -456,7 +456,7 @@ int CheckIfDir(int (*map)[5],int w,int h,int dir){
         }
         break;
     case DIR_RIGHT:
-        forloop(x,h){
+        forp(x,h){
             for(int y=w-1;y>0;y--){
                 int *F = &map[x][y];
                 int *S = NULL;

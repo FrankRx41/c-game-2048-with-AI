@@ -1,7 +1,7 @@
 #ifndef _MACRO_H_
 #define _MARCO_H_
 
-#define forloop(i,time)     for(int i=0;i<(time);i++)
+#define forp(i,time)        for(int i=0;i<(time);i++)
 #define _LOOP_VARNAME_(x,y) var##x##y
 #define loop(time)          for(int _LOOP_VARNAME_(__LINE__,__FILE__)=0;        \
                                     _LOOP_VARNAME_(__LINE__,__FILE__)<time;     \

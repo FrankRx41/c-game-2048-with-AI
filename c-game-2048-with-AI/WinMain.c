@@ -29,7 +29,7 @@ int WinKeyHandle(int key,LPOPTION lpOption){
     }
     else if(key == lpOption->vKeyPause)
     {
-        debug("KEY: pause");
+        //debug("KEY: pause");
         GamePause(lpOption);
         return 0;
     }
@@ -53,7 +53,7 @@ int WinKeyHandle(int key,LPOPTION lpOption){
     {
         return GameDirKey(DIR_RIGHT,lpOption);
     }
-    debug("KEY: inefficacy (%d) (%X)",key);
+    //debug("KEY: inefficacy (%d) (%X)",key);
     return 0;
 }
 
@@ -70,11 +70,12 @@ HFONT SetMyFont(HDC hdc,LPCTSTR face,int h,int angle)
 }
 
 int GetTableColor(int x,LPOPTION lpOption){
-    int i = 0;
+    return lpOption->nColorTable[x];
+    /*int i = 0;
     while(x >>= 1,x != 0){
         i++;
     }
-    return lpOption->nColorTable[i];
+    return lpOption->nColorTable[i];*/
 }
 
 int WinDraw(HDC srchdc,LPOPTION lpOption){
@@ -121,7 +122,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
             RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,20,20);
 
             if(map[x][y] != 0){
-                sprintf(szString,"%d",map[x][y]);
+                sprintf(szString,"%d",1<<map[x][y]);
                 DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
             }
             DeleteObject(hBrush);
@@ -157,7 +158,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
         rt.top      += h;
         rt.bottom   += h;
         //SetMyFont(hdc,TEXT("MSYaHei"),lpOption->iFontSize,0);
-        forloop(i,3){
+        forp(i,3){
             rt.top      += h;
             rt.bottom   += h;
 
@@ -187,7 +188,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
         rt.bottom   = 30;
         SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
         int ai;
-        forloop(i,3){
+        forp(i,3){
             if(lpOption->AI[i]) ai = i;
         }
         sprintf(szString,"%s%d%s","AI ",ai," Play");
@@ -277,7 +278,7 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
     case MENU_AI_2:
         if(lpOption->iGameState == GS_OVER)return 0;
         if(lpOption->AI[LOWORD(wParam) - MENU_AI_0] != 1){
-            forloop(i,3)
+            forp(i,3)
             lpOption->AI[i] = 0;
             lpOption->AI[LOWORD(wParam) - MENU_AI_0] = 1;
             lpOption->iGameState |= GS_ONAI;
