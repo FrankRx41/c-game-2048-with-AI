@@ -53,7 +53,7 @@ int GameLoad(LPOPTION lpOption){
         }
         MoveWindow(lpOption->hWnd,x,y,w,h,FALSE);
     }
-    lpOption->iGameState = GS_RUNNING;
+    lpOption->iGameState |= GS_RUNNING;
     fclose(fp);
     WinMenuInit(lpOption);
 }
@@ -85,19 +85,7 @@ int GameCreatNewBlock(LPOPTION lpOption){
     }
     if(!CheckALLDirNearby(map,lpOption->nWidth,lpOption->nHeight,0) && !CheckBlank(map,lpOption->nWidth,lpOption->nHeight))
     {
-        if((lpOption->iGameState & 0x0F) == GS_RUNNING){
-            //MessageBox(0,"Game Over","2048",0);
-            lpOption->iGameState = GS_OVER;
-            //PlaySound(TEXT("2.wav"),0,SND_FILENAME|SND_ASYNC);
-
-            // clear AI timer
-            KillTimer(lpOption->hWnd,0);
-            lpOption->AI[0] = 0;
-            lpOption->AI[1] = 0;
-            lpOption->AI[2] = 0;
-            WinMenuInit(lpOption);
-        }
-        debug("______________GAME_OVER________________");
+        GameOver(lpOption);
     }
 
 }
@@ -191,13 +179,25 @@ int GameDirKey(int dir,LPOPTION lpOption){
         if(lpOption->fSound){
             if(fUniting){
                 debug("playsound");
-                PlaySound(TEXT("1.wav"),0,SND_FILENAME|SND_ASYNC);
+                PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
             }else{
-                PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
+                //PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
+                PlaySound(TEXT("CREATSOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
             }
         }
     }
     return fHadmove;
+}
+
+int GamePause(LPOPTION lpOption){
+    if(lpOption->iGameState == GS_OVER)return 0;
+
+    lpOption->iGameState ^= GS_PAUSE;
+    WinMenuInit(lpOption);
+    InvalidateRect(lpOption->hWnd,NULL,FALSE);
+    if(lpOption->iGameState & GS_PAUSE){
+        PlaySound(TEXT("PAUSESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
+    }
 }
 
 int GameInit(LPOPTION lpOption,int w,int h){
@@ -280,7 +280,24 @@ int GameInit(LPOPTION lpOption,int w,int h){
 }
 
 int GameOver(LPOPTION lpOption){
+    if((lpOption->iGameState & 0x0F) & GS_RUNNING){
 
+        lpOption->iGameState = GS_OVER;
+
+        // clear AI timer
+        KillTimer(lpOption->hWnd,0);
+        lpOption->AI[0] = 0;
+        lpOption->AI[1] = 0;
+        lpOption->AI[2] = 0;
+        WinMenuInit(lpOption);
+
+        if(lpOption->nCurScore > lpOption->nScore[lpOption->iLevel]){
+            lpOption->nScore[lpOption->iLevel] = lpOption->nCurScore;
+        }
+    }
+    debug("______________GAME_OVER________________");
+
+    SaveOption(lpOption);
 }
 
 int GameMove(int dir,LPOPTION lpOption){

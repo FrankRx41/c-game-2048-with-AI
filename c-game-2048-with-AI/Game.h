@@ -10,6 +10,7 @@
 
 int GameSave(LPOPTION lpOption);
 int GameLoad(LPOPTION lpOption);
+int GamePause(LPOPTION lpOption);
 int GameDirKey(int dir,LPOPTION lpOption);
 int GameInit(LPOPTION lpOption,int w,int h);
 int GameCreatNewBlock(LPOPTION lpOption);

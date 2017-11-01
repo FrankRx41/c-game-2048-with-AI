@@ -9,12 +9,11 @@
 int WinKeyHandle(int key,LPOPTION lpOption){
     if(key == lpOption->key_esc)
     {
-        PostQuitMessage(0);
+        DestroyWindow(lpOption->hWnd);
         return -1;
     }
     if(key == lpOption->key_pause){
-        lpOption->iGameState ^= GS_PAUSE;
-        CheckMenuItem(GetMenu(lpOption->hWnd),MENU_GAME_PAUSE,lpOption->iGameState&GS_PAUSE?MF_CHECKED:0);
+        GamePause(lpOption);
     }
     else if(lpOption->iGameState & GS_ONAI || lpOption->iGameState & GS_PAUSE)
     {
@@ -61,7 +60,7 @@ int GetTableColor(int x,LPOPTION lpOption){
 }
 
 int WinDraw(HDC srchdc,LPOPTION lpOption){
-    char s[MAX] = {0};
+    char szString[MAX] = {0};
     int correct = lpOption->nCorrect;
     int padding = lpOption->nPadding;
     HBRUSH  hBrush;
@@ -104,27 +103,75 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
             RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,20,20);
 
             if(map[x][y] != 0){
-                sprintf(s,"%d",map[x][y]);
-                DrawText(hdc,s,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+                sprintf(szString,"%d",map[x][y]);
+                DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
             }
             DeleteObject(hBrush);
         }
     }
 
-    SetTextColor(hdc,RGB(0xFF,0xFF,0xFF));
-    sprintf(s," score: %d",lpOption->nCurScore);
-    TextOut(hdc,0,h*padding,s,strlen(s));
-    sprintf(s," Step: %d",lpOption->nStep);
-    TextOut(hdc,lpOption->cxClient/2,h*padding,s,strlen(s));
+    SetTextColor(hdc,RGB(230,230,230));
+    sprintf(szString," score: %d",lpOption->nCurScore);
+    TextOut(hdc,0,h*padding,szString,strlen(szString));
+    sprintf(szString," Step: %d",lpOption->nStep);
+    TextOut(hdc,lpOption->cxClient/2,h*padding,szString,strlen(szString));
 
     if(lpOption->iGameState == GS_OVER){
+        SetTextColor(hdc,RGB(250,35,45));
+        //SetTextColor(hdc,RGB(230,120,155));
+        rt.left     = 0;
+        rt.right    = cxClient;
+        rt.top      = 0;
+        rt.bottom   = cxClient/2;
+        SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize*2,0);
+        sprintf(szString,"%s","Game Over");
+        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        
+        SetTextColor(hdc,RGB(240,225,0));
+        int h = 80;
+        SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        rt.top      += h;
+        rt.bottom   += h;
+        sprintf(szString,"%s","Hight Score");
+        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+
+        h = 25;
+        rt.top      += h;
+        rt.bottom   += h;
+        SetMyFont(hdc,TEXT("MSYaHei"),lpOption->iFontSize,0);
+        forloop(i,3){
+            rt.top      += h;
+            rt.bottom   += h;
+
+            sprintf(szString,"%d  *  4  :  %07d",i+3,lpOption->nScore[i]);
+            DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        }
+    }
+    //debug("lpOption->iGameState & GS_ONAI:%d",lpOption->iGameState & GS_ONAI);
+    if(lpOption->iGameState & GS_PAUSE){
         rt.left     = 0;
         rt.right    = cxClient;
         rt.top      = 0;
         rt.bottom   = cxClient;
-        SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize*2,0);
-        sprintf(s,"%s","Game Over");
-        DrawText(hdc,s,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+
+        sprintf(szString,"%s","Pause");
+        SetTextColor(hdc,RGB(10,10,240));
+        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+    }
+    if(lpOption->iGameState & GS_ONAI){
+        rt.left     = 0;
+        rt.right    = cxClient;
+        rt.top      = 0;
+        rt.bottom   = 30;
+        SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        int ai;
+        forloop(i,3){
+            if(lpOption->AI[i]) ai = i;
+        }
+        sprintf(szString,"%s%d%s","AI ",ai," Play");
+        SetTextColor(hdc,RGB(240,10,10));
+        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
     }
 
     BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
@@ -163,12 +210,11 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         InvalidateRect(hWnd,NULL,FALSE);
         return 0;
     case MENU_GAME_PAUSE:
-        lpOption->iGameState ^= GS_PAUSE;
-        CheckMenuItem(GetMenu(hWnd),MENU_GAME_PAUSE,lpOption->iGameState&GS_PAUSE?MF_CHECKED:0);
+        GamePause(lpOption);
         break;
 
     case MENU_GAME_EXIT:
-        PostQuitMessage(0);
+        DestroyWindow(hWnd);
         return -1;
 
     case MENU_OPTION_SOUND:
@@ -196,6 +242,7 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
     case MENU_AI_0:
     case MENU_AI_1:
     case MENU_AI_2:
+        if(lpOption->iGameState == GS_OVER)return 0;
         if(lpOption->AI[LOWORD(wParam) - MENU_AI_0] != 1){
             forloop(i,3)
             lpOption->AI[i] = 0;
@@ -214,8 +261,13 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         CheckMenuItem(GetMenu(hWnd),MENU_AI_0,lpOption->AI[0]?MF_CHECKED:0);
         CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[1]?MF_CHECKED:0);
         CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[2]?MF_CHECKED:0);
+        InvalidateRect(hWnd,NULL,FALSE);
         break;
 
+    case MENU_SAVE_OPTION:
+        debug("Save the option");
+        SaveOption(lpOption);
+        break;
     case MENU_HELP_ABOUT:
         return MessageBox(0,"EiSnow\n\n(C)CopyRight  2017.10.31","2048",0);
     }
@@ -302,7 +354,7 @@ int WinMenuInit(LPOPTION lpOption){
 int WinSysInit(HWND hWnd,LPOPTION lpOption){
     lpOption->hWnd = hWnd;
     lpOption->iGameState = GS_RUNNING;
-    ReadSetting(lpOption);
+    ReadOption(lpOption);
     WinMenuInit(lpOption);
 }
 
@@ -369,6 +421,7 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         EndPaint(hWnd,&ps);
         return 0;
     case WM_DESTROY:
+        SaveOption(lpOption);        
         PostQuitMessage(0);
         return 0;
     }

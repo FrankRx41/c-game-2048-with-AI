@@ -56,6 +56,7 @@ typedef struct OPTION{
 }* LPOPTION, OPTION;
 
 void PrintOption(LPOPTION lpOption);
-int ReadSetting(LPOPTION lpOption);
+int ReadOption(LPOPTION lpOption);
+int SaveOption(LPOPTION lpOption);
 
 #endif

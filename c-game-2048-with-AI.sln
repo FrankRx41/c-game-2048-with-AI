@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataViewer", "DataViewer\Da
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataCreator", "DataCreater\DataCreater.vcxproj", "{C66524D0-15FC-4E09-BCE7-89B2D5C566D1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlaySound", "PlaySound\PlaySound.vcxproj", "{1C537203-1FAE-4EA0-A9AC-4DABF542A1D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,10 @@ Global
 		{C66524D0-15FC-4E09-BCE7-89B2D5C566D1}.Debug|Win32.Build.0 = Debug|Win32
 		{C66524D0-15FC-4E09-BCE7-89B2D5C566D1}.Release|Win32.ActiveCfg = Release|Win32
 		{C66524D0-15FC-4E09-BCE7-89B2D5C566D1}.Release|Win32.Build.0 = Release|Win32
+		{1C537203-1FAE-4EA0-A9AC-4DABF542A1D0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1C537203-1FAE-4EA0-A9AC-4DABF542A1D0}.Debug|Win32.Build.0 = Debug|Win32
+		{1C537203-1FAE-4EA0-A9AC-4DABF542A1D0}.Release|Win32.ActiveCfg = Release|Win32
+		{1C537203-1FAE-4EA0-A9AC-4DABF542A1D0}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
