@@ -31,11 +31,11 @@ float WeightTable[][13] = {
     {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    15.,    16.,    21.,    25.,    },  // CORNER_VALUE
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_INSIDE
   //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    },  // ALL_AROUND
-    {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_AROUND
+    {   .25,    .25,    .25,    .25,    .25,    .30,    .35,    .40,    .45,    .50,    .55,    .25,    .25,    },  // ALL_AROUND
                        
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_AROUND
     {   2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      },  // BIG_INCORNER
-    {   0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      },  // BIG_INSIDE
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_INSIDE
 };
 
 #define AICheckInRegion(x,h)        ((x)<(h) && (x)>=0)
@@ -261,8 +261,9 @@ static int AICheckBigNumInSide(int(*map)[5],int w,int h){
     int len = AICheckAllMaxNumXY(map,w,h,&x,&y);
     int max = AICheckMaxNum(map,w,h);
     forp(i,len){
-        if(AICheckInSide(x[i],y[i],w,h));
-        return max;
+        if(AICheckInSide(x[i],y[i],w,h)){
+            return max;
+        }
     }
     return -max;
 }
@@ -439,8 +440,8 @@ int AI1(int map[5][5],int w,int h){
     int dir = 0;
     for(int i=1;i<=4;i++){
         if(x[i] == -0xFFFF){
-            continue;
             debug("x[%d] get null points",i);
+            continue;
         }
         if(maxpoint < x[i]){
             maxpoint = x[i];
@@ -453,3 +454,6 @@ int AI1(int map[5][5],int w,int h){
 }
 
 
+// 24645
+
+// 26953
