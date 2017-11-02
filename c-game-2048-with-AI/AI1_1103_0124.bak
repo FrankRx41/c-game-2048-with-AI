@@ -25,8 +25,6 @@ enum{
     WEIGHT_BIG_INCORNER,
     WEIGHT_BIG_INSIDE,
     WEIGHT_BIG_NEAR,
-
-    WEIGHT_DEPTH,
 };
 
 float WeightTable[][13] = { 
@@ -41,7 +39,7 @@ float WeightTable[][13] = {
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MAXNUM 
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    0.5,    1.0,    1.5,    1.5,    2.5,    3.0,    },  // MERGE 
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BLANK_NEAR_2_OR_4 
-    {   .25,    .25,    .25,    .25,    .25,    .20,    .15,    .10,    .10,    .05,    .05,    .01,    .25,    },  // WAVE
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // WAVE
                                    
     {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    15.,    16.,    21.,    25.,    },  // CORNER_VALUE
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_INSIDE
@@ -52,8 +50,6 @@ float WeightTable[][13] = {
     {   2,      4,      4,      3,      3,      3,      3,      3,      3,      2.5,    2.5,    2,      2,      },  // BIG_INCORNER
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_INSIDE
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_NEAR
-
-    {   1,      .05,    .05,    .05,    .05,    .05,    .05,    .05,    1,      1,      1,      1,      1,      },  // DEPTH
 };
 
 #define AICheckInRegion(x,h)        ((x)<(h) && (x)>=0)
@@ -552,250 +548,40 @@ static int AICheckIsWaveDown(const int num[],const int len,int *retmax){
 static int AICheckWave(int(*map)[5],int w,int h){
     int num[20];
     int sum = 0;
-    int max,min;
-    int Bigmax;
-    
-    int tmp = 0;
-    int len = 0;
+    int max;
+    int v;
 
-    for(int x=0;x<h;x++){
-        max = map[x][0];
-        Bigmax = map[x][0];
-        tmp = 1;
-        for(int y=1;y<w;y++){
-            if(map[x][y] >= max && map[x][y] <= max+2){
-                tmp++;
-                max = map[x][y];
-            }else{
-                max = map[x][y];
-                Bigmax = len>tmp ? max : Bigmax;
-                len = len>tmp ? len : tmp;
-                tmp = 1;
-            }
+    forp(x,h){
+        int i = 0;
+        forp(y,w){
+            num[i++] = map[x][y];
         }
-        if(len == 2 || Bigmax == 0)continue;
-        //debug("1 max:%d len:%d",Bigmax,len);
-        sum += len * Bigmax;
+        //x = AICheckIsWaveDown(num,i,&max);
+        //sum += x * max;
+        v = AICheckIsWaveUp(num,i,&max);
+        sum += v * max;
     }
 
-    for(int x=0;x<h;x++){
-        min = map[x][0];
-        Bigmax = map[x][0];
-        tmp = 1;
-        for(int y=1;y<w;y++){
-            if(map[x][y] <= min && map[x][y] >= min-2){
-                tmp++;
-                min = map[x][y];
-            }
-            else{
-                min = map[x][y];
-                Bigmax = len>tmp ? max : Bigmax;
-                len = len>tmp ? len : tmp;
-                tmp = 1;
-            }
-        }
-        if(len == 2 || Bigmax == 0)continue;
-        //debug("2 max:%d len:%d",Bigmax,len);
-        sum += len * Bigmax;
-    }
-
-    for(int y=0;y<w;y++){
-        max = map[0][y];
-        Bigmax = map[0][y];
-        tmp = 1;
-        for(int x=1;x<h;x++){
-            if(map[x][y] >= max && map[x][y] <= max+2){
-                tmp++;
-                max = map[x][y];
-            }
-            else{
-                max = map[x][y];
-                Bigmax = len>tmp ? max : Bigmax;
-                len = len>tmp ? len : tmp;
-                tmp = 1;
-            }
-        }
-        if(len == 2 || Bigmax == 0)continue;
-        //debug("3 max:%d len:%d",Bigmax,len);
-        sum += len * Bigmax;
-    }
-
-    for(int y=0;y<w;y++){
-        min = map[0][y];
-        Bigmax = map[0][y];
-        tmp = 1;
-        for(int x=1;x<h;x++){
-            if(map[x][y] <= min && map[x][y] >= min-2){
-                tmp++;
-                min = map[x][y];
-            }
-            else{
-                min = map[x][y];
-                Bigmax = len>tmp ? max : Bigmax;
-                len = len>tmp ? len : tmp;
-                tmp = 1;
-            }
-        }
-        if(len == 2 || Bigmax == 0)continue;
-        //debug("4 max:%d len:%d",Bigmax,len);
-        sum += len * Bigmax;
-    }
-    //debug("sum:%d",sum);
+    //i = 0;
+    //forp(y,w){
+    //    forp(x,h){
+    //        num[i++] = map[x][y];
+    //    }
+    //}
+    //x = AICheckIsWaveDown(num,i,&max);
+    //sum += x * max;
+    //x = AICheckIsWaveUp(num,i,&max);
+    //sum += x * max;
+    //
+    //debug("%d",sum);
     return sum;
-}
-
-
-static int AICheckAll(const int(*mNextMap)[5],int w,int h){
-    float v = 0;
-    float sum = 0;
-    int max = AIFindMaxNum(mNextMap,w,h);
-    // All number
-    v = (AICheckAllCornerValue(mNextMap,w,h) * WeightTable[WEIGHT_CORNER_VALUE][max]);
-    sum += v;
-    //debug("WEIGHT_CORNER_VALUE: %g",v);
-
-    v = AICheckAllInSide(mNextMap,w,h) * WeightTable[WEIGHT_ALL_INSIDE][max];
-    sum += v;
-    //debug("WEIGHT_ALL_INSIDE: %g",v);
-
-    v = AICheckAllAround(mNextMap,w,h) * WeightTable[WEIGHT_ALL_AROUND][max];
-    sum += v;
-    //debug("WEIGHT_ALL_AROUND: %g",v);
-
-
-    // Big number
-    v = AICheckBigNumInCorner(mNextMap,w,h) * WeightTable[WEIGHT_BIG_INCORNER][max];
-    sum += v;
-    //debug("WEIGHT_BIG_INCORNER: %g",v);
-
-    v = AICheckBigNumInSide(mNextMap,w,h) * WeightTable[WEIGHT_BIG_INSIDE][max];
-    sum += v;
-    //debug("WEIGHT_BIG_INSIDE: %g",v);
-
-    v = AICheckBigNumAround(mNextMap,w,h) * WeightTable[WEIGHT_BIG_AROUND][max];
-    sum += v;
-    //debug("WEIGHT_BIG_AROUND: %g",v);
-
-    v = AICheckBigNear(mNextMap,w,h) * WeightTable[WEIGHT_BIG_NEAR][max];
-    sum += v;
-    //debug("WEIGHT_BIG_NEAR: %g",v);
-
-
-    // mormal
-    v = AIFindMaxNum(mNextMap,w,h) * WeightTable[WEIGHT_MAXNUM][max];
-    sum += v;
-    //debug("WEIGHT_MAXNUM: %g",v);
-
-    v = AICheckBlank(mNextMap,w,h) * WeightTable[WEIGHT_BLANK][max];
-    sum += v;
-    //debug("WEIGHT_BLANK: %g",v);
-
-    v = AICheckAllNearby(mNextMap,w,h) * WeightTable[WEIGHT_NEARBY][max];
-    sum += v;
-    //debug("WEIGHT_NEARBY: %g",v);
-
-    v = AICheckAllNear(mNextMap,w,h) * WeightTable[WEIGHT_ALL_NEAR][max];
-    sum += v;
-    //debug("WEIGHT_ALL_NEAR: %g",v);
-
-    v = AICheckBlankNear2or4(mNextMap,w,h) * WeightTable[WEIGHT_BLANK_NEAR_2_OR_4][max];
-    sum += v;
-    //debug("WEIGHT_BLANK_NEAR_2_OR_4: %g",v);
-
-    v = AICheckWave(mNextMap,w,h) * WeightTable[WEIGHT_WAVE][max];
-    sum += v;
-    //debug("WEIGHT_WAVE: %g",v);
-
-    return (int)sum;
-}
-
-int AICheckTree(const int(*map)[5],int w,int h,int depth){
-    if(depth-- == 0)return 0;
-    //debug("check tree!");
-
-    int x[5] = {-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF};
-    int mNextMap[5][5];
-    memcpy(mNextMap,map,sizeof(mNextMap));
-    for(int i=1;i<=4;i++){
-        memcpy(mNextMap,map,sizeof(mNextMap));
-        float v = AICheckIfDir(mNextMap,w,h,i) * WEIGHT_MERGE;
-        if(v)
-        {
-            int max = AIFindMaxNum(mNextMap,w,h);
-
-            x[i] = 0;
-
-            x[i] += v;
-
-            //v = AICheckAllNearby(mNextMap,w,h) * WeightTable[WEIGHT_NEARBY][max];
-            //x[i] += v;
-            //
-            //v = AICheckAllAround(mNextMap,w,h) * WeightTable[WEIGHT_ALL_AROUND][max];
-            //x[i] += v;
-
-            //v = AICheckBigNumInCorner(mNextMap,w,h) * WeightTable[WEIGHT_BIG_INCORNER][max];
-            //x[i] += v;
-            //debug("WEIGHT_BIG_INCORNER: %g",v);
-            //
-            //v = AICheckBigNumInSide(mNextMap,w,h) * WeightTable[WEIGHT_BIG_INSIDE][max];
-            //x[i] += v;
-            //debug("WEIGHT_BIG_INSIDE: %g",v);
-            //
-            //v = AICheckBigNumAround(mNextMap,w,h) * WeightTable[WEIGHT_BIG_AROUND][max];
-            //x[i] += v;
-            //debug("WEIGHT_BIG_AROUND: %g",v);
-            //
-            //v = AICheckBigNear(mNextMap,w,h) * WeightTable[WEIGHT_BIG_NEAR][max];
-            //x[i] += v;
-            //debug("WEIGHT_BIG_NEAR: %g",v);
-            //
-            //v = AICheckBlankNear2or4(mNextMap,w,h) * WeightTable[WEIGHT_BLANK_NEAR_2_OR_4][max];
-            //x[i] += v;
-            //
-            //v = AICheckWave(mNextMap,w,h) * WeightTable[WEIGHT_WAVE][max];
-            //x[i] += v;
-
-            //x[i] += AICheckTree(mNextMap,w,h,depth);
-
-            //if(depth==0){
-            //    v = AICheckAll(mNextMap,w,h);
-            //    debug("%g",v);
-            //    x[i] = v;
-            //}else{
-            //    x[i] = AICheckTree(mNextMap,w,h,depth);
-            //}
-
-            v = AICheckAll(mNextMap,w,h);
-            x[i] += v;
-
-            x[i] += AICheckTree(mNextMap,w,h,depth-1);
-        }
-    }
-
-    int maxpoint = -0xFFFF;
-    int dir = 0;
-    for(int i=1;i<=4;i++){
-        if(x[i] == -0xFFFF){
-            //debug("x[%d] get null points",i);
-            continue;
-        }
-        if(maxpoint < x[i]){
-            maxpoint = x[i];
-            dir = i;
-        }
-        //debug("x[%d] get %d points",i,x[i]);
-    }
-
-    //int max = AIFindMaxNum(mNextMap,w,h);
-
-    return x[dir];
-    //if(depth-- == 0)return 0;
 }
 
 int AI1(int map[5][5],int w,int h){
     debug("--------------------AI--------------------");
     // some AI, I hadn't named it :)
     int x[5] = {-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF};
+    float v = 0;
     int mNextMap[5][5];
     int mCurMap[5][5];
 
@@ -804,22 +590,75 @@ int AI1(int map[5][5],int w,int h){
 
     for(int i=1;i<=4;i++){
         memcpy(mNextMap,map,sizeof(mNextMap));
-        float v = AICheckIfDir(mNextMap,w,h,i) * WEIGHT_MERGE;
+        v = AICheckIfDir(mNextMap,w,h,i) * WEIGHT_MERGE;
         if(v)
         {
+            int max = AIFindMaxNum(mNextMap,w,h);
             x[i] = 0;
             AIDebugPrintDir("check dir",i);
-            
+            /*memcpy(mCurMap,map,sizeof(mCurMap));
+            if(*/
+
             x[i] += v;
             debug("WEIGHT_MERGE: %g",v);
-            
-            x[i] += AICheckAll(mNextMap,w,h);
-            
-            int v = AICheckTree(mNextMap,w,h,2);
-            x[i] += v;
-            debug("Tree get %d point",v);
 
-            //x[i] += AICheckTree(mNextMap,w,h,1);
+            // All number
+            v = (AICheckAllCornerValue(mNextMap,w,h) * WeightTable[WEIGHT_CORNER_VALUE][max]);
+            x[i] += v;
+            debug("WEIGHT_CORNER_VALUE: %g",v);
+
+            v = AICheckAllInSide(mNextMap,w,h) * WeightTable[WEIGHT_ALL_INSIDE][max];
+            x[i] += v;
+            debug("WEIGHT_ALL_INSIDE: %g",v);
+
+            v = AICheckAllAround(mNextMap,w,h) * WeightTable[WEIGHT_ALL_AROUND][max];
+            x[i] += v;
+            debug("WEIGHT_ALL_AROUND: %g",v);
+
+
+            // Big number
+            v = AICheckBigNumInCorner(mNextMap,w,h) * WeightTable[WEIGHT_BIG_INCORNER][max];
+            x[i] += v;
+            debug("WEIGHT_BIG_INCORNER: %g",v);
+
+            v = AICheckBigNumInSide(mNextMap,w,h) * WeightTable[WEIGHT_BIG_INSIDE][max];
+            x[i] += v;
+            debug("WEIGHT_BIG_INSIDE: %g",v);
+
+            v = AICheckBigNumAround(mNextMap,w,h) * WeightTable[WEIGHT_BIG_AROUND][max];
+            x[i] += v;
+            debug("WEIGHT_BIG_AROUND: %g",v);
+
+            v = AICheckBigNear(mNextMap,w,h) * WeightTable[WEIGHT_BIG_NEAR][max];
+            x[i] += v;
+            debug("WEIGHT_BIG_NEAR: %g",v);
+
+
+            // mormal
+            v = AIFindMaxNum(mNextMap,w,h) * WeightTable[WEIGHT_MAXNUM][max];
+            x[i] += v;
+            debug("WEIGHT_MAXNUM: %g",v);
+            
+            v = AICheckBlank(mNextMap,w,h) * WeightTable[WEIGHT_BLANK][max];
+            x[i] += v;
+            debug("WEIGHT_BLANK: %g",v);
+            
+            v = AICheckAllNearby(mNextMap,w,h) * WeightTable[WEIGHT_NEARBY][max];
+            x[i] += v;
+            debug("WEIGHT_NEARBY: %g",v);
+
+            v = AICheckAllNear(mNextMap,w,h) * WeightTable[WEIGHT_ALL_NEAR][max];
+            x[i] += v;
+            debug("WEIGHT_ALL_NEAR: %g",v);
+
+            v = AICheckBlankNear2or4(mNextMap,w,h) * WeightTable[WEIGHT_BLANK_NEAR_2_OR_4][max];
+            x[i] += v;
+            debug("WEIGHT_BLANK_NEAR_2_OR_4: %g",v);
+
+            v = AICheckWave(mNextMap,w,h) * WeightTable[WEIGHT_WAVE][max];
+            x[i] += v;
+            debug("WEIGHT_WAVE: %g",v);
+            
         }
     }
 
