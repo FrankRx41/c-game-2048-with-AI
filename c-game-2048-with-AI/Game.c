@@ -78,10 +78,10 @@ static int GameCreatNewBlock(LPOPTION lpOption){
         map[x][y] = v;
     }
     debug("create new (%d) in [%d,%d]",v,x,y);
-    lpOption->nCurScore += v;
+    //lpOption->nCurScore += v;
     
     for(int y=0;y<lpOption->nWidth;y++){
-        debug("[ %-4d %-4d %-4d %-4d]",map[y][0],map[y][1],map[y][2],map[y][3]);
+        debug("[  %-4.d %-4.d %-4.d %-4.d]",map[y][0],map[y][1],map[y][2],map[y][3]);
     }
     if(!CheckALLDirNearby(map,lpOption->nWidth,lpOption->nHeight,0) && !CheckBlank(map,lpOption->nWidth,lpOption->nHeight))
     {
@@ -101,6 +101,7 @@ static int GameCreatNewBlock(LPOPTION lpOption){
                                     *S = 0;                 \
                                     fHadmove = 1;           \
                                     fUniting = 1;           \
+                                    lpOption->nCurScore += 1<<*F;   \
                                     break;                  \
                                 }                           \
                                 else break;                 \
@@ -407,68 +408,4 @@ static int CheckALLDirNearby(const int (*map)[5],int w,int h,int dir){
         sum += CheckNearby(map,w,h,i,j,dir);
     //debug("CheckALLDirNearby: %d",sum);
     return sum;
-}
-
-int CheckIfDir(int (*map)[5],int w,int h,int dir){
-    int fHadmove = 0;
-    int fUniting = 0;
-    switch(dir){
-    case DIR_UP:
-        forp(i,w){
-            for(int j=0;j<h-1;j++){
-                int *F = &map[j][i];
-                int *S = NULL;
-
-                for(int k=j+1;k<h;k++){
-                    S = &map[k][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",j,i,map[j][i],k,i,map[k][i]);
-                    GameBlockUnite(F,S);
-                }
-            }
-        }
-        break;
-    case DIR_DOWN:
-        forp(y,w){
-            for(int x=h-1;x>0;x--){
-                int *F = &map[x][y];
-                int *S = NULL;
-
-                for(int i=x-1;i>=0;i--){
-                    S = &map[i][y];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
-                    GameBlockUnite(F,S);
-                }
-            }
-        }
-        break;
-    case DIR_LEFT:
-        forp(x,h){
-            for(int y=0;y<w-1;y++){
-                int *F = &map[x][y];
-                int *S = NULL;
-
-                for(int i=y+1;i<w;i++){
-                    S = &map[x][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
-                    GameBlockUnite(F,S);
-                }
-            }
-        }
-        break;
-    case DIR_RIGHT:
-        forp(x,h){
-            for(int y=w-1;y>0;y--){
-                int *F = &map[x][y];
-                int *S = NULL;
-
-                for(int i=y-1;i>=0;i--){
-                    S = &map[x][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
-                    GameBlockUnite(F,S);
-                }
-            }
-        }
-        break;
-    }
-    return fHadmove;
 }

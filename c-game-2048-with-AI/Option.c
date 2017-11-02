@@ -1,6 +1,7 @@
 #include "Option.h"
 #include "Macro.h"
 #include <stdio.h>
+#include <time.h>
 
 static FILE * fp;
 static int fCreateFile  = 0;
@@ -20,6 +21,7 @@ int PrintOption(LPOPTION lpOption){
     //debug("BgColor:0x%X",lpOption->nBgColor);
     debug("FontName:%s   FontSize:%d\n",lpOption->hFontName,lpOption->iFontSize);
     debug("--------------------Option--------------------");
+    return lpOption->iGameState;
 }
 
 static int SkipSpace(char * str){
@@ -35,23 +37,20 @@ static int ReadOptionStr(char *pointer){
     int i = SkipSpace(str);
     strncpy(pointer,str+i,strlen(str)-1-i);
     //debug("%s:[%s]",__FUNCTION__,pointer);
+    return pointer;
 }
 static int ReadOptionHex(int *pointer){
     char str[MAX];
     fgets(str,MAX,fp);
     sscanf(str,"%X",pointer);
     //debug("%s:[%x]",__FUNCTION__,*pointer);
+    return *pointer;
 }
 static int ReadOptionDec(int *pointer){
     char str[MAX];
     fgets(str,MAX,fp);
-    if(sscanf(str,"%d",pointer) != 1){
-        fHaveSeek = 0;
-        srand(time(NULL));
-        int x = rand();
-        debug("i guess it is rand seek, i random it: %d",x);
-        *pointer = x;
-    }
+    sscanf(str,"%d",pointer);
+    return *pointer;
 }
 
 static int WriteOptionStr(char *pointer,char *value){
@@ -61,6 +60,7 @@ static int WriteOptionStr(char *pointer,char *value){
         fprintf(fp,"%s\n",value);
         strcpy(pointer,value);
     }
+    return pointer;
 }
 static int WriteOptionHex(int *pointer,int value){
     if(fSaveOption){
@@ -69,6 +69,7 @@ static int WriteOptionHex(int *pointer,int value){
         fprintf(fp,"%#X\n",value);
         *pointer = value;
     }
+    return *pointer;
 }
 static int WriteOptionDec(int *pointer,int value){
     if(fSaveOption){
@@ -77,6 +78,7 @@ static int WriteOptionDec(int *pointer,int value){
         fprintf(fp,"%d\n",value);
         *pointer = value;
     }
+    return *pointer;
 }
 
 static int FindHeader(char *header){
@@ -108,7 +110,7 @@ static int OptionHex(char *header,int *pointer,int value){
     else{
         WriteOptionHex(pointer,value);
     }
-    fclose(fp);
+    return fclose(fp);
 }
 static int OptionDec(char *header,int *pointer,int value){
     fp = fopen("config.ini","r+");
@@ -118,7 +120,7 @@ static int OptionDec(char *header,int *pointer,int value){
     else{
         WriteOptionDec(pointer,value);
     }
-    fclose(fp);
+    return fclose(fp);
 }
 static int OptionStr(char *header,char *pointer,char *value){
     fp = fopen("config.ini","r+");
@@ -128,7 +130,7 @@ static int OptionStr(char *header,char *pointer,char *value){
     else{
         WriteOptionStr(pointer,value);
     }
-    fclose(fp);
+    return fclose(fp);
 }
 
 static int WriteComment(char *str){
@@ -136,7 +138,7 @@ static int WriteComment(char *str){
     fseek(fp,0,SEEK_END);
     if(str[0] == '[')fprintf(fp,"\n");
     fprintf(fp,"%s\n",str);
-    fclose(fp);
+    return fclose(fp);
 }
 
 static int CreateRandSeek(LPOPTION lpOption){
@@ -145,6 +147,7 @@ static int CreateRandSeek(LPOPTION lpOption){
     int x = rand();
     debug("old random seek: %d\nnew random seek: %d",lpOption->iRandseek,x);
     lpOption->iRandseek = x;
+    return x;
 }
 
 static int ReadAndSaveOption(LPOPTION lpOption){
@@ -218,6 +221,8 @@ static int ReadAndSaveOption(LPOPTION lpOption){
         fgets(str,MAX,fp);
         if(sscanf(str,"%d",&lpOption->iRandseek) != 1){
             CreateRandSeek(lpOption);
+        }else{
+            debug("random seek: %d",lpOption->iRandseek);
         }
     }
     else{

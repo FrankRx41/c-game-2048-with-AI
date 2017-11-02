@@ -22,7 +22,7 @@ int WinKeyHandle(int key,LPOPTION lpOption){
         }
         return 0;
     }
-    else if(key == lpOption->vKeyAISpeedDown)
+    else if(key == lpOption->vKeyAISpeedUp)
     {
         lpOption->iAISleep += 10;
         return 0;
@@ -146,7 +146,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
         sprintf(szString,"%s","Game Over");
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
         
-        SetTextColor(hdc,RGB(240,225,0));
+        /*SetTextColor(hdc,RGB(240,225,0));
         int h = 80;
         SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
         rt.top      += h;
@@ -167,7 +167,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
             
             sprintf(szString,"                 %d",lpOption->nScore[i]);
             DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
-        }
+        }*/
     }
     //debug("lpOption->iGameState & GS_ONAI:%d",lpOption->iGameState & GS_ONAI);
     if(lpOption->iGameState & GS_PAUSE){
@@ -191,7 +191,7 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
         forp(i,3){
             if(lpOption->AI[i]) ai = i;
         }
-        sprintf(szString,"%s%d%s","AI ",ai," Play");
+        sprintf(szString,"%s%d%s (%d)","AI ",ai," Play",lpOption->iAISleep);
         SetTextColor(hdc,RGB(240,10,10));
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
     }
@@ -200,6 +200,8 @@ int WinDraw(HDC srchdc,LPOPTION lpOption){
 
     DeleteObject(hBmp);
     DeleteDC(hdc);
+
+    return 0;
 }
 
 int __stdcall AboutDlgProc(HWND hDlg,UINT message,WPARAM wParam,LPARAM lParam){
@@ -296,15 +298,19 @@ int WinOnMenu(HWND hWnd,WPARAM wParam,LPOPTION lpOption){
         CheckMenuItem(GetMenu(hWnd),MENU_AI_1,lpOption->AI[1]?MF_CHECKED:0);
         CheckMenuItem(GetMenu(hWnd),MENU_AI_2,lpOption->AI[2]?MF_CHECKED:0);
         InvalidateRect(hWnd,NULL,FALSE);
-        break;
+        return 0;
 
-    case MENU_SAVE_OPTION:
-        debug("Save the option");
-        SaveOption(lpOption);
-        break;
+    //case MENU_SAVE_OPTION:
+    //    debug("Save the option");
+    //    SaveOption(lpOption);
+    //    return 0;
+
     case MENU_HELP_ABOUT:
         DialogBox(NULL,TEXT("ABOUTBOX"),hWnd,AboutDlgProc);
         //return MessageBox(0,"EiSnow\n\n(C)CopyRight  2017.10.31","2048",0);
+        return 0;
+    default:
+        MessageBox(0,"UnDefine Menu Message!","Error",0);
         return 0;
     }
 }
@@ -384,6 +390,8 @@ int WinMenuInit(LPOPTION lpOption){
     //        break;
     //    }
     //}
+
+    return 0;
 }
 
 int WinSysInit(HWND hWnd,LPOPTION lpOption){
@@ -394,6 +402,7 @@ int WinSysInit(HWND hWnd,LPOPTION lpOption){
     if(lpOption->nWinPosX!=-1 && lpOption->nWinPosY!=-1){
         MoveWindow(hWnd,lpOption->nWinPosX,lpOption->nWinPosY,0,0,FALSE);
     }
+    return 1;
 }
 
 int OnAITimer(LPOPTION lpOption){
