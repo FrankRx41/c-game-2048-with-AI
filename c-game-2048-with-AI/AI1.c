@@ -23,15 +23,15 @@ per nearby + 1 point
 float WeightTable[][13] = { 
     //  0       2       4       8       16      32      64      128     256     512     1024    2048    4096
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BLANK
-    {   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
   //{   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
+    {   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MAXNUM 
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    0.5,    1.0,    1.5,    2.0,    2.5,    3.0,    },  // MERGE 
                                    
     {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    16.,    18.,    21.,   25.,     },  // CORNER_VALUE
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_INSIDE
-    {   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,      },  // ALL_AROUND
-  //{   1.0,    1.0,    1.0,    1.5,    1.5,    1.5,    2.0,    2.0,    2.0,    2.5,    2.5,    2.5,    2.5,      },  // ALL_AROUND
+  //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,      },  // ALL_AROUND
+    {   1.0,    1.0,    1.0,    1.5,    1.5,    1.5,    2.0,    2.0,    2.0,    2.5,    2.5,    2.5,    2.5,      },  // ALL_AROUND
                        
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_AROUND
     {   2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      },  // BIG_INCORNER
@@ -303,10 +303,26 @@ static int AICheckBigNumAround(const int (*map)[5],int w,int h){
 static int AICheckAllAround(const int (*map)[5],int w,int h){
     int sum = 0;
     forp(x,h)forp(y,w){
-        sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
-        sum += !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
-        sum += !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
-        sum += !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+        //if(map[x][y] > 7)
+        {
+            // Big num check only one side
+            int v[4];
+            v[0] = !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
+            v[1] = !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
+            v[2] = !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
+            v[3] = !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            forp(i,4){
+                if(v[i] > 0){
+                    sum += v[i];
+                }
+            }
+        }
+        //else{
+        //    sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
+        //    sum += !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
+        //    sum += !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
+        //    sum += !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+        //}
     }
     return sum;
 }
