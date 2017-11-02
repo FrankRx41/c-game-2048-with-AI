@@ -16,7 +16,7 @@ int WinKeyHandle(int key,LPOPTION lpOption){
     }
     else if(key == lpOption->vKeyAISpeedDown)
     {
-        lpOption->iAISleep -= 50;
+        lpOption->iAISleep -= 150;
         if(lpOption->iAISleep < 0){
             lpOption->iAISleep = 0;
         }
@@ -24,7 +24,7 @@ int WinKeyHandle(int key,LPOPTION lpOption){
     }
     else if(key == lpOption->vKeyAISpeedUp)
     {
-        lpOption->iAISleep += 50;
+        lpOption->iAISleep += 150;
         return 0;
     }
     else if(key == lpOption->vKeyPause)

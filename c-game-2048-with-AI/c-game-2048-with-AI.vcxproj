@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />
+    <Text Include="AI1wyy.bak" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AI.h" />

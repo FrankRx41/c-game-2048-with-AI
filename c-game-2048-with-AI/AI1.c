@@ -7,55 +7,68 @@ per blank + 1 point
 per nearby + 1 point
 */
 
-#define WEIGHT_BLANK        0
-#define WEIGHT_NEARBY       1
-#define WEIGHT_MAXNUM       2
-#define WEIGHT_MERGE        3
+enum{
+    WEIGHT_BLANK,
+    WEIGHT_NEARBY,
+    WEIGHT_MAXNUM,
+    WEIGHT_MERGE,
 
-#define WEIGHT_CORNER_VALUE 4
-#define WEIGHT_ALL_INSIDE   5
-#define WEIGHT_ALL_AROUND   6
+    WEIGHT_CORNER_VALUE,
+    WEIGHT_ALL_INSIDE,
+    WEIGHT_ALL_AROUND,
 
-#define WEIGHT_BIG_AROUND   7
-#define WEIGHT_BIG_INCORNER 8
-#define WEIGHT_BIG_INSIDE   9
+    WEIGHT_BIG_AROUND,
+    WEIGHT_BIG_INCORNER,
+    WEIGHT_BIG_INSIDE,
+    WEIGHT_BIG_NEAR,
+};
 
 float WeightTable[][13] = { 
+    //{   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
+    //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    },  // ALL_AROUND
+    //{   0.5,    0.5,    1.0,    1.0,    1.0,    1.2,    0.8,    0.5,    0.2,    0.2,    0.2,    1.0,    0.5,    },  // BIG_NEAR
+    //{   0.5,    0.5,    1.0,    1.0,    1.0,    1.2,    0.8,    0.5,    0.2,    0.2,    0.2,    1.0,    0.5,    },  // BIG_NEAR
+
     //  0       2       4       8       16      32      64      128     256     512     1024    2048    4096
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BLANK
-  //{   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
     {   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MAXNUM 
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    0.5,    1.0,    1.5,    1.5,    2.5,    3.0,    },  // MERGE 
                                    
     {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    15.,    16.,    21.,    25.,    },  // CORNER_VALUE
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_INSIDE
-  //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    },  // ALL_AROUND
-    {   .25,    .25,    .25,    .25,    .25,    .30,    .35,    .40,    .45,    .50,    .55,    .25,    .25,    },  // ALL_AROUND
+    {   .25,    .25,    .25,    .25,    .25,    .30,    .35,    .40,    .45,    .50,    0.45,    .25,    .25,    },  // ALL_AROUND
                        
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_AROUND
     {   2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      },  // BIG_INCORNER
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_INSIDE
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_NEAR
 };
 
 #define AICheckInRegion(x,h)        ((x)<(h) && (x)>=0)
 #define AICheckInRegionXY(x,y,w,h)  ((x)<(h) && (x)>=0 && (y)<(w) && (y)>=0)
 
-#define GameBlockUnite(F,S) if(*S != 0){                    \
-                                if(*F == 0){                \
-                                    *F = *S;                \
-                                    *S = 0;                 \
-                                    fHadmove = 1;           \
-                                }                           \
-                                else if(*F == *S){          \
-                                    *F = *F+1;              \
-                                    *S = 0;                 \
-                                    fHadmove = 1;           \
-                                    fMerge += *F;           \
-                                    break;                  \
-                                }                           \
-                                else break;                 \
-                            }
+static int AIIsFix(int a,int b){
+    int max = max(a,b);
+    int min = min(a,b);
+    //return min>=max/2+1;
+    //return max-(max/2+1-min);
+    /*if(min == 0){
+    return max/2;
+    }*/
+    /*if(min == 0){
+    return 0;
+    }*/
+    if(min>=max/2+1){
+        return min;
+    }
+    else{
+        return min-max;
+    }
+    //return max/2+min-1;
+}
+
+#define GameBlockUnite(F,S) if(*S != 0){if(*F == 0){*F = *S;*S = 0;fHadmove = 1;}else if(*F == *S){*F = *F+1;*S = 0;fHadmove = 1;fMerge += *F;break;}else break;}
 
 static int AICheckIfDir(int(*map)[5],int w,int h,int dir){
     int fHadmove = 0;
@@ -157,7 +170,7 @@ static int AICheckBlank(const int(*map)[5],int w,int h){
     return sum;
 }
 
-static int AICheckMaxNum(const int (*map)[5],int w,int h){
+static int AIFindMaxNum(const int (*map)[5],int w,int h){
     int max = 0;
     forp(x,h)forp(y,w){
         if(map[x][y] > max){
@@ -167,14 +180,10 @@ static int AICheckMaxNum(const int (*map)[5],int w,int h){
     return max;
 }
 
-static int AICheckAllMaxNumXY(const int(*map)[5],int w,int h,int *px,int *py){
-    int max = 0;
+static int AIFindOneNumXY(const int(*map)[5],int w,int h,int *px,int *py,int max){
     int i = 0;
     forp(x,h)forp(y,w){
-        if(map[x][y] > max){
-            i = 0;
-        }
-        if(map[x][y] >= max){
+        if(map[x][y] == max){
             max = map[x][y];
             px[i] = x;
             py[i] = y;
@@ -192,13 +201,13 @@ static int AICheckInSide(int x,int y,int w,int h){
 static int AICheckInCorner(int x,int y,int w,int h){
     //return !AICheckInRegionXY(x-1,y-1,w,h) || !AICheckInRegionXY(x-1,y+1,w,h) || 
     //       !AICheckInRegionXY(x+1,y-1,w,h) || !AICheckInRegionXY(x+1,y+1,w,h);
-    return (x==0 && y==0) || (x==h && y==0) || (x==0 && y==w) || (x==h && y==w);
+    return (x==0 && y==0) || (x==h-1 && y==0) || (x==0 && y==w-1) || (x==h-1 && y==w-1);
 }
 
 static int AICheckBigNumInCorner(int (*map)[5],int w,int h){
     int x[20] = {0},y[20] = {0};
-    int len = AICheckAllMaxNumXY(map,w,h,&x,&y);
-    int max = AICheckMaxNum(map,w,h);
+    int len = AIFindOneNumXY(map,w,h,&x,&y,AIFindMaxNum(map,w,h));
+    int max = AIFindMaxNum(map,w,h);
     forp(i,len){
         if(AICheckInCorner(x[i],y[i],w,h)){
             //debug("%s:[%d,%d]",__FUNCTION__,x[i],y[i]);
@@ -208,27 +217,10 @@ static int AICheckBigNumInCorner(int (*map)[5],int w,int h){
     return -max;
 }
 
-static int AIIsFix(int a,int b){
-    int max = max(a,b);
-    int min = min(a,b);
-    //return min>=max/2+1;
-    //return max-(max/2+1-min);
-    /*if(min == 0){
-    return max/2;
-    }*/
-    /*if(min == 0){
-    return 0;
-    }*/
-    if(min>=max/2+1){
-        return min;
-    }
-    else{
-        return min-max;
-    }
-    //return max/2+min-1;
-}
-
 static int AICheckAllCornerValue(int(*map)[5],int w,int h){
+    // this function is too inscrutable, so I disable it!
+    return 0;
+
     int sum = 0;
     int cnt = 0;
     int x[4] = {0};
@@ -255,11 +247,10 @@ static int AICheckAllCornerValue(int(*map)[5],int w,int h){
     return sum;
 }
 
-
 static int AICheckBigNumInSide(int(*map)[5],int w,int h){
     int x[20],y[20];
-    int len = AICheckAllMaxNumXY(map,w,h,&x,&y);
-    int max = AICheckMaxNum(map,w,h);
+    int len = AIFindOneNumXY(map,w,h,&x,&y,AIFindMaxNum(map,w,h));
+    int max = AIFindMaxNum(map,w,h);
     forp(i,len){
         if(AICheckInSide(x[i],y[i],w,h)){
             return max;
@@ -278,7 +269,7 @@ static int AICheckAllInSide(int(*map)[5],int w,int h){
 
 static int AICheckBigNumAround(const int (*map)[5],int w,int h){
     int sum = 0;
-    int maxnum = AICheckMaxNum(map,w,h);
+    int maxnum = AIFindMaxNum(map,w,h);
     forp(x,h)forp(y,w){
         if(map[x][y] >= maxnum-1){
             
@@ -367,6 +358,99 @@ static int AICheckAllNearby(const int(*map)[5],int w,int h){
     return sum;
 }
 
+static int AICheckOneNear(int w,int h,int x,int y){
+
+}
+
+static int AICheckBigNear(const int (*map)[5],int w,int h){
+    int x[40] = {0},y[40] = {0};
+    int len = 0;
+    int max = AIFindMaxNum(map, w, h);
+
+    while(len < 2) {
+        if(max < 0)break;
+        len += AIFindOneNumXY(map,w,h,&x[len],&y[len],max--);
+    }
+
+    float sum = 0;
+    int fnear = 0;
+
+    for(int i=0;i<len;i++){
+        for(int j=i+1;j<len;j++){
+            if(x[i]==x[j] && y[i]==y[j]){
+                continue;
+            }
+            int tol = 0;
+            tol += map[x[i]][y[i]];
+            tol += map[x[j]][y[j]];
+            
+            //debug("[%d,%d] ~ [%d,%d]",x[i],y[i],x[j],y[j]);
+
+            if((x[i] == x[j] && (y[i] == y[j] + 1 || y[i] == y[j] - 1)) ||
+               (y[i] == y[j] && (x[i] == x[j] + 1 || x[i] == x[j] - 1)))
+            {
+                sum += tol/2;
+            }else{
+                sum -= tol/2;
+            }
+            
+        }
+    }
+    debug("%s sum:%g",__FUNCTION__,sum);
+    return (int)sum;
+}
+
+static int AICheckAllNear(const int (*map)[5],int w,int h){
+    int x[40] = {0},y[40] = {0};
+    int len = 0;
+    int Mmax = AIFindMaxNum(map,w,h);
+    float sum = 0;
+    int max = Mmax;
+    while(Mmax--){
+        while(len < 2) {
+            if(max < 0)break;
+            len += AIFindOneNumXY(map,w,h,&x[len],&y[len],max--);
+        }
+
+        int fnear = 0;
+        int tol = 0;
+        debug("len:%d",len);
+        forp(i,len){
+            debug("[%d,%d]",x[i],y[i]);
+        }
+        for(int i=0;i<len;i++){
+            for(int j=i+1;j<len;j++){
+                if(x[i]==x[j] && y[i]==y[j]){
+                    debug("continue: [%d,%d] ~ [%d,%d]",x[i],y[i],x[j],y[j]);
+                    continue;
+                }
+                tol += map[x[i]][y[i]];
+                tol += map[x[j]][y[j]];
+
+                debug("[%d,%d] ~ [%d,%d]",x[i],y[i],x[j],y[j]);
+
+                if((x[i] == x[j] && (y[i] == y[j] + 1 || y[i] == y[j] - 1)) ||
+                   (y[i] == y[j] && (x[i] == x[j] + 1 || x[i] == x[j] - 1)))
+                {
+                    sum += tol/2;
+                    //debug("+");
+                }
+                else{
+                    sum -= tol/2;
+                    //debug("-");
+                    //debug("sum:%f %d",sum,tol);
+                }
+
+                //debug("%s sum:%g %d",__FUNCTION__,sum,tol);
+            }
+        }
+        //sum += fnear ? tol : -tol;
+        debug("%s sum:%g",__FUNCTION__,sum);
+    }
+    return (int)sum;
+}
+
+
 int AI1(int map[5][5],int w,int h){
     debug("--------------------AI--------------------");
     // some AI, I hadn't named it :)
@@ -383,7 +467,7 @@ int AI1(int map[5][5],int w,int h){
         v = AICheckIfDir(mNextMap,w,h,i) * WEIGHT_MERGE;
         if(v)
         {
-            int max = AICheckMaxNum(mNextMap,w,h);
+            int max = AIFindMaxNum(mNextMap,w,h);
             x[i] = 0;
             AIDebugPrintDir("check dir",i);
             /*memcpy(mCurMap,map,sizeof(mCurMap));
@@ -393,8 +477,7 @@ int AI1(int map[5][5],int w,int h){
             debug("WEIGHT_MERGE: %g",v);
 
             // All number
-
-            v += AICheckAllCornerValue(map,w,h) * WeightTable[WEIGHT_CORNER_VALUE][max];
+            v = (AICheckAllCornerValue(mNextMap,w,h) * WeightTable[WEIGHT_CORNER_VALUE][max]);
             x[i] += v;
             debug("WEIGHT_CORNER_VALUE: %g",v);
 
@@ -420,9 +503,13 @@ int AI1(int map[5][5],int w,int h){
             x[i] += v;
             debug("WEIGHT_BIG_AROUND: %g",v);
 
+            v = AICheckBigNear(mNextMap,w,h) * WeightTable[WEIGHT_BIG_NEAR][max];
+            x[i] += v;
+            debug("WEIGHT_BIG_NEAR: %g",v);
+
 
             // mormal
-            v = AICheckMaxNum(mNextMap,w,h) * WeightTable[WEIGHT_MAXNUM][max];
+            v = AIFindMaxNum(mNextMap,w,h) * WeightTable[WEIGHT_MAXNUM][max];
             x[i] += v;
             debug("WEIGHT_MAXNUM: %g",v);
             
