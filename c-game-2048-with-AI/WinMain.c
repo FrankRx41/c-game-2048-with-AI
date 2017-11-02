@@ -469,6 +469,9 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
         case VK_F9:
             PrintOption(lpOption);
             return 0;
+        case VK_F8:
+            GameWatchMap(lpOption);
+            return 0;
         default:
             if(WinKeyHandle(wParam,lpOption)){
                 InvalidateRect(hWnd,NULL,FALSE);

@@ -4,6 +4,13 @@
 
 #pragma comment(lib,"winmm.lib")
 
+int GameWatchMap(LPOPTION lpOption){
+    int (*map)[5] = lpOption->nMap;
+    for(int y=0;y<lpOption->nWidth;y++){
+        debug("[  %-4.d %-4.d %-4.d %-4.d]",map[y][0],map[y][1],map[y][2],map[y][3]);
+    }
+}
+
 int GameSave(LPOPTION lpOption){
     FILE * fp = fopen(lpOption->sSaveDate,"wb");
     if(!fp){
@@ -80,9 +87,8 @@ static int GameCreatNewBlock(LPOPTION lpOption){
     debug("create new (%d) in [%d,%d]",v,x,y);
     //lpOption->nCurScore += v;
     
-    for(int y=0;y<lpOption->nWidth;y++){
-        debug("[  %-4.d %-4.d %-4.d %-4.d]",map[y][0],map[y][1],map[y][2],map[y][3]);
-    }
+    GameWatchMap(lpOption);
+
     if(!CheckALLDirNearby(map,lpOption->nWidth,lpOption->nHeight,0) && !CheckBlank(map,lpOption->nWidth,lpOption->nHeight))
     {
         GameOver(lpOption);

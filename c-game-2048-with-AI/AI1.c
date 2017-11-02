@@ -26,12 +26,12 @@ float WeightTable[][13] = {
   //{   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
     {   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MAXNUM 
-    {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    0.5,    1.0,    1.5,    2.0,    2.5,    3.0,    },  // MERGE 
+    {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    0.5,    1.0,    1.5,    1.5,    2.5,    3.0,    },  // MERGE 
                                    
-    {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    16.,    18.,    21.,   25.,     },  // CORNER_VALUE
+    {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    15.,    16.,    21.,    25.,    },  // CORNER_VALUE
     {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_INSIDE
-  //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,      },  // ALL_AROUND
-    {   1.0,    1.0,    1.0,    1.5,    1.5,    1.5,    2.0,    2.0,    2.0,    2.5,    2.5,    2.5,    2.5,      },  // ALL_AROUND
+  //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    },  // ALL_AROUND
+    {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_AROUND
                        
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_AROUND
     {   2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      2,      },  // BIG_INCORNER
@@ -201,7 +201,7 @@ static int AICheckBigNumInCorner(int (*map)[5],int w,int h){
     int max = AICheckMaxNum(map,w,h);
     forp(i,len){
         if(AICheckInCorner(x[i],y[i],w,h)){
-            debug("%s:[%d,%d]",__FUNCTION__,x[i],y[i]);
+            //debug("%s:[%d,%d]",__FUNCTION__,x[i],y[i]);
             return max;
         }
     }
@@ -234,9 +234,11 @@ static int AICheckAllCornerValue(int(*map)[5],int w,int h){
     int x[4] = {0};
     
     x[0] = map[0][0];
-    x[1] = map[0][w];
-    x[2] = map[h][0];
-    x[3] = map[h][w];
+    x[1] = map[0][w-1];
+    x[2] = map[h-1][0];
+    x[3] = map[h-1][w-1];
+    //debug("%s: %d %d %d %d",__FUNCTION__,x[0],x[1],x[2],x[3]);
+
 
     //if( !AIIsFix(x[0],x[1]) || AIIsFix(x[0],x[2]) || AIIsFix(x[0],x[3])
 
@@ -248,6 +250,7 @@ static int AICheckAllCornerValue(int(*map)[5],int w,int h){
             if(!AIIsFix(x[i],x[j]))cnt ++;
         }
         if(cnt >= 2)sum+=x[i];
+        //debug("%s:x[%d]:%d sum:%d",__FUNCTION__,i,x[i],sum);
     }
     return sum;
 }
@@ -274,9 +277,9 @@ static int AICheckAllInSide(int(*map)[5],int w,int h){
 
 static int AICheckBigNumAround(const int (*map)[5],int w,int h){
     int sum = 0;
-    int max = AICheckMaxNum(map,w,h);
+    int maxnum = AICheckMaxNum(map,w,h);
     forp(x,h)forp(y,w){
-        if(map[x][y] >= max-1){
+        if(map[x][y] >= maxnum-1){
             
 
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
@@ -284,10 +287,10 @@ static int AICheckBigNumAround(const int (*map)[5],int w,int h){
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
 
-            sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
-            sum += !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
-            sum += !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
-            sum += !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            //sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
+            //sum += !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
+            //sum += !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
+            //sum += !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
 
             //sum += (!AICheckInRegion(x-1,h) || !AICheckInRegion(y-1,w))?0:AIIsFix(map[x-1][y-1],map[x][y]);
             //sum += (!AICheckInRegion(x+1,h) || !AICheckInRegion(y-1,w))?0:AIIsFix(map[x+1][y-1],map[x][y]);
@@ -295,6 +298,19 @@ static int AICheckBigNumAround(const int (*map)[5],int w,int h){
             //sum += (!AICheckInRegion(x+1,h) || !AICheckInRegion(y+1,w))?0:AIIsFix(map[x+1][y+1],map[x][y]);
 
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
+
+            int v[4];
+            v[0] = !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
+            v[1] = !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
+            v[2] = !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
+            v[3] = !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            int max = 0;
+            forp(i,4){
+                if(max < v[i]){
+                    max = v[i];
+                }
+            }
+            sum += max;
         }
     }
     return sum;
@@ -311,11 +327,13 @@ static int AICheckAllAround(const int (*map)[5],int w,int h){
             v[1] = !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
             v[2] = !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
             v[3] = !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            int max = 0;
             forp(i,4){
-                if(v[i] > 0){
-                    sum += v[i];
+                if(max < v[i]){
+                    max = v[i];
                 }
             }
+            sum += max;
         }
         //else{
         //    sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
@@ -420,12 +438,15 @@ int AI1(int map[5][5],int w,int h){
     int maxpoint = -0xFFFF;
     int dir = 0;
     for(int i=1;i<=4;i++){
-        debug("x[%d] get %d points",i,x[i]);
-        if(x[i] == -0xFFFF)continue;
+        if(x[i] == -0xFFFF){
+            continue;
+            debug("x[%d] get null points",i);
+        }
         if(maxpoint < x[i]){
             maxpoint = x[i];
             dir = i;
         }
+        debug("x[%d] get %d points",i,x[i]);
     }
     debug("--------------------AI--------------------");
     return AIDebugPrintDir("Goto",dir);
