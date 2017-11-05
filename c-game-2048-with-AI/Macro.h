@@ -12,6 +12,7 @@ extern __declspec(dllimport) int __cdecl printf(const char * _Format, ...);
                                 /*printf("%s(%d):\n",__FILE__,__LINE__);*/      \
                                 printf(str"\n",__VA_ARGS__);                    \
                             }while(0)
+#define arraylen(a)         (sizeof(a)/sizeof(a[0]))
 #define MAX     256
 #define strequ(s1,s2)	    (strcmp((s1),(s2))==0)
 

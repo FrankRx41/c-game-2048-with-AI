@@ -13,6 +13,12 @@ enum{
     GS_PAUSE    = 0x8000,
 };
 
+typedef struct TILE{
+    int x;
+    int y;
+    int v;
+}TILE;
+
 typedef struct OPTION{
     // game play info
     unsigned int nWidth;                // must be 4
@@ -70,6 +76,13 @@ typedef struct OPTION{
 
     // score
     unsigned int nScore[3];
+
+    // animation
+    TILE    tLast;
+    TILE    tMergeForm[10];
+    TILE    tMergeTo[10];
+    int     iAnimationSpeed;
+
 }* LPOPTION, OPTION;
 
 int PrintOption(LPOPTION lpOption);

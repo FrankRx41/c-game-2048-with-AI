@@ -97,6 +97,7 @@
     <ClInclude Include="Macro.h" />
     <ClInclude Include="Option.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="WeightTable.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>

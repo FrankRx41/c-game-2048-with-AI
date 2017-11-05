@@ -28,6 +28,7 @@ int WinKeyHandle(LPOPTION lpOption,int key){
     else if(key == lpOption->vKeyPause)
     {
         GamePause(lpOption);
+        WinMenuReset(lpOption);
         return 1;
     }
     
@@ -221,6 +222,63 @@ static int DrawInfo(LPOPTION lpOption,HDC hdc){
     }
 }
 
+static int DrawOneTileAnimation(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
+    int margin  = lpOption->nMargin;
+    int width   = lpOption->nTileWidth;
+    int(*map)[5] = lpOption->mMap;
+    RECT rt = {0};
+    HBRUSH  hBrush;
+    int bg,fg,r,g,b;
+    int x = tile.x, y = tile.y;
+    char szString[MAX] = {0};
+
+    SetBkMode(hdc,1);
+    SetTextColor(hdc,lpOption->nTextColor);
+
+    rt.left     = y * width + margin;
+    rt.right    = y * width + width - margin;
+    rt.top      = x * width + margin;
+    rt.bottom   = x * width + width - margin;
+
+
+    bg = GetTableColor(lpOption,0);
+    fg = GetTableColor(lpOption,map[x][y]);
+    r = GetRValue(bg) - GetRValue(fg);
+    g = GetGValue(bg) - GetGValue(fg);
+    b = GetBValue(bg) - GetBValue(fg);
+    hBrush = CreateSolidBrush( RGB( ((int)(r*deep)+GetRValue(fg)),
+                                    ((int)(g*deep)+GetGValue(fg)),
+                                    ((int)(b*deep)+GetBValue(fg))) );
+    SelectObject(hdc,hBrush);
+    SelectObject(hdc,GetStockObject(NULL_PEN));
+    RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,lpOption->nRound,lpOption->nRound);
+
+    if(map[x][y] != 0){
+        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        sprintf(szString,"%d",1<<map[x][y]);
+        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+    }
+    DeleteObject(hBrush);
+    //debug("on animation");
+}
+
+int DrawAnimation(LPOPTION lpOption,HDC hdc){
+    static float deep = 1;
+
+    KillTimer(lpOption->hWnd,TIMER_ANIMATION);
+
+    DrawOneTileAnimation(lpOption,lpOption->tLast,deep,hdc);
+    //DrawOneTileAnimation(lpOption,lpOption->tMergeFrom,deep,hdc);
+
+    deep -= 0.05;
+
+    if(deep > 0 && lpOption->fAnimation){
+        SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
+    }else{
+        deep = 1;
+    }
+}
+
 int WinDraw(LPOPTION lpOption,HDC srchdc){
     int cxClient = lpOption->cxClient,cyClient = lpOption->cyClient;
 
@@ -238,6 +296,9 @@ int WinDraw(LPOPTION lpOption,HDC srchdc){
     DrawBackGround(lpOption,hdc);
     DrawTiles(lpOption,hdc);
     DrawInfo(lpOption,hdc);
+    if(lpOption->fAnimation){
+        DrawAnimation(lpOption,hdc);
+    }
 
     BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
 
@@ -289,9 +350,11 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
     case MENU_GAME_LOAD:
         GameLoad(lpOption);
         debug("load");
-        return 0;
+        return 1;
 
     case MENU_GAME_PAUSE:
+        // don't be confuse about this, because you check or uncheck the item before the game state update.
+        CheckMenuItem(GetMenu(lpOption->hWnd),LOWORD(wParam),!(lpOption->iGameState&GS_PAUSE)?MF_CHECKED:0);
         return GamePause(lpOption);
 
     case MENU_GAME_EXIT:
@@ -380,9 +443,11 @@ int WinMenuReset(LPOPTION lpOption){
             CheckMenuItem(hMenu,id,lpOption->fGaryMode?MF_CHECKED:0);
             break;
         case MENU_OPTION_ANIMATION:
-            // TODO: finish this!
-            //CheckMenuItem(hMenu,id,lpOption->fAnimation?MF_CHECKED:0);
-            EnableMenuItem(hMenu,id,MF_GRAYED);
+            CheckMenuItem(hMenu,id,lpOption->fAnimation?MF_CHECKED:0);
+            break;
+
+        case MENU_GAME_PAUSE:
+            CheckMenuItem(hMenu,id,lpOption->iGameState&GS_PAUSE?MF_CHECKED:0);
             break;
 
         case MENU_GAME_SAVE:

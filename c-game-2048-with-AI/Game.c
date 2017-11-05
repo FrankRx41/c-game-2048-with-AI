@@ -58,7 +58,7 @@ int GameLoad(LPOPTION lpOption){
 
     GameWatchMap(lpOption);
     lpOption->iGameState == GS_RUNNING;
-    return 0;
+    return 1;
 }
 
 static int CheckBlank(const int(*map)[5],int w,int h){
@@ -73,7 +73,7 @@ static int CheckBlank(const int(*map)[5],int w,int h){
     return sum;
 }
 
-static int CheckNearby(const int(*map)[5],int w,int h,int x,int y,int dir){
+static int CheckNeighbor(const int(*map)[5],int w,int h,int x,int y,int dir){
     if(map[x][y] == 0)return 4;
 
     int sum = 0;
@@ -122,7 +122,7 @@ static int CheckALLDirNearby(const int(*map)[5],int w,int h,int dir){
     int sum = 0;
     for(int i=0;i<h;i++)
         for(int j=0;j<w;j++)
-            sum += CheckNearby(map,w,h,i,j,dir);
+            sum += CheckNeighbor(map,w,h,i,j,dir);
     //debug("CheckALLDirNearby: %d",sum);
     return sum;
 }
@@ -142,6 +142,8 @@ static int CreatOneTile(LPOPTION lpOption){
     v = (rand()%10) ? 1 : 2;
 #endif
     map[x][y] = v;
+    lpOption->tLast.x = x;
+    lpOption->tLast.y = y;
     debug("create new (%d) in [%d,%d]",v,x,y);
 
     // old up score rule
@@ -262,8 +264,11 @@ int GamePause(LPOPTION lpOption){
     }
     else{
         lpOption->iGameState ^= GS_PAUSE;
-        if(lpOption->iGameState & GS_PAUSE){
-            PlaySound(TEXT("PAUSESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
+        if(lpOption->iGameState & GS_PAUSE)
+        {
+            if(lpOption->fSound){
+                PlaySound(TEXT("PAUSESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
+            }
         }
         return 1;
     }
@@ -344,6 +349,9 @@ int GameInit(LPOPTION lpOption,int w,int h){
 
     GameSetWindow(lpOption);
     GameSetMap(lpOption);
+
+    lpOption->tLast.x = -1;
+    lpOption->tLast.y = -1;
 
     debug("--------------------init--------------------");
 }

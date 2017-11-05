@@ -1,60 +1,12 @@
+#include <assert.h>
 #include "Macro.h"
 #include "Game.h"
-#include <assert.h>
-
-enum{
-    WEIGHT_BLANK,
-    WEIGHT_NEARBY,
-    WEIGHT_MAXNUM,
-    WEIGHT_MERGE,
-    WEIGHT_BLANK_NEAR_2_OR_4,
-    WEIGHT_WAVE,
-
-
-    WEIGHT_CORNER_VALUE,
-    WEIGHT_ALL_INSIDE,
-    WEIGHT_ALL_AROUND,
-    WEIGHT_ALL_NEAR,
-
-    WEIGHT_BIG_AROUND,
-    WEIGHT_BIG_INCORNER,
-    WEIGHT_BIG_INSIDE,
-    WEIGHT_BIG_NEAR,
-
-    WEIGHT_DEPTH,
-};
-
-float WeightTable[][13] = { 
-    //{   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
-    //{   1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    },  // ALL_AROUND
-    //{   0.5,    0.5,    1.0,    1.0,    1.0,    1.2,    0.8,    0.5,    0.2,    0.2,    0.2,    1.0,    0.5,    },  // BIG_NEAR
-    //{   0.5,    0.5,    1.0,    1.0,    1.0,    1.2,    0.8,    0.5,    0.2,    0.2,    0.2,    1.0,    0.5,    },  // BIG_NEAR
-
-    //  0       2       4       8       16      32      64      128     256     512     1024    2048    4096
-    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BLANK
-    {   2.0,    2.0,    2.0,    2.0,    1.5,    1.2,    1.0,    .75,    0.5,    0.5,    0.5,    0.5,    0.5,    },  // NEARBY 
-    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MAXNUM 
-    {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    0.5,    1.0,    1.5,    1.5,    2.5,    3.0,    },  // MERGE 
-    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BLANK_NEAR_2_OR_4 
-    {   .25,    .25,    .25,    .25,    .25,    .20,    .15,    .10,    .10,    .05,    .05,    .01,    .25,    },  // WAVE
-                                   
-    {   0.0,    1.0,    2.0,    3.0,    4.0,    6.0,    8.0,    10.0,   14.,    15.,    16.,    21.,    25.,    },  // CORNER_VALUE
-    {   .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    .25,    },  // ALL_INSIDE
-    {   .25,    .25,    .25,    .25,    .25,    .30,    .35,    .40,    .45,    .50,    0.45,   .25,    .25,    },  // ALL_AROUND
-    {   .50,    .50,    .50,    .50,    .50,    .50,    .50,    .50,    .50,    .50,    .50,    .50,    .10,    },  // ALL_NEAR
-                       
-    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_AROUND
-    {   2,      4,      4,      3,      3,      3,      3,      3,      3,      2.5,    2.5,    2,      2,      },  // BIG_INCORNER
-    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_INSIDE
-    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_NEAR
-
-    {   1,      .05,    .05,    .05,    .05,    .05,    .05,    .05,    1,      1,      1,      1,      1,      },  // DEPTH
-};
+#include "WeightTable.h"
 
 #define AICheckInRegion(x,h)        ((x)<(h) && (x)>=0)
 #define AICheckInRegionXY(x,y,w,h)  ((x)<(h) && (x)>=0 && (y)<(w) && (y)>=0)
 
-static int AIIsFix(int a,int b){
+static int AIIsFit(int a,int b){
     int max = max(a,b);
     int min = min(a,b);
     //return min>=max/2+1;
@@ -196,7 +148,7 @@ static int AIFindMaxNum(const int (*map)[5],int w,int h){
     return max;
 }
 
-static int AIFindOneNumXY(const int(*map)[5],int w,int h,int *px,int *py,int max){
+static int AIFindALLNumXY(const int(*map)[5],int w,int h,int *px,int *py,int max){
     int i = 0;
     forp(x,h)forp(y,w){
         if(map[x][y] == max){
@@ -222,7 +174,7 @@ static int AICheckInCorner(int x,int y,int w,int h){
 
 static int AICheckBigNumInCorner(int (*map)[5],int w,int h){
     int x[20] = {0},y[20] = {0};
-    int len = AIFindOneNumXY(map,w,h,&x,&y,AIFindMaxNum(map,w,h));
+    int len = AIFindALLNumXY(map,w,h,&x,&y,AIFindMaxNum(map,w,h));
     int max = AIFindMaxNum(map,w,h);
     forp(i,len){
         if(AICheckInCorner(x[i],y[i],w,h)){
@@ -248,14 +200,14 @@ static int AICheckAllCornerValue(int(*map)[5],int w,int h){
     //debug("%s: %d %d %d %d",__FUNCTION__,x[0],x[1],x[2],x[3]);
 
 
-    //if( !AIIsFix(x[0],x[1]) || AIIsFix(x[0],x[2]) || AIIsFix(x[0],x[3])
+    //if( !AIIsFit(x[0],x[1]) || AIIsFit(x[0],x[2]) || AIIsFit(x[0],x[3])
 
     for(int i=0;i<4;i++){
         cnt = 0;
         for(int j=0;j<4;j++){
             if(i == j)continue;
             if(x[i] == 0 || x[j] == 0)continue;
-            if(!AIIsFix(x[i],x[j]))cnt ++;
+            if(!AIIsFit(x[i],x[j]))cnt ++;
         }
         if(cnt >= 2)sum+=x[i];
         //debug("%s:x[%d]:%d sum:%d",__FUNCTION__,i,x[i],sum);
@@ -265,7 +217,7 @@ static int AICheckAllCornerValue(int(*map)[5],int w,int h){
 
 static int AICheckBigNumInSide(int(*map)[5],int w,int h){
     int x[20],y[20];
-    int len = AIFindOneNumXY(map,w,h,&x,&y,AIFindMaxNum(map,w,h));
+    int len = AIFindALLNumXY(map,w,h,&x,&y,AIFindMaxNum(map,w,h));
     int max = AIFindMaxNum(map,w,h);
     forp(i,len){
         if(AICheckInSide(x[i],y[i],w,h)){
@@ -289,18 +241,17 @@ static int AICheckBigNumAround(const int (*map)[5],int w,int h){
     forp(x,h)forp(y,w){
         if(map[x][y] >= maxnum-1){
             
-
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
 
-            //sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
-            //sum += !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
-            //sum += !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
-            //sum += !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            //sum += !AICheckInRegion(x-1,h)?0:AIIsFit(map[x-1][y],map[x][y]);
+            //sum += !AICheckInRegion(x+1,h)?0:AIIsFit(map[x+1][y],map[x][y]);
+            //sum += !AICheckInRegion(y-1,w)?0:AIIsFit(map[x][y-1],map[x][y]);
+            //sum += !AICheckInRegion(y+1,w)?0:AIIsFit(map[x][y+1],map[x][y]);
 
-            //sum += (!AICheckInRegion(x-1,h) || !AICheckInRegion(y-1,w))?0:AIIsFix(map[x-1][y-1],map[x][y]);
+            //sum += (!AICheckInRegion(x-1,h) || !AICheckInRegion(y-1,w))?0:AIIsFit(map[x-1][y-1],map[x][y]);
             //sum += (!AICheckInRegion(x+1,h) || !AICheckInRegion(y-1,w))?0:AIIsFix(map[x+1][y-1],map[x][y]);
             //sum += (!AICheckInRegion(x-1,h) || !AICheckInRegion(y+1,w))?0:AIIsFix(map[x-1][y+1],map[x][y]);
             //sum += (!AICheckInRegion(x+1,h) || !AICheckInRegion(y+1,w))?0:AIIsFix(map[x+1][y+1],map[x][y]);
@@ -308,10 +259,10 @@ static int AICheckBigNumAround(const int (*map)[5],int w,int h){
             //if(sum)debug("v:%d [%d,%d]",sum,x,y);
 
             int v[4];
-            v[0] = !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
-            v[1] = !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
-            v[2] = !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
-            v[3] = !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            v[0] = !AICheckInRegion(x-1,h)?0:AIIsFit(map[x-1][y],map[x][y]);
+            v[1] = !AICheckInRegion(x+1,h)?0:AIIsFit(map[x+1][y],map[x][y]);
+            v[2] = !AICheckInRegion(y-1,w)?0:AIIsFit(map[x][y-1],map[x][y]);
+            v[3] = !AICheckInRegion(y+1,w)?0:AIIsFit(map[x][y+1],map[x][y]);
             int max = 0;
             forp(i,4){
                 if(max < v[i]){
@@ -331,10 +282,10 @@ static int AICheckAllAround(const int (*map)[5],int w,int h){
         {
             // Big num check only one side
             int v[4];
-            v[0] = !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
-            v[1] = !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
-            v[2] = !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
-            v[3] = !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+            v[0] = !AICheckInRegion(x-1,h)?0:AIIsFit(map[x-1][y],map[x][y]);
+            v[1] = !AICheckInRegion(x+1,h)?0:AIIsFit(map[x+1][y],map[x][y]);
+            v[2] = !AICheckInRegion(y-1,w)?0:AIIsFit(map[x][y-1],map[x][y]);
+            v[3] = !AICheckInRegion(y+1,w)?0:AIIsFit(map[x][y+1],map[x][y]);
             int max = 0;
             forp(i,4){
                 if(max < v[i]){
@@ -344,10 +295,10 @@ static int AICheckAllAround(const int (*map)[5],int w,int h){
             sum += max;
         }
         //else{
-        //    sum += !AICheckInRegion(x-1,h)?0:AIIsFix(map[x-1][y],map[x][y]);
-        //    sum += !AICheckInRegion(x+1,h)?0:AIIsFix(map[x+1][y],map[x][y]);
-        //    sum += !AICheckInRegion(y-1,w)?0:AIIsFix(map[x][y-1],map[x][y]);
-        //    sum += !AICheckInRegion(y+1,w)?0:AIIsFix(map[x][y+1],map[x][y]);
+        //    sum += !AICheckInRegion(x-1,h)?0:AIIsFit(map[x-1][y],map[x][y]);
+        //    sum += !AICheckInRegion(x+1,h)?0:AIIsFit(map[x+1][y],map[x][y]);
+        //    sum += !AICheckInRegion(y-1,w)?0:AIIsFit(map[x][y-1],map[x][y]);
+        //    sum += !AICheckInRegion(y+1,w)?0:AIIsFit(map[x][y+1],map[x][y]);
         //}
     }
     return sum;
@@ -362,7 +313,7 @@ static int AICheckOneNearby(const int(*map)[5],int w,int h,int x,int y){
     return sum>0?map[x][y]:0;
 }
 
-static int AICheckAllNearby(const int(*map)[5],int w,int h){
+static int AICheckAllNeighbor(const int(*map)[5],int w,int h){
     int sum = 0;
     forp(x,h)forp(y,w){
         if(map[x][y]!=0){
@@ -413,7 +364,7 @@ static int AICheckBigNear(const int (*map)[5],int w,int h){
 
     while(len < 3) {
         if(max < 0)break;
-        len += AIFindOneNumXY(map,w,h,&x[len],&y[len],max--);
+        len += AIFindALLNumXY(map,w,h,&x[len],&y[len],max--);
     }
 
     int sum = 0;
@@ -438,7 +389,7 @@ static int AICheckAllNear(const int (*map)[5],int w,int h){
         if(!AIIsHaveNum(map,w,h,find))continue;
         while(len < 2) {
             if(find <= 0)break;
-            len += AIFindOneNumXY(map,w,h,&x[len],&y[len],find--);
+            len += AIFindALLNumXY(map,w,h,&x[len],&y[len],find--);
         }
         forp(i,len){
             //printf("[%d,%d](%d) ",x[i],y[i],map[x[i]][y[i]]);
@@ -461,7 +412,7 @@ static int AICheckAroundIsNum(int (*map)[5],int w,int h,int x,int y,int num){
 static int AICheckBlankNear2or4(int (*map)[5],int w,int h){
     int sum = 0;
     int x[40] = {0},y[40] = {0};
-    int len = AIFindOneNumXY(map,w,h,x,y,0);
+    int len = AIFindALLNumXY(map,w,h,x,y,0);
     forp(i,len){
         sum += AICheckAroundIsNum(map,w,h,x[i],y[i],1);
         sum += AICheckAroundIsNum(map,w,h,x[i],y[i],2);
@@ -685,9 +636,9 @@ static int AICheckAll(const int(*mNextMap)[5],int w,int h){
     sum += v;
     //debug("WEIGHT_BLANK: %g",v);
 
-    v = AICheckAllNearby(mNextMap,w,h) * WeightTable[WEIGHT_NEARBY][max];
+    v = AICheckAllNeighbor(mNextMap,w,h) * WeightTable[WEIGHT_NEIGHBOR][max];
     sum += v;
-    //debug("WEIGHT_NEARBY: %g",v);
+    //debug("WEIGHT_NEIGHBOR: %g",v);
 
     v = AICheckAllNear(mNextMap,w,h) * WeightTable[WEIGHT_ALL_NEAR][max];
     sum += v;
@@ -722,7 +673,7 @@ int AICheckTree(const int(*map)[5],int w,int h,int depth){
 
             x[i] += v;
 
-            //v = AICheckAllNearby(mNextMap,w,h) * WeightTable[WEIGHT_NEARBY][max];
+            //v = AICheckAllNeighbor(mNextMap,w,h) * WeightTable[WEIGHT_NEIGHBOR][max];
             //x[i] += v;
             //
             //v = AICheckAllAround(mNextMap,w,h) * WeightTable[WEIGHT_ALL_AROUND][max];
@@ -787,55 +738,76 @@ int AICheckTree(const int(*map)[5],int w,int h,int depth){
     //if(depth-- == 0)return 0;
 }
 
-int AI1(int map[5][5],int w,int h){
-    debug("--------------------AI--------------------");
-    // some AI, I hadn't named it :)
+int AI1(int mCurMap[5][5],int w,int h){
+    //debug("--------------------AI--------------------");
     int x[5] = {-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF};
     int mNextMap[5][5];
-    int mCurMap[5][5];
+    float v[20][5] = {0};
 
-    //assert(WeightTable[WEIGHT_CORNER_VALUE][0]==16);
-    //assert(WeightTable[WEIGHT_BIG_INSIDE][0]==0);
-
-    for(int i=1;i<=4;i++){
-        memcpy(mNextMap,map,sizeof(mNextMap));
-        float v = AICheckIfDir(mNextMap,w,h,i) * WEIGHT_MERGE;
-        if(v)
+    for(int dir=1;dir<=4;dir++){
+        memcpy(mNextMap,mCurMap,sizeof(mNextMap));
+        v[WEIGHT_MERGE][dir] = AICheckIfDir(mNextMap,w,h,dir);
+        if(v[WEIGHT_MERGE][dir])
         {
-            x[i] = 0;
-            AIDebugPrintDir("check dir",i);
-            
-            x[i] += v;
-            debug("WEIGHT_MERGE: %g",v);
-            
-            x[i] += AICheckAll(mNextMap,w,h);
-            
-            int v = AICheckTree(mNextMap,w,h,2);
-            x[i] += v;
-            debug("Tree get %d point",v);
+            int max = AIFindMaxNum(mNextMap,w,h);
+            v[WEIGHT_MERGE][dir] *= WeightTable[WEIGHT_MERGE][max];
 
-            //x[i] += AICheckTree(mNextMap,w,h,1);
+            // big number have to in the side or corner
+            v[WEIGHT_BIG_INCORNER][dir] = AICheckBigNumInCorner(mNextMap,w,h)   * WeightTable[WEIGHT_BIG_INCORNER][max];
+            v[WEIGHT_BIG_INSIDE][dir]   = AICheckBigNumInSide(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_INSIDE][max];
+            v[WEIGHT_BIG_AROUND][dir]   = AICheckBigNumAround(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_AROUND][max];
+            v[WEIGHT_BIG_NEAR]  [dir]   = AICheckBigNear(mNextMap,w,h)          * WeightTable[WEIGHT_BIG_NEAR][max];
+
+            v[WEIGHT_MAXNUM]    [dir]   = AIFindMaxNum(mNextMap,w,h)            * WeightTable[WEIGHT_MAXNUM][max];
+            v[WEIGHT_BLANK]     [dir]   = AICheckBlank(mNextMap,w,h)            * WeightTable[WEIGHT_BLANK][max];
+            v[WEIGHT_NEIGHBOR]  [dir]   = AICheckAllNeighbor(mNextMap,w,h)      * WeightTable[WEIGHT_NEIGHBOR][max];
+            v[WEIGHT_ALL_NEAR]  [dir]   = AICheckAllNear(mNextMap,w,h)          * WeightTable[WEIGHT_ALL_NEAR][max];            
+            v[WEIGHT_BLANK_NEAR_2_OR_4][dir] = AICheckBlankNear2or4(mNextMap,w,h) * WeightTable[WEIGHT_BLANK_NEAR_2_OR_4][max];
+
+            //v[WEIGHT_CORNER_VALUE][dir] = AICheckAllCornerValue(mNextMap,w,h)   * WeightTable[WEIGHT_CORNER_VALUE][max];
+            //v[WEIGHT_ALL_INSIDE][dir]   = AICheckAllInSide(mNextMap,w,h)        * WeightTable[WEIGHT_ALL_INSIDE][max];
+            //v[WEIGHT_ALL_AROUND][dir]   = AICheckAllAround(mNextMap,w,h)        * WeightTable[WEIGHT_ALL_AROUND][max];
+            //v[WEIGHT_WAVE][dir]         = AICheckWave(mNextMap,w,h)             * WeightTable[WEIGHT_WAVE][max];
+
+            x[dir] = 0;
+            forp(i,WEIGHT_END){
+                x[dir] += v[i][dir];
+            }
         }
     }
+
+    // table list
+    int DisableRule[] = {WEIGHT_CORNER_VALUE,WEIGHT_ALL_INSIDE,WEIGHT_ALL_AROUND,WEIGHT_WAVE};
+    int flag;
+    debug("WeightTable\tUP\tDOWN\tLEFT\tRIGHT");
+    forp(i,WEIGHT_END){
+        flag = 1;
+        forp(j,arraylen(DisableRule)){
+            if(i==DisableRule[j])flag = 0;
+        }
+        if(flag){
+            debug("%-8s\t%g\t%g\t%g\t%g",WeightTableName[i],v[i][1],v[i][2],v[i][3],v[i][4]);
+        }
+    }
+    debug("%-8s\t%d\t%d\t%d\t%d","TOTAL",
+          x[1] == -0xFFFF ? -1 : x[1],
+          x[2] == -0xFFFF ? -1 : x[2],
+          x[3] == -0xFFFF ? -1 : x[3],
+          x[4] == -0xFFFF ? -1 : x[4]
+          );
+
 
     int maxpoint = -0xFFFF;
     int dir = 0;
     for(int i=1;i<=4;i++){
         if(x[i] == -0xFFFF){
-            debug("x[%d] get null points",i);
             continue;
         }
         if(maxpoint < x[i]){
             maxpoint = x[i];
             dir = i;
         }
-        debug("x[%d] get %d points",i,x[i]);
     }
-    debug("--------------------AI--------------------");
+    //debug("--------------------AI--------------------");
     return AIDebugPrintDir("Goto",dir);
 }
-
-
-// 24645
-
-// 26953

@@ -28,6 +28,11 @@ long __stdcall WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam){
                 InvalidateRect(hWnd,NULL,FALSE);
             }
             return 0;
+        case TIMER_ANIMATION:
+            hdc = GetDC(hWnd);
+            DrawAnimation(lpOption,hdc);
+            ReleaseDC(hWnd,hdc);
+            return 0;
         }
         break;
     case WM_KEYDOWN:
