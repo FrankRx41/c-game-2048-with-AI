@@ -3,47 +3,61 @@
 
 #include <Windows.h>
 
+#define TITLENAME   TEXT("2048 with AI")
+#define CLASSNAME   TEXT("2048GAMEWITHAI")
+
 enum{
-    /*GS_OP,GS_ED,GS_HEIGHT_SCORE,*/
     GS_RUNNING  = 0x0001,
     GS_OVER     = 0x0000,
-    GS_ONAI     = 0x4000,
+    GS_AIPLAY   = 0x4000,
     GS_PAUSE    = 0x8000,
 };
 
 typedef struct OPTION{
-    // Game Setting
-    unsigned int nWidth;
-    unsigned int nHeight;
+    // game play info
+    unsigned int nWidth;                // must be 4
+    unsigned int nHeight;               // 3 - 5
     unsigned int nCurScore;
     unsigned int iLevel;
     unsigned int nStep;
-    int nMap[5][5];
+    int mMap[5][5];
 
+    // game loop info
     int iGameState;
-    int AI[3];
-    int iAISleep;
 
-    // System Setting
+    // about AI
+    int iAISleep;
+    int iCurAI;
+
+    // game setting
     int fSound;
-    int fFullScreen;                    // XXX: delete it?
+    int fFullScreen;                    // abandon
     int fSuggestion;
     int fGaryMode;
     int fAnimation;
 
-    HWND    hWnd;
+    // UI
     int     nColorTable[21];
     int     nBgColor;
     int     nTextColor;
     char    hFontName[30];
     int     iFontSize;
+
+    int     nTileWidth;
+    int     nMargin;
+    int     nRound;
+    int     nInfoBarHeigh;
+
+    long    iRandseek;
+    char    sSaveDate[30];
+
+    // window setting
+    HWND    hWnd;
     int     cxClient;
     int     cyClient;
-    int     nTileWidth;
-    int     nMargin ;
-    char    sSaveDate[30];
-    long    iRandseek;
-
+    int     nWinPosX;
+    int     nWinPosY;
+    
     // Key
     int     vKeyUp;
     int     vKeyDown;
@@ -53,9 +67,6 @@ typedef struct OPTION{
     int     vKeyPause;
     int     vKeyAISpeedUp;
     int     vKeyAISpeedDown;
-
-    int     nWinPosX;
-    int     nWinPosY;
 
     // score
     unsigned int nScore[3];

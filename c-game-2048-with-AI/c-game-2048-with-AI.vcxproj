@@ -83,6 +83,7 @@
     <ClCompile Include="AI2.c" />
     <ClCompile Include="Game.c" />
     <ClCompile Include="Option.c" />
+    <ClCompile Include="Window.c" />
     <ClCompile Include="WinMain.c" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +97,7 @@
     <ClInclude Include="Macro.h" />
     <ClInclude Include="Option.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

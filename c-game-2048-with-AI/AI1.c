@@ -2,11 +2,6 @@
 #include "Game.h"
 #include <assert.h>
 
-/*
-per blank + 1 point
-per nearby + 1 point
-*/
-
 enum{
     WEIGHT_BLANK,
     WEIGHT_NEARBY,

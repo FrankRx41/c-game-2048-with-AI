@@ -157,7 +157,7 @@ static int ReadAndSaveOption(LPOPTION lpOption){
     OptionDec("FontSize",   &lpOption->iFontSize,       34);
 
     if(fCreateFile)WriteComment("[COLOR]");
-    if(fCreateFile)WriteComment("# format: BBGGRR");
+    if(fCreateFile)WriteComment("# format: 0xBBGGRR");
     OptionHex("0",          &lpOption->nColorTable[0],  0x1A2A3A);
     OptionHex("2",          &lpOption->nColorTable[1],  0x106475);
     OptionHex("4",          &lpOption->nColorTable[2],  0x106C7D);
@@ -178,14 +178,18 @@ static int ReadAndSaveOption(LPOPTION lpOption){
     OptionHex("131072",     &lpOption->nColorTable[17], 0x5E12ED);
     OptionHex("262144",     &lpOption->nColorTable[18], 0x5E12ED);
     OptionHex("524288",     &lpOption->nColorTable[19], 0x5E12ED);
-    OptionHex("10485..",   &lpOption->nColorTable[20], 0x5E12ED);
+    OptionHex("10485..",    &lpOption->nColorTable[20], 0x5E12ED);
 
     OptionHex("bground",    &lpOption->nBgColor,        0x111240);
     OptionHex("text",       &lpOption->nTextColor,      0x9A9C9B);
 
-    if(fCreateFile)WriteComment("[SIZE]");
-    OptionDec("width",      &lpOption->nTileWidth,      100);
-    OptionDec("margin",     &lpOption->nMargin,         5);
+    if(fCreateFile)WriteComment("[UI]");
+    OptionDec("Width",      &lpOption->nTileWidth,      100);
+    OptionDec("Margin",     &lpOption->nMargin,         5);
+    OptionDec("Round",      &lpOption->nRound,          20);
+    OptionDec("ExHeigh",    &lpOption->nInfoBarHeigh,   50);
+
+    if(fCreateFile)WriteComment("[WINDOW]");
     OptionDec("posX",       &lpOption->nWinPosX,        -1);
     OptionDec("posY",       &lpOption->nWinPosY,        -1);
 
@@ -200,9 +204,9 @@ static int ReadAndSaveOption(LPOPTION lpOption){
     OptionDec("AISpeedDown",&lpOption->vKeyAISpeedDown, VK_ADD);
 
     if(fCreateFile)WriteComment("[SCORE]");
-    OptionDec("score3*4",   &lpOption->nScore[0],       0);
-    OptionDec("score4*4",   &lpOption->nScore[1],       0);
-    OptionDec("score5*4",   &lpOption->nScore[2],       0);
+    OptionDec("Score3*4",   &lpOption->nScore[0],       0);
+    OptionDec("Score4*4",   &lpOption->nScore[1],       0);
+    OptionDec("Score5*4",   &lpOption->nScore[2],       0);
 
     if(fCreateFile)WriteComment("[OPTION]");
     OptionStr("SaveDate",   &lpOption->sSaveDate,       "2048.dat");
@@ -248,7 +252,7 @@ int ReadOption(LPOPTION lpOption){
         fCreateFile = 1;
         fp = fopen(filename,"w+");
         if(!fp){
-            MessageBox(0,"Create Config File Error!",0,0);
+            ErrorMsg("Create Config File Error!");
             PostQuitMessage(0);
         }
     }
@@ -263,7 +267,7 @@ int SaveOption(LPOPTION lpOption){
     char filename[] = "config.ini";
     fp = fopen(filename,"w");
     if(!fp){
-        MessageBox(0,"Open Config File Error!",0,0);
+        ErrorMsg("Open Config File Error!");
         return 0;
     }
     //fprintf(fp,"# this file create by 2048\n");
