@@ -21,26 +21,32 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Option.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="AI5.c">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="Game.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="AI3.c">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="AI0.c">
+    <ClCompile Include="AI2.c">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
     <ClCompile Include="AI1.c">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="AI2.c">
-      <Filter>Source Files\AI</Filter>
+    <ClCompile Include="Game.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Option.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WinMain.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AI4.c">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +76,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WeightTable.h">
+      <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="uthash.h">
       <Filter>Source Files\AI</Filter>
     </ClInclude>
   </ItemGroup>

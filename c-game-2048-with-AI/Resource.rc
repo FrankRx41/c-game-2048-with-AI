@@ -24,9 +24,11 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "A&I"
         BEGIN
-            MENUITEM "&AI0 random\tF1"      MENU_AI_0
-            MENUITEM "&AI1\tF2"             MENU_AI_1
-            MENUITEM "&AI2 maxblank\tF3"    MENU_AI_2
+            MENUITEM "&AI1 random\tF1"      MENU_AI_1
+            MENUITEM "&AI2 stupid AI\tF2"   MENU_AI_2
+            MENUITEM "&AI3 maxblank\tF3"    MENU_AI_3
+            MENUITEM "&AI4 eve's AI\tF4"    MENU_AI_4
+            MENUITEM "&AI5 U-R-D-L\tF5"     MENU_AI_5
         END
         MENUITEM SEPARATOR
         MENUITEM "S&ound"               MENU_OPTION_SOUND
@@ -49,9 +51,11 @@ END
 
 2048GAMEWITHAI  ACCELERATORS    DISCARDABLE
 BEGIN
-    VK_F1,  MENU_AI_0,      VIRTKEY,    NOINVERT
-    VK_F2,  MENU_AI_1,      VIRTKEY,    NOINVERT
-    VK_F3,  MENU_AI_2,      VIRTKEY,    NOINVERT
+    VK_F1,  MENU_AI_1,      VIRTKEY,    NOINVERT
+    VK_F2,  MENU_AI_2,      VIRTKEY,    NOINVERT
+    VK_F3,  MENU_AI_3,      VIRTKEY,    NOINVERT
+    VK_F4,  MENU_AI_4,      VIRTKEY,    NOINVERT
+    VK_F5,  MENU_AI_5,      VIRTKEY,    NOINVERT
     "^S",   MENU_GAME_SAVE, ASCII,      NOINVERT
     "^L",   MENU_GAME_LOAD, ASCII,      NOINVERT
     "1",    MENU_NEW_3,     ASCII,      ALT,NOINVERT

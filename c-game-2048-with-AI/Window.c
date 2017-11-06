@@ -136,8 +136,7 @@ static int DrawHightScore(LPOPTION lpOption,HDC hdc){
     HBRUSH  hBrush;
     
     SetTextColor(hdc,RGB(240,225,0));
-    int h = 80;
-    SetMyFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+    CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
     rt.top      += h;
     rt.bottom   += h;
     sprintf(szString,"%s","Height  Score");
@@ -232,6 +231,8 @@ static int DrawOneTileAnimation(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
     int x = tile.x, y = tile.y;
     char szString[MAX] = {0};
 
+    if(x < 0 || y < 0)return 1;
+
     SetBkMode(hdc,1);
     SetTextColor(hdc,lpOption->nTextColor);
 
@@ -324,9 +325,11 @@ static int __stdcall WinAboutDlgProc(HWND hDlg,UINT message,WPARAM wParam,LPARAM
 }
 
 static int WinCheckAIMenu(LPOPTION lpOption){
-    CheckMenuItem(GetMenu(lpOption->hWnd),MENU_AI_0,lpOption->iCurAI == 0 ? MF_CHECKED : 0);
     CheckMenuItem(GetMenu(lpOption->hWnd),MENU_AI_1,lpOption->iCurAI == 1 ? MF_CHECKED : 0);
     CheckMenuItem(GetMenu(lpOption->hWnd),MENU_AI_2,lpOption->iCurAI == 2 ? MF_CHECKED : 0);
+    CheckMenuItem(GetMenu(lpOption->hWnd),MENU_AI_3,lpOption->iCurAI == 3 ? MF_CHECKED : 0);
+    CheckMenuItem(GetMenu(lpOption->hWnd),MENU_AI_4,lpOption->iCurAI == 4 ? MF_CHECKED : 0);
+    CheckMenuItem(GetMenu(lpOption->hWnd),MENU_AI_5,lpOption->iCurAI == 5 ? MF_CHECKED : 0);
 }
 
 // return 1 mean window need update
@@ -382,24 +385,27 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
         CheckMenuItem(GetMenu(lpOption->hWnd),LOWORD(wParam),lpOption->fAnimation?MF_CHECKED:0);
         return 0;
 
-    case MENU_AI_0:
     case MENU_AI_1:
     case MENU_AI_2:
+    case MENU_AI_3:
+    case MENU_AI_4:
+    case MENU_AI_5:
+        wParam = LOWORD(wParam) + 1;
         if(lpOption->iGameState == GS_OVER)return 0;
 
         // stop AI
-        if(lpOption->iCurAI == LOWORD(wParam) - MENU_AI_0){
+        if(lpOption->iCurAI == LOWORD(wParam) - MENU_AI_1){
             lpOption->iCurAI = -1;
             lpOption->iGameState -= GS_AIPLAY;
             KillTimer(lpOption->hWnd,0);
-            debug("stop AI: %d",LOWORD(wParam) - MENU_AI_0);
+            debug("stop AI: %d",LOWORD(wParam) - MENU_AI_1);
         }
         // start AI or change AI
         else{
-            lpOption->iCurAI = LOWORD(wParam) - MENU_AI_0;
+            lpOption->iCurAI = LOWORD(wParam) - MENU_AI_1;
             lpOption->iGameState |= GS_AIPLAY;
             SetTimer(lpOption->hWnd,TIMER_AI,lpOption->iAISleep,NULL);
-            debug("start AI: %d",LOWORD(wParam) - MENU_AI_0);
+            debug("start AI: %d",LOWORD(wParam) - MENU_AI_1);
         }
         //debug("AI: %d",LOWORD(wParam) - MENU_AI_0);
         WinCheckAIMenu(lpOption);
@@ -504,12 +510,6 @@ int WinOnTimerAI(LPOPTION lpOption){
     KillTimer(lpOption->hWnd,TIMER_AI);
 
     switch(lpOption->iCurAI){
-    case 0:
-        GameDirKey(
-            lpOption,
-            AI0(map,lpOption->nWidth,lpOption->nHeight)
-            );
-        break;
     case 1:
         GameDirKey(
             lpOption,
@@ -520,6 +520,24 @@ int WinOnTimerAI(LPOPTION lpOption){
         GameDirKey(
             lpOption,
             AI2(map,lpOption->nWidth,lpOption->nHeight)
+            );
+        break;
+    case 3:
+        GameDirKey(
+            lpOption,
+            AI3(map,lpOption->nWidth,lpOption->nHeight)
+            );
+        break;
+    case 4:
+        GameDirKey(
+            lpOption,
+            AI4(map,lpOption->nWidth,lpOption->nHeight)
+            );
+        break;
+    case 5:
+        GameDirKey(
+            lpOption,
+            AI5(map,lpOption->nWidth,lpOption->nHeight)
             );
         break;
     default:

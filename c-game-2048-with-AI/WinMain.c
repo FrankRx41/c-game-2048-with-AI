@@ -113,7 +113,7 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
 
     while(GetMessage(&msg,0,0,0))
     {
-        if(!TranslateAccelerator(hWnd,hAccel,&msg)){
+        if(!TranslateAccelerator(hWnd,(HACCEL)hAccel,&msg)){
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }

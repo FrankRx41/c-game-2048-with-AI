@@ -78,9 +78,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AI0.c" />
     <ClCompile Include="AI1.c" />
     <ClCompile Include="AI2.c" />
+    <ClCompile Include="AI3.c" />
+    <ClCompile Include="AI4.c" />
+    <ClCompile Include="AI5.c" />
     <ClCompile Include="Game.c" />
     <ClCompile Include="Option.c" />
     <ClCompile Include="Window.c" />
@@ -97,6 +99,7 @@
     <ClInclude Include="Macro.h" />
     <ClInclude Include="Option.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="uthash.h" />
     <ClInclude Include="WeightTable.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

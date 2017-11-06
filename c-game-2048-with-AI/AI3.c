@@ -29,7 +29,6 @@ static int AICheckIfDir(int (*map)[5],int w,int h,int dir){
 
                 for(int k=j+1;k<h;k++){
                     S = &map[k][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",j,i,map[j][i],k,i,map[k][i]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -43,7 +42,6 @@ static int AICheckIfDir(int (*map)[5],int w,int h,int dir){
 
                 for(int i=x-1;i>=0;i--){
                     S = &map[i][y];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -57,7 +55,6 @@ static int AICheckIfDir(int (*map)[5],int w,int h,int dir){
 
                 for(int i=y+1;i<w;i++){
                     S = &map[x][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -71,7 +68,6 @@ static int AICheckIfDir(int (*map)[5],int w,int h,int dir){
 
                 for(int i=y-1;i>=0;i--){
                     S = &map[x][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -81,20 +77,65 @@ static int AICheckIfDir(int (*map)[5],int w,int h,int dir){
     return fHadmove;
 }
 
-
-int AI0(int map[5][5],int w,int h){
-    // random AI
-    int dir = rand()%4+1;
-    int map2[5][5];
-    memcpy(map2,map,sizeof(map2));
-    while(1){
-        int v = AICheckIfDir(map2,w,h,dir);
-        debug("random dir: %d v:%d",dir,v);
-        if(v){
-            break;
-        }
-        memcpy(map2,map,sizeof(map2));
-        dir = rand()%4+1;
+static int AIDebugPrintGo(int dir){
+    switch(dir){
+    case DIR_UP:
+        debug("AI go: Up");
+        break;
+    case DIR_DOWN:
+        debug("AI go: Down");
+        break;
+    case DIR_LEFT:
+        debug("AI go: Left");
+        break;
+    case DIR_RIGHT:
+        debug("AI go: Right");
+        break;
+    default:
+        debug("AI go error!");
+        break;
     }
     return dir;
 }
+
+static int AICheckBlank(const int(*map)[5],int w,int h){
+    int sum = 0;
+    for(int x=0;x<h;x++){
+        for(int y=0;y<w;y++){
+            if(map[x][y] == 0)
+                sum++;
+        }
+    }
+    debug("%s: %d",__FUNCTION__,sum);
+    return sum;
+}
+
+int AI3(int map[5][5],int w,int h){
+    debug("--------------------AI--------------------");
+    // min blank
+    int x[5] = {0,0,0,0,0};
+    int map2[5][5];
+
+    for(int i=1;i<=4;i++){
+        memcpy(map2,map,sizeof(map2));
+        if(AICheckIfDir(map2,w,h,i)){
+            x[i] += AICheckBlank(map2,w,h);
+        }
+    }
+
+    int maxpoint = 0;
+    int dir = 0;
+    for(int i=1;i<=4;i++){
+        if(x[i] == 0)continue;
+        if(maxpoint < x[i]){
+            maxpoint = x[i];
+            dir = i;
+        }
+        debug("x[%d] get %d points",i,x[i]);
+    }
+    debug("--------------------AI--------------------");
+    return AIDebugPrintGo(dir);
+}
+
+
+

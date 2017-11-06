@@ -1,6 +1,7 @@
 #ifndef _MACRO_H_
 #define _MARCO_H_
 
+#include <stdio.h>
 #ifndef _INC_STDIO
 extern __declspec(dllimport) int __cdecl printf(const char * _Format, ...);
 #endif
