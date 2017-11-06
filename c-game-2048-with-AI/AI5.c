@@ -1,5 +1,6 @@
 ﻿#include "Macro.h"
 #include "Game.h"
+#include "AI.h"
 
 #define GameBlockUnite(F,S) if(*S != 0){                    \
                                 if(*F == 0){                \

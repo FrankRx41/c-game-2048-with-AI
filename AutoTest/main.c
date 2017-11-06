@@ -4,12 +4,16 @@
 //#include "..\c-game-2048-with-AI\Game.c"
 
 #include "..\c-game-2048-with-AI\AI1.c"
+#include "..\c-game-2048-with-AI\AI2.c"
+#include "..\c-game-2048-with-AI\AI3.c"
+#include "..\c-game-2048-with-AI\AI4.c"
+#include "..\c-game-2048-with-AI\AI5.c"
 
 
 int ShowWeight(){
     forp(j,arraylen(WeightTable)){
         forp(i,WEIGHT_LEN){
-            printf("%-3g ",WeightTable[j][i]);
+            printf("%-5g ",WeightTable[j][i]);
         }
         printf("\n");
     }
@@ -33,7 +37,7 @@ int ReadWeight(){
     return 1;
 }
 
-int PlayGame(){
+int PlayGame(int ai){
     OPTION Option = {0};
     LPOPTION lpOption = &Option;
 
@@ -43,21 +47,71 @@ int PlayGame(){
     while(lpOption->iGameState != GS_OVER){
         int map[5][5];
         memcpy(map,lpOption->mMap,sizeof(map));
-        GameDirKey(lpOption,AI1(map,4,4));
+
+        switch(ai){
+        case 1:
+            GameDirKey(lpOption,AI1(map,4,4));
+            break;
+        case 2:
+            GameDirKey(lpOption,AI2(map,4,4));
+            break;
+        case 3:
+            GameDirKey(lpOption,AI3(map,4,4));
+            break;
+        case 4:
+            GameDirKey(lpOption,AI4(map,4,4));
+            break;
+        case 5:
+            GameDirKey(lpOption,AI5(map,4,4));
+            break;
+        default:
+            printf("AI (%d) error!\n",ai);
+            getchar();
+            return 0;
+        }
     }
-    printf("%d\n",AIFindMaxNum(lpOption->mMap,4,4));
+    return AIFindMaxNum(lpOption->mMap,4,4);
     //GameWatchMap(lpOption);
 }
 
-int main(){
-    if(!ReadWeight()){
-        return 0;
+#define MAX_HIGH_SCORE  15
+#define TOTAL_RUN       100
+
+int ShowStatist(int *v){
+    forp(i,MAX_HIGH_SCORE){
+        printf("%-3d %4d (%5.1f%% )\n",i,v[i],(double)v[i]/TOTAL_RUN*100);
     }
-    ShowWeight();
-    getchar();
-    forp(i,1000){
-        //printf("%d:\n",i);
-        PlayGame();
+}
+
+#ifdef _DEBUG
+#error Use release mode to build this project!
+#endif
+
+int main(){
+    printf("NOTICE: Use Release Mode to build this project to hide debug info\n");
+    //printf("Weight Table:\n");
+    //if(!ReadWeight()){
+    //    return 0;
+    //}
+    //ShowWeight();
+    system("pause");
+
+    
+    for(int ai=1;ai<=5;ai++){
+        printf("Now in AI %d play, total play %d times\n",ai,TOTAL_RUN);
+        
+        int v[MAX_HIGH_SCORE] = {0};
+
+        printf("Now in statist, please wait (00%%)");
+        forp(i,TOTAL_RUN){
+
+            printf("\b\b\b\b%02d%%)",(int)(i*100/TOTAL_RUN));
+
+            v[PlayGame(ai)]++;
+        }
+        printf("\b\b\b\b\b(100%%)\n");
+        ShowStatist(v);
+        //system("pause");
     }
 
     return 0;
