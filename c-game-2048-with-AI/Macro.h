@@ -1,7 +1,9 @@
 #ifndef _MACRO_H_
 #define _MARCO_H_
 
+#ifndef _INC_STDIO
 extern __declspec(dllimport) int __cdecl printf(const char * _Format, ...);
+#endif
 
 #define forp(i,time)        for(int i=0;i<(time);i++)
 #define _LOOP_VARNAME_(x,y) var##x##y
@@ -17,5 +19,9 @@ extern __declspec(dllimport) int __cdecl printf(const char * _Format, ...);
 #define strequ(s1,s2)	    (strcmp((s1),(s2))==0)
 
 #define ErrorMsg(str)       MessageBox(NULL,TEXT(str),TEXT("Error"),MB_ICONERROR|MB_OK);
+
+#ifndef _DEBUG
+#define debug(str,...)
+#endif
 
 #endif

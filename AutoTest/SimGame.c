@@ -1,64 +1,15 @@
-#include "Game.h"
-#include "Macro.h"
-#include <stdio.h>
+#include "..\c-game-2048-with-AI\Game.h"
+#include "..\c-game-2048-with-AI\Macro.h"
 
-#pragma comment(lib,"winmm.lib")
-
-#ifdef  _DEBUG
-#define _DEBUG_2_1_4_1
-#define _DEBUG_SHOW
-#endif
+#define debug(str,...)
 
 int GameWatchMap(LPOPTION lpOption){
-#ifdef _DEBUG
     int (*map)[5] = lpOption->mMap;
     for(int y=0;y<lpOption->nHeight;y++)
     {
-        debug("[  %-4.d %-4.d %-4.d %-4.d]",map[y][0],map[y][1],map[y][2],map[y][3]);
+        printf("[  %-4.d %-4.d %-4.d %-4.d]\n",map[y][0],map[y][1],map[y][2],map[y][3]);
     }
-#endif
     return 0;
-}
-
-int GameSave(LPOPTION lpOption){
-    FILE * fp = fopen(lpOption->sSaveDate,"wb");
-    if(!fp){
-        ErrorMsg("Create Save File Error!");
-        return -1;
-    }
-
-    fwrite(&lpOption->nWidth,sizeof(lpOption->nWidth),1,fp);
-    fwrite(&lpOption->nHeight,sizeof(lpOption->nHeight),1,fp);
-    fwrite(&lpOption->nCurScore,sizeof(lpOption->nCurScore),1,fp);
-    fwrite(&lpOption->iLevel,sizeof(lpOption->iLevel),1,fp);
-    fwrite(&lpOption->nStep,sizeof(lpOption->nStep),1,fp);
-    fwrite(&lpOption->mMap,sizeof(lpOption->mMap),1,fp);
-    fclose(fp);
-    return 0;
-}
-
-int GameLoad(LPOPTION lpOption){
-    FILE * fp = fopen(lpOption->sSaveDate,"rb");
-    if(!fp){
-        ErrorMsg("Read Save File Error!");
-        return -1;
-    }
-    int iLevel = lpOption->iLevel;
-    //debug("iLevel: %d",iLevel);
-    fread(&lpOption->nWidth,sizeof(lpOption->nWidth),1,fp);
-    fread(&lpOption->nHeight,sizeof(lpOption->nHeight),1,fp);    
-    fread(&lpOption->nCurScore,sizeof(lpOption->nCurScore),1,fp);
-    fread(&lpOption->iLevel,sizeof(lpOption->iLevel),1,fp);
-    fread(&lpOption->nStep,sizeof(lpOption->nStep),1,fp);
-    fread(&lpOption->mMap,sizeof(lpOption->mMap),1,fp);
-    fclose(fp);
-
-    // reset window if need
-    GameSetWindow(lpOption,lpOption->nWidth,lpOption->nHeight);
-
-    GameWatchMap(lpOption);
-    lpOption->iGameState = GS_RUNNING;
-    return 1;
 }
 
 static int CheckBlank(const int(*map)[5],int w,int h){
@@ -149,7 +100,7 @@ static int CreatOneTile(LPOPTION lpOption){
     // old up score rule
     //lpOption->nCurScore += v;
     
-    GameWatchMap(lpOption);
+    //GameWatchMap(lpOption);
 
     // check is game over?
     if(!CheckALLDirNearby(map,lpOption->nWidth,lpOption->nHeight,0) && 
@@ -248,55 +199,17 @@ int GameDirKey(LPOPTION lpOption,int dir){
         if(lpOption->fSound){
             if(fMerge){
                 //debug("playsound");
-                PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
             }else{
                 //PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
-                PlaySound(TEXT("CREATSOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
             }
         }
     }
     return fMoved;
 }
 
-int GamePause(LPOPTION lpOption){
-    if(lpOption->iGameState == GS_OVER){
-        return 0;
-    }
-    else{
-        lpOption->iGameState ^= GS_PAUSE;
-        if(lpOption->iGameState & GS_PAUSE)
-        {
-            if(lpOption->fSound){
-                PlaySound(TEXT("PAUSESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
-            }
-        }
-        return 1;
-    }
-}
-
-static int GameSetWindow(LPOPTION lpOption){
-    int w = lpOption->nWidth;
-    int h = lpOption->nHeight;
-    int padding = lpOption->nTileWidth;
-    w = w * padding;
-    h = h * padding + lpOption->nInfoBarHeigh;
-    RECT rt = {0,0,w,h};
-    AdjustWindowRectEx(&rt,WS_OVERLAPPEDWINDOW,TRUE,NULL);
-    w = rt.right-rt.left;
-    h = rt.bottom-rt.top;
-
-    int x = 0,y = 0;
-    RECT rect = {0};
-    if(GetWindowRect(lpOption->hWnd,&rect)) {
-        x = rect.left;
-        y = rect.top;
-    }
-    MoveWindow(lpOption->hWnd,x,y,w,h,FALSE);
-}
-
 static int GameSetMap(LPOPTION lpOption){
     // map init
-    int (*map)[5] = lpOption->mMap;
+    int(*map)[5] = lpOption->mMap;
     for(int i=0;i<lpOption->nWidth;i++){
         for(int j=0;j<lpOption->nHeight;j++){
             map[j][i] = 0;
@@ -347,7 +260,6 @@ int GameInit(LPOPTION lpOption,int w,int h){
     lpOption->iCurAI    = -1;
     lpOption->iGameState = GS_RUNNING;
 
-    GameSetWindow(lpOption);
     GameSetMap(lpOption);
 
     lpOption->tLast.x = -1;
@@ -364,7 +276,7 @@ int GameOver(LPOPTION lpOption){
         //if(lpOption->nCurScore > lpOption->nScore[lpOption->iLevel]){
         //    lpOption->nScore[lpOption->iLevel] = lpOption->nCurScore;
         //}
-        SaveOption(lpOption);
+        //SaveOption(lpOption);
     }
     debug("--------------------over--------------------");
     return 1;
