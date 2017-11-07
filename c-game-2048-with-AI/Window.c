@@ -88,17 +88,42 @@ static int DrawBackGround(LPOPTION lpOption,HDC hdc){
     DeleteObject(hBrush);
 }
 
-static int DrawTiles(LPOPTION lpOption,HDC hdc){
+static int DrawOneTile(LPOPTION lpOption,RECT rt,int x,int y,float deep,HDC hdc){
     char szString[MAX] = {0};
-    int cxClient = lpOption->cxClient;
-    int cyClient = lpOption->cyClient;
-    int margin  = lpOption->nMargin;
-    int width   = lpOption->nTileWidth;
+    HBRUSH  hBrush;
+    int (*map)[5] = lpOption->mMap;
+    int bg,fg,r,g,b;
+
+    bg = GetTableColor(lpOption,0);
+    fg = GetTableColor(lpOption,map[x][y]);
+    r = GetRValue(bg) - GetRValue(fg);
+    g = GetGValue(bg) - GetGValue(fg);
+    b = GetBValue(bg) - GetBValue(fg);
+    hBrush = CreateSolidBrush(RGB(  ((int)(r*deep)+GetRValue(fg)),
+                                    ((int)(g*deep)+GetGValue(fg)),
+                                    ((int)(b*deep)+GetBValue(fg))));
+
+    //hBrush = CreateSolidBrush(GetTableColor(lpOption,map[x][y]));
+
+    SelectObject(hdc,hBrush);
+    SelectObject(hdc,GetStockObject(NULL_PEN));
+    RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,lpOption->nRound,lpOption->nRound);
+
+    if(map[x][y] != 0){
+        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        sprintf(szString,"%d",1<<map[x][y]);
+        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+    }
+    DeleteObject(hBrush);
+
+}
+
+static int DrawTiles(LPOPTION lpOption,HDC hdc){
     int w = lpOption->nWidth;
     int h = lpOption->nHeight;
-    int (*map)[5] = lpOption->mMap;
-    RECT rt = {0,0,cxClient,cyClient};
-    HBRUSH  hBrush;
+    RECT rt = {0,0,0,0};
+    int margin  = lpOption->nMargin;
+    int width   = lpOption->nTileWidth;
 
     SetBkMode(hdc,1);
     SetTextColor(hdc,lpOption->nTextColor);
@@ -111,22 +136,11 @@ static int DrawTiles(LPOPTION lpOption,HDC hdc){
         rt.top      = x * width + margin;
         rt.bottom   = x * width + width - margin;
 
-        hBrush = CreateSolidBrush(GetTableColor(lpOption,map[x][y]));
-        SelectObject(hdc,hBrush);
-        SelectObject(hdc,GetStockObject(NULL_PEN));
-        RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,lpOption->nRound,lpOption->nRound);
-
-        if(map[x][y] != 0){
-            CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
-            sprintf(szString,"%d",1<<map[x][y]);
-            DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
-        }
-        DeleteObject(hBrush);
+        DrawOneTile(lpOption,rt,x,y,0,hdc);
     }
 }
 
 static int DrawHightScore(LPOPTION lpOption,HDC hdc){
-#ifndef _DEBUG
     char szString[MAX] = {0};
     int cxClient = lpOption->cxClient,cyClient = lpOption->cyClient;
     int margin = lpOption->nMargin;
@@ -139,7 +153,7 @@ static int DrawHightScore(LPOPTION lpOption,HDC hdc){
     CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
     rt.top      += h;
     rt.bottom   += h;
-    sprintf(szString,"%s","Height  Score");
+    sprintf(szString,"%s","High  Score");
     DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 
     h = 25;
@@ -150,13 +164,14 @@ static int DrawHightScore(LPOPTION lpOption,HDC hdc){
         rt.top      += h;
         rt.bottom   += h;
 
-        sprintf(szString,"%d  *  4  :             ",i+3);
-        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        //sprintf(szString,"%d  *  4  :             ",i+3);
+        //DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 
-        sprintf(szString,"                 %d",lpOption->nScore[i]);
+        //sprintf(szString,"                 %d",lpOption->nScore[i]);
+        
+        sprintf(szString,"%d",lpOption->nScore[lpOption->iLevel][i]);
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
     }
-#endif
 }
 
 static int DrawInfo(LPOPTION lpOption,HDC hdc){
@@ -221,13 +236,12 @@ static int DrawInfo(LPOPTION lpOption,HDC hdc){
     }
 }
 
-static int DrawOneTileAnimation(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
+static int DrawTileAppear(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
     int margin  = lpOption->nMargin;
     int width   = lpOption->nTileWidth;
     int(*map)[5] = lpOption->mMap;
     RECT rt = {0};
     HBRUSH  hBrush;
-    int bg,fg,r,g,b;
     int x = tile.x, y = tile.y;
     char szString[MAX] = {0};
 
@@ -241,35 +255,63 @@ static int DrawOneTileAnimation(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
     rt.top      = x * width + margin;
     rt.bottom   = x * width + width - margin;
 
-
-    bg = GetTableColor(lpOption,0);
-    fg = GetTableColor(lpOption,map[x][y]);
-    r = GetRValue(bg) - GetRValue(fg);
-    g = GetGValue(bg) - GetGValue(fg);
-    b = GetBValue(bg) - GetBValue(fg);
-    hBrush = CreateSolidBrush( RGB( ((int)(r*deep)+GetRValue(fg)),
-                                    ((int)(g*deep)+GetGValue(fg)),
-                                    ((int)(b*deep)+GetBValue(fg))) );
-    SelectObject(hdc,hBrush);
-    SelectObject(hdc,GetStockObject(NULL_PEN));
-    RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,lpOption->nRound,lpOption->nRound);
-
-    if(map[x][y] != 0){
-        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
-        sprintf(szString,"%d",1<<map[x][y]);
-        DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
-    }
-    DeleteObject(hBrush);
-    //debug("on animation");
+    DrawOneTile(lpOption,rt,x,y,deep,hdc);
 }
 
-int DrawAnimation(LPOPTION lpOption,HDC hdc){
+static int DrawTilesMerge(LPOPTION lpOption,TILE form[],TILE to[],int index,float deep,HDC hdc){
+    float len;
+    int margin  = lpOption->nMargin;
+    int width   = lpOption->nTileWidth;
+    RECT rt = {0};
+
+    debug("Ani:%d",index);
+    forp(i,index){
+        if(form[i].x == to[i].x){
+            len = (form[i].y - to[i].y) * (width);
+            debug("len: %f",len);
+            len *= (deep);
+            rt.left     = form[i].y * width + margin + len;
+            rt.right    = form[i].y * width + width - margin + len;
+            rt.top      = form[i].x * width + margin;
+            rt.bottom   = form[i].x * width + width - margin;
+            DrawOneTile(lpOption,rt,form[i].x,form[i].y,0,hdc);
+        }
+        else if(form[i].y == to[i].y){
+            len = (form[i].x - to[i].x) * (width);
+            debug("len: %f",len);
+            len *= (deep);
+            rt.left     = form[i].y * width + margin;
+            rt.right    = form[i].y * width + width - margin;
+            rt.top      = form[i].x * width + margin + len;
+            rt.bottom   = form[i].x * width + width - margin + len;
+            DrawOneTile(lpOption,rt,form[i].x,form[i].y,0,hdc);
+        }
+
+    }
+}
+
+int DrawAnimation(LPOPTION lpOption,HDC srchdc){
     static float deep = 1;
+    int cxClient = lpOption->cxClient,cyClient = lpOption->cyClient;
+    HDC hdc = CreateCompatibleDC(srchdc);
+    HBITMAP hBmp;
+    if(lpOption->fGaryMode){
+        hBmp = CreateCompatibleBitmap(hdc,cxClient,cyClient);
+    }
+    else{
+        hBmp = CreateCompatibleBitmap(srchdc,cxClient,cyClient);
+    }
+    SelectObject(hdc,hBmp);
+    BitBlt(hdc,0,0,cxClient,cyClient,srchdc,0,0,SRCCOPY);
 
     KillTimer(lpOption->hWnd,TIMER_ANIMATION);
 
-    DrawOneTileAnimation(lpOption,lpOption->tLast,deep,hdc);
-    //DrawOneTileAnimation(lpOption,lpOption->tMergeFrom,deep,hdc);
+    DrawTileAppear(lpOption,lpOption->tLast,deep,hdc);
+    DrawTilesMerge(lpOption,lpOption->tMergeForm,lpOption->tMergeTo,lpOption->iAnimationIndex,deep,hdc);
+    BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
+
+    DeleteObject(hBmp);
+    DeleteDC(hdc);
 
     deep -= 0.05;
 
@@ -298,7 +340,8 @@ int WinDraw(LPOPTION lpOption,HDC srchdc){
     DrawTiles(lpOption,hdc);
     DrawInfo(lpOption,hdc);
     if(lpOption->fAnimation){
-        DrawAnimation(lpOption,hdc);
+        //DrawAnimation(lpOption,hdc);
+        SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
     }
 
     BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
@@ -356,9 +399,9 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
         return 1;
 
     case MENU_GAME_PAUSE:
-        // don't be confuse about this, because you check or uncheck the item before the game state update.
-        CheckMenuItem(GetMenu(lpOption->hWnd),LOWORD(wParam),!(lpOption->iGameState&GS_PAUSE)?MF_CHECKED:0);
-        return GamePause(lpOption);
+        GamePause(lpOption);
+        CheckMenuItem(GetMenu(lpOption->hWnd),LOWORD(wParam),lpOption->iGameState&GS_PAUSE?MF_CHECKED:0);
+        return 1;
 
     case MENU_GAME_EXIT:
         DestroyWindow(lpOption->hWnd);
@@ -470,6 +513,7 @@ int WinMenuReset(LPOPTION lpOption){
                 EnableMenuItem(hMenu,id,MF_GRAYED);
             }
             else{
+                EnableMenuItem(hMenu,id,MF_ENABLED);
                 fclose(fp);
             }
             break;

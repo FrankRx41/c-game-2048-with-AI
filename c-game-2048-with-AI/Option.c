@@ -204,9 +204,15 @@ static int ReadAndSaveOption(LPOPTION lpOption){
     OptionDec("AISpeedDown",&lpOption->vKeyAISpeedDown, VK_ADD);
 
     if(fCreateFile)WriteComment("[SCORE]");
-    OptionDec("Score3*4",   &lpOption->nScore[0],       0);
-    OptionDec("Score4*4",   &lpOption->nScore[1],       0);
-    OptionDec("Score5*4",   &lpOption->nScore[2],       0);
+    OptionDec("Score3*4(1)",&lpOption->nScore[0][0],    0);
+    OptionDec("Score3*4(2)",&lpOption->nScore[0][1],    0);
+    OptionDec("Score3*4(3)",&lpOption->nScore[0][2],    0);
+    OptionDec("Score4*4(1)",&lpOption->nScore[1][0],    0);
+    OptionDec("Score4*4(2)",&lpOption->nScore[1][1],    0);
+    OptionDec("Score4*4(3)",&lpOption->nScore[1][2],    0);
+    OptionDec("Score5*4(1)",&lpOption->nScore[2][0],    0);
+    OptionDec("Score5*4(2)",&lpOption->nScore[2][1],    0);
+    OptionDec("Score5*4(3)",&lpOption->nScore[2][2],    0);
 
     if(fCreateFile)WriteComment("[OPTION]");
     OptionStr("SaveDate",   &lpOption->sSaveDate,       "2048.dat");

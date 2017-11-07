@@ -186,6 +186,7 @@ int GameDirKey(LPOPTION lpOption,int dir){
     int(*map)[5] = lpOption->mMap;
     int w = lpOption->nWidth;
     int h = lpOption->nHeight;
+    int aIndex = lpOption->iAnimationIndex = -1;
 
     switch(dir){
     case DIR_UP:
@@ -195,6 +196,14 @@ int GameDirKey(LPOPTION lpOption,int dir){
                 int *S = NULL;
 
                 for(int k=j+1;k<h;k++){
+                    if(map[k][i] != 0){
+                        aIndex++;
+                        lpOption->tMergeTo[aIndex].x = j;
+                        lpOption->tMergeTo[aIndex].y = i;
+                        lpOption->tMergeForm[aIndex].x = k;
+                        lpOption->tMergeForm[aIndex].y = i;
+                        debug("[%d,%d] [%d,%d]",j,i,k,i);
+                    }
                     S = &map[k][i];
                     GameBlockUnite(F,S);
                 }
@@ -241,6 +250,8 @@ int GameDirKey(LPOPTION lpOption,int dir){
         }
         break;
     }
+
+    lpOption->iAnimationIndex = aIndex;
 
     if(fMoved){
         CreatOneTile(lpOption);
@@ -350,8 +361,10 @@ int GameInit(LPOPTION lpOption,int w,int h){
     GameSetWindow(lpOption);
     GameSetMap(lpOption);
 
+    // animation
     lpOption->tLast.x = -1;
     lpOption->tLast.y = -1;
+    lpOption->iAnimationIndex   = -1;
 
     debug("--------------------init--------------------");
 }
@@ -360,10 +373,18 @@ int GameOver(LPOPTION lpOption){
     if((lpOption->iGameState & 0x0F) & GS_RUNNING)
     {
         lpOption->iGameState = GS_OVER;
-        // FIXME: statist score
-        //if(lpOption->nCurScore > lpOption->nScore[lpOption->iLevel]){
-        //    lpOption->nScore[lpOption->iLevel] = lpOption->nCurScore;
-        //}
+        // statist score
+        for(int i=0;i<3;i++)
+        {
+            if(lpOption->nCurScore > lpOption->nScore[lpOption->iLevel][i])
+            {
+                for(int j=2;j>i;j--){
+                    lpOption->nScore[lpOption->iLevel][j] = lpOption->nScore[lpOption->iLevel][j-1];
+                }
+                lpOption->nScore[lpOption->iLevel][i] = lpOption->nCurScore;
+                break;
+            }
+        }
         SaveOption(lpOption);
     }
     debug("--------------------over--------------------");

@@ -75,12 +75,13 @@ typedef struct OPTION{
     int     vKeyAISpeedDown;
 
     // score
-    unsigned int nScore[3];
+    unsigned int nScore[3][3];
 
     // animation
     TILE    tLast;
     TILE    tMergeForm[10];
     TILE    tMergeTo[10];
+    int     iAnimationIndex;
     int     iAnimationSpeed;
 
 }* LPOPTION, OPTION;
