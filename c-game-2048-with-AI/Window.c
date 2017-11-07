@@ -63,13 +63,11 @@ int WinKeyHandle(LPOPTION lpOption,int key){
     return 0;
 }
 
-static int CreateAndSelectFont(HDC hdc,LPCTSTR face,int high,int angle)
+static HFONT CreateAndSelectFont(HDC hdc,LPCTSTR face,int high,int angle)
 {
-    static HFONT oldFont = NULL;
-    DeleteObject(oldFont);
     HFONT hFont = CreateFont(high,0,angle,0,FW_DONTCARE,FALSE,FALSE,FALSE,ANSI_CHARSET,OUT_OUTLINE_PRECIS,
                CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,VARIABLE_PITCH,face);
-    oldFont = SelectObject(hdc,hFont);
+    SelectObject(hdc,hFont);
     return hFont;
 }
 
@@ -110,9 +108,10 @@ static int DrawOneTile(LPOPTION lpOption,RECT rt,int x,int y,float deep,HDC hdc)
     RoundRect(hdc,rt.left,rt.top,rt.right,rt.bottom,lpOption->nRound,lpOption->nRound);
 
     if(map[x][y] != 0){
-        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        HFONT hFont = CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
         sprintf(szString,"%d",1<<map[x][y]);
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        DeleteObject(hFont);
     }
     DeleteObject(hBrush);
 
@@ -147,10 +146,9 @@ static int DrawHightScore(LPOPTION lpOption,HDC hdc){
     int width = lpOption->nTileWidth;
     int w = lpOption->nWidth,h = lpOption->nHeight;
     RECT rt = {0,0,cxClient,cyClient};
-    HBRUSH  hBrush;
     
     SetTextColor(hdc,RGB(240,225,0));
-    CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+    HFONT hFont = CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
     rt.top      += h;
     rt.bottom   += h;
     sprintf(szString,"%s","High  Score");
@@ -172,6 +170,7 @@ static int DrawHightScore(LPOPTION lpOption,HDC hdc){
         sprintf(szString,"%d",lpOption->nScore[lpOption->iLevel][i]);
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
     }
+    DeleteObject(hFont);
 }
 
 static int DrawInfo(LPOPTION lpOption,HDC hdc){
@@ -183,6 +182,7 @@ static int DrawInfo(LPOPTION lpOption,HDC hdc){
     int w = lpOption->nWidth;
     int h = lpOption->nHeight;
     RECT rt = {0,0,cxClient,cyClient};
+    HFONT hFont;
     
     SetTextColor(hdc,RGB(230,230,230));
     sprintf(szString," Score: %d",lpOption->nCurScore);
@@ -198,10 +198,11 @@ static int DrawInfo(LPOPTION lpOption,HDC hdc){
         rt.right    = cxClient;
         rt.top      = 0;
         rt.bottom   = cyClient/2;
-        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize*2,0);
+        hFont = CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize*2,0);
         sprintf(szString,"%s","Game Over");
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
         DrawHightScore(lpOption,hdc);
+        DeleteObject(hFont);
     }
 
     if(lpOption->iGameState & GS_PAUSE)
@@ -210,11 +211,12 @@ static int DrawInfo(LPOPTION lpOption,HDC hdc){
         rt.right    = cxClient;
         rt.top      = 0;
         rt.bottom   = cyClient - lpOption->nInfoBarHeigh;
-        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        hFont = CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
 
         sprintf(szString,"%s","Pause");
         SetTextColor(hdc,RGB(10,10,240));
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        DeleteObject(hFont);
     }
 
     if(lpOption->iGameState & GS_AIPLAY)
@@ -224,15 +226,17 @@ static int DrawInfo(LPOPTION lpOption,HDC hdc){
         rt.top      = 0;
         rt.bottom   = 30;
 
-        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
+        hFont = CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize,0);
         sprintf(szString,"%s%d%s","AI ",lpOption->iCurAI," Play");
         SetTextColor(hdc,RGB(240,10,10));
         DrawText(hdc,szString,-1,&rt,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+        DeleteObject(hFont);
 
-        CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize/2,0);
+        hFont = CreateAndSelectFont(hdc,(LPCTSTR)lpOption->hFontName,lpOption->iFontSize/2,0);
         sprintf(szString," AI sleep:%-4d",lpOption->iAISleep);
         SetTextColor(hdc,RGB(240,10,10));
         DrawText(hdc,szString,-1,&rt,NULL);
+        DeleteObject(hFont);
     }
 }
 
@@ -241,7 +245,6 @@ static int DrawTileAppear(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
     int width   = lpOption->nTileWidth;
     int(*map)[5] = lpOption->mMap;
     RECT rt = {0};
-    HBRUSH  hBrush;
     int x = tile.x, y = tile.y;
     char szString[MAX] = {0};
 
@@ -258,43 +261,54 @@ static int DrawTileAppear(LPOPTION lpOption,TILE tile,float deep,HDC hdc){
     DrawOneTile(lpOption,rt,x,y,deep,hdc);
 }
 
-static int DrawTilesMerge(LPOPTION lpOption,TILE form[],TILE to[],int index,float deep,HDC hdc){
+static int DrawTilesMerge(LPOPTION lpOption,TILE from[],TILE to[],int index,float deep,HDC hdc){
     float len;
     int margin  = lpOption->nMargin;
     int width   = lpOption->nTileWidth;
     RECT rt = {0};
 
-    debug("Ani:%d",index);
-    forp(i,index){
-        if(form[i].x == to[i].x){
-            len = (form[i].y - to[i].y) * (width);
-            debug("len: %f",len);
-            len *= (deep);
-            rt.left     = form[i].y * width + margin + len;
-            rt.right    = form[i].y * width + width - margin + len;
-            rt.top      = form[i].x * width + margin;
-            rt.bottom   = form[i].x * width + width - margin;
-            DrawOneTile(lpOption,rt,form[i].x,form[i].y,0,hdc);
+    //debug("Ani:%d",index);
+    forp(i,index+1){
+        // l - r
+        if(from[i].x == to[i].x){
+            len = (to[i].y-from[i].y) * (width);
+            len *= (1-deep);
+            //debug("len: %f",len);
+            rt.left     = from[i].y * width + margin + len;
+            rt.right    = from[i].y * width + width - margin + len;
+            rt.top      = from[i].x * width + margin;
+            rt.bottom   = from[i].x * width + width - margin;
+            DrawOneTile(lpOption,rt,to[i].x,to[i].y,0,hdc);
         }
-        else if(form[i].y == to[i].y){
-            len = (form[i].x - to[i].x) * (width);
-            debug("len: %f",len);
-            len *= (deep);
-            rt.left     = form[i].y * width + margin;
-            rt.right    = form[i].y * width + width - margin;
-            rt.top      = form[i].x * width + margin + len;
-            rt.bottom   = form[i].x * width + width - margin + len;
-            DrawOneTile(lpOption,rt,form[i].x,form[i].y,0,hdc);
+        // u - d
+        else if(from[i].y == to[i].y){
+            len = (to[i].x-from[i].x) * (width);
+            len *= (1-deep);
+            //debug("[%d,%d] len: %f",form[i].x,form[i].y,len);
+            rt.left     = from[i].y * width + margin;
+            rt.right    = from[i].y * width + width - margin;
+            rt.top      = from[i].x * width + margin + len;
+            rt.bottom   = from[i].x * width + width - margin + len;
+            //debug("%d %d",rt.top,rt.bottom);
+            DrawOneTile(lpOption,rt,to[i].x,to[i].y,0,hdc);
         }
 
     }
 }
 
 int DrawAnimation(LPOPTION lpOption,HDC srchdc){
-    static float deep = 1;
     int cxClient = lpOption->cxClient,cyClient = lpOption->cyClient;
-    HDC hdc = CreateCompatibleDC(srchdc);
+    HDC hdc;
     HBITMAP hBmp;
+    static float deep = 1;
+
+    KillTimer(lpOption->hWnd,TIMER_ANIMATION);
+
+    if(lpOption->iGameState == GS_OVER){
+        return 0;
+    }
+
+    hdc = CreateCompatibleDC(srchdc);
     if(lpOption->fGaryMode){
         hBmp = CreateCompatibleBitmap(hdc,cxClient,cyClient);
     }
@@ -302,24 +316,54 @@ int DrawAnimation(LPOPTION lpOption,HDC srchdc){
         hBmp = CreateCompatibleBitmap(srchdc,cxClient,cyClient);
     }
     SelectObject(hdc,hBmp);
-    BitBlt(hdc,0,0,cxClient,cyClient,srchdc,0,0,SRCCOPY);
 
-    KillTimer(lpOption->hWnd,TIMER_ANIMATION);
+    static HDC hdc2;
+    static HBITMAP hBmp2;
+    if(deep == 1){
+        hdc2 = CreateCompatibleDC(srchdc);
+        hBmp2 = CreateCompatibleBitmap(srchdc,cxClient,cyClient);
+        SelectObject(hdc2,hBmp2);
+        BitBlt(hdc2,0,0,cxClient,cyClient,srchdc,0,0,SRCCOPY);
+        debug("DrawAnimation");
+    }
+    else if(deep <= 0){
+        BitBlt(hdc,0,0,cxClient,cyClient,hdc2,0,0,SRCCOPY);
+        BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
+
+        DeleteObject(hBmp2);
+        DeleteDC(hdc2);
+
+        DeleteObject(hBmp);
+        DeleteDC(hdc);
+
+        deep = 1;
+        lpOption->iAnimationIndex = -1;
+        lpOption->tLast.x = -1;
+        lpOption->tLast.y = -1;
+        debug("End DrawAnimation");
+        return 0;
+    }
+    else{
+        BitBlt(hdc,0,0,cxClient,cyClient,hdc2,0,0,SRCCOPY);
+    }
+
 
     DrawTileAppear(lpOption,lpOption->tLast,deep,hdc);
     DrawTilesMerge(lpOption,lpOption->tMergeForm,lpOption->tMergeTo,lpOption->iAnimationIndex,deep,hdc);
-    BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
+
+    if( deep != 1 ){
+        BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
+    }
 
     DeleteObject(hBmp);
     DeleteDC(hdc);
 
-    deep -= 0.05;
-
     if(deep > 0 && lpOption->fAnimation){
         SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
-    }else{
-        deep = 1;
     }
+
+    deep -= 0.1;
+    return 1;
 }
 
 int WinDraw(LPOPTION lpOption,HDC srchdc){
@@ -339,13 +383,18 @@ int WinDraw(LPOPTION lpOption,HDC srchdc){
     DrawBackGround(lpOption,hdc);
     DrawTiles(lpOption,hdc);
     DrawInfo(lpOption,hdc);
-    if(lpOption->fAnimation){
-        //DrawAnimation(lpOption,hdc);
-        SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
-    }
 
     BitBlt(srchdc,0,0,cxClient,cyClient,hdc,0,0,SRCCOPY);
 
+    if(lpOption->fAnimation && lpOption->iGameState & GS_RUNNING){
+        //deep = 1;
+        //DrawAnimation(lpOption,hdc);
+        //DrawAnimation(lpOption,srchdc);
+        if(!(lpOption->iCurAI != 0 && lpOption->iAISleep < 300)){
+            SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
+        }
+    }
+    ReleaseDC(NULL,hdc);
     DeleteObject(hBmp);
     DeleteDC(hdc);
     return 0;

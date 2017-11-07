@@ -147,7 +147,7 @@ static int CreatOneTile(LPOPTION lpOption){
     debug("create new (%d) in [%d,%d]",v,x,y);
 
     // old up score rule
-    //lpOption->nCurScore += v;
+    lpOption->nCurScore += v;
     
     GameWatchMap(lpOption);
 
@@ -172,7 +172,7 @@ static int CreatOneTile(LPOPTION lpOption){
                                     fMoved = 1;             \
                                     fMerge = 1;             \
                                     /* new up score rule */ \
-                                    lpOption->nCurScore += 1<<*F;   \
+                                    /*lpOption->nCurScore += 1<<*F;*/   \
                                     break;                  \
                                 }                           \
                                 else break;                 \
@@ -196,13 +196,13 @@ int GameDirKey(LPOPTION lpOption,int dir){
                 int *S = NULL;
 
                 for(int k=j+1;k<h;k++){
-                    if(map[k][i] != 0){
+                    if(map[k][i] != 0 && (map[j][i]==0 || map[k][i]==map[j][i])){
                         aIndex++;
                         lpOption->tMergeTo[aIndex].x = j;
                         lpOption->tMergeTo[aIndex].y = i;
                         lpOption->tMergeForm[aIndex].x = k;
                         lpOption->tMergeForm[aIndex].y = i;
-                        debug("[%d,%d] [%d,%d]",j,i,k,i);
+                        //debug("[%d,%d] [%d,%d]",j,i,k,i);
                     }
                     S = &map[k][i];
                     GameBlockUnite(F,S);
@@ -217,6 +217,14 @@ int GameDirKey(LPOPTION lpOption,int dir){
                 int *S = NULL;
 
                 for(int i=x-1;i>=0;i--){
+                    if(map[i][y] != 0 && (map[x][y]==0 || map[i][y]==map[x][y])){
+                        aIndex++;
+                        lpOption->tMergeTo[aIndex].x = x;
+                        lpOption->tMergeTo[aIndex].y = y;
+                        lpOption->tMergeForm[aIndex].x = i;
+                        lpOption->tMergeForm[aIndex].y = y;
+                        //debug("[%d,%d] [%d,%d]",x,y,i,y);
+                    }
                     S = &map[i][y];
                     GameBlockUnite(F,S);
                 }
@@ -230,6 +238,14 @@ int GameDirKey(LPOPTION lpOption,int dir){
                 int *S = NULL;
 
                 for(int i=y+1;i<w;i++){
+                    if(map[x][i] != 0 && (map[x][y]==0 || map[x][i]==map[x][y])){
+                        aIndex++;
+                        lpOption->tMergeTo[aIndex].x = x;
+                        lpOption->tMergeTo[aIndex].y = y;
+                        lpOption->tMergeForm[aIndex].x = x;
+                        lpOption->tMergeForm[aIndex].y = i;
+                        //debug("[%d,%d] [%d,%d]",x,y,x,i);
+                    }
                     S = &map[x][i];
                     GameBlockUnite(F,S);
                 }
@@ -243,6 +259,14 @@ int GameDirKey(LPOPTION lpOption,int dir){
                 int *S = NULL;
 
                 for(int i=y-1;i>=0;i--){
+                    if(map[x][i] != 0 && (map[x][y]==0 || map[x][i]==map[x][y])){
+                        aIndex++;
+                        lpOption->tMergeTo[aIndex].x = x;
+                        lpOption->tMergeTo[aIndex].y = y;
+                        lpOption->tMergeForm[aIndex].x = x;
+                        lpOption->tMergeForm[aIndex].y = i;
+                        //debug("[%d,%d] [%d,%d]",x,y,x,i);
+                    }
                     S = &map[x][i];
                     GameBlockUnite(F,S);
                 }
@@ -252,11 +276,17 @@ int GameDirKey(LPOPTION lpOption,int dir){
     }
 
     lpOption->iAnimationIndex = aIndex;
+    debug("aIndex %d",aIndex+1);
 
     if(fMoved){
         CreatOneTile(lpOption);
         lpOption->nStep++;
         if(lpOption->fSound){
+            
+            if(lpOption->iCurAI!=0){
+                if(lpOption->iAISleep < 300)return fMoved;
+            }
+
             if(fMerge){
                 //debug("playsound");
                 PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
@@ -355,7 +385,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     lpOption->iLevel    = h-3;
     lpOption->nCurScore = 0;
     lpOption->nStep     = 0;
-    lpOption->iCurAI    = -1;
+    lpOption->iCurAI    = 0;
     lpOption->iGameState = GS_RUNNING;
 
     GameSetWindow(lpOption);

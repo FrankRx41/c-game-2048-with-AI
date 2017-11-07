@@ -86,7 +86,7 @@ int __stdcall WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR szCmdLin
     wcex.lpfnWndProc    = WinProc;
     wcex.lpszClassName  = CLASSNAME;
     wcex.lpszMenuName   = CLASSNAME;
-    wcex.style          = CS_OWNDC;
+    wcex.style          = 0;
     wcex.hIcon          = LoadIcon(hInstance,CLASSNAME);
     RegisterClassEx(&wcex);
 

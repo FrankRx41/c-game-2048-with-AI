@@ -75,7 +75,7 @@ int PlayGame(int ai){
 }
 
 #define MAX_HIGH_SCORE  15
-#define TOTAL_RUN       100
+#define TOTAL_RUN       10000
 
 int ShowStatist(int *v){
     forp(i,MAX_HIGH_SCORE){

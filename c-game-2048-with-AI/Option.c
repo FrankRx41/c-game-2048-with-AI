@@ -20,6 +20,8 @@ int PrintOption(LPOPTION lpOption){
     //}
     //debug("BgColor:0x%X",lpOption->nBgColor);
     debug("FontName:%s   FontSize:%d\n",lpOption->hFontName,lpOption->iFontSize);
+    debug("Animation sleep:%d\n",lpOption->iAnimationSpeed);
+    debug("AI: %d AI sleep:%d\n",lpOption->iCurAI,lpOption->iAISleep);
     debug("--------------------Option--------------------");
     return lpOption->iGameState;
 }
