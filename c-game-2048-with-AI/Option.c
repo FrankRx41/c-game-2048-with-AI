@@ -223,7 +223,7 @@ static int ReadAndSaveOption(LPOPTION lpOption){
     OptionDec("Suggestion", &lpOption->fSuggestion,     0);
     OptionDec("GaryMode",   &lpOption->fGaryMode,       0);
     OptionDec("Animation",  &lpOption->fAnimation,      1);
-    OptionDec("AnimationSpeed",     &lpOption->iAnimationSpeed,     10);
+    //OptionDec("AnimationSpeed",     &lpOption->iAnimationSpeed,     10);
 
     OptionDec("AISleepTime",&lpOption->iAISleep,        300);
 

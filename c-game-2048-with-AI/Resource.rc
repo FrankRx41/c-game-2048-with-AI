@@ -11,13 +11,14 @@ PAUSESOUND      WAVE    "2.wav"
 BEGIN
     POPUP "&Game"
     BEGIN
-        POPUP "&New"
-        BEGIN
-            MENUITEM "&3 * 4\tAlt+1"   MENU_NEW_3
-            MENUITEM "&4 * 4\tAlt+2"   MENU_NEW_4
-            MENUITEM "&5 * 4\tAlt+3"   MENU_NEW_5
-            //MENUITEM "&Customize"       MENU_NEW_CUSTOMIZE
-        END
+        //POPUP "&New"
+        //BEGIN
+        //    MENUITEM "&3 * 4\tAlt+1"   MENU_NEW_3
+        //    MENUITEM "&4 * 4\tAlt+2"   MENU_NEW_4
+        //    MENUITEM "&5 * 4\tAlt+3"   MENU_NEW_5
+        //    //MENUITEM "&Customize"       MENU_NEW_CUSTOMIZE
+        //END
+        MENUITEM "&New\tCtrl+N"         MENU_NEW_4
         MENUITEM "&Save\tCtrl+S"        MENU_GAME_SAVE
         MENUITEM "&Load\tCtrl+L"        MENU_GAME_LOAD
         MENUITEM "&Pause\tSpace"        MENU_GAME_PAUSE
@@ -27,7 +28,7 @@ BEGIN
             MENUITEM "&AI1 random\tF1"      MENU_AI_1
             MENUITEM "&AI2 stupid AI\tF2"   MENU_AI_2
             MENUITEM "&AI3 maxblank\tF3"    MENU_AI_3
-            MENUITEM "&AI4 eve's AI\tF4"    MENU_AI_4
+            MENUITEM "&AI4 nneonneo\tF4"    MENU_AI_4
             MENUITEM "&AI5 U-R-D-L\tF5"     MENU_AI_5
         END
         MENUITEM SEPARATOR
@@ -58,6 +59,7 @@ BEGIN
     VK_F5,  MENU_AI_5,      VIRTKEY,    NOINVERT
     "^S",   MENU_GAME_SAVE, ASCII,      NOINVERT
     "^L",   MENU_GAME_LOAD, ASCII,      NOINVERT
+    "^N",   MENU_NEW_4,     ASCII,      NOINVERT
     "1",    MENU_NEW_3,     ASCII,      ALT,NOINVERT
     "2",    MENU_NEW_4,     ASCII,      ALT,NOINVERT
     "3",    MENU_NEW_5,     ASCII,      ALT,NOINVERT

@@ -296,11 +296,11 @@ static int DrawTilesMerge(LPOPTION lpOption,TILE from[],TILE to[],int index,floa
     }
 }
 
+static float deep = 1;
 int DrawAnimation(LPOPTION lpOption,HDC srchdc){
     int cxClient = lpOption->cxClient,cyClient = lpOption->cyClient;
     HDC hdc;
     HBITMAP hBmp;
-    static float deep = 1;
 
     KillTimer(lpOption->hWnd,TIMER_ANIMATION);
 
@@ -390,7 +390,7 @@ int WinDraw(LPOPTION lpOption,HDC srchdc){
         //deep = 1;
         //DrawAnimation(lpOption,hdc);
         //DrawAnimation(lpOption,srchdc);
-        if(!(lpOption->iCurAI != 0 && lpOption->iAISleep < 300)){
+        if(!(lpOption->iCurAI != 0 && lpOption->iAISleep < 200)){
             SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
         }
     }

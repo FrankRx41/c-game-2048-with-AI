@@ -147,7 +147,7 @@ static int CreatOneTile(LPOPTION lpOption){
     debug("create new (%d) in [%d,%d]",v,x,y);
 
     // old up score rule
-    lpOption->nCurScore += v;
+    //lpOption->nCurScore += v;
     
     GameWatchMap(lpOption);
 
@@ -172,7 +172,7 @@ static int CreatOneTile(LPOPTION lpOption){
                                     fMoved = 1;             \
                                     fMerge = 1;             \
                                     /* new up score rule */ \
-                                    /*lpOption->nCurScore += 1<<*F;*/   \
+                                    lpOption->nCurScore += 1<<*F;   \
                                     break;                  \
                                 }                           \
                                 else break;                 \
@@ -282,17 +282,14 @@ int GameDirKey(LPOPTION lpOption,int dir){
         CreatOneTile(lpOption);
         lpOption->nStep++;
         if(lpOption->fSound){
-            
-            if(lpOption->iCurAI!=0){
-                if(lpOption->iAISleep < 300)return fMoved;
-            }
-
+            if(!(lpOption->iCurAI != 0 && lpOption->iAISleep < 200)){
             if(fMerge){
                 //debug("playsound");
                 PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
             }else{
                 //PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
                 PlaySound(TEXT("CREATSOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
+            }
             }
         }
     }
@@ -392,6 +389,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     GameSetMap(lpOption);
 
     // animation
+    lpOption->iAnimationSpeed = 10;
     lpOption->tLast.x = -1;
     lpOption->tLast.y = -1;
     lpOption->iAnimationIndex   = -1;
