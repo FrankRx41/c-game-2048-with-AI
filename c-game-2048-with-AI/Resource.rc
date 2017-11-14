@@ -22,6 +22,40 @@ BEGIN
         MENUITEM "&Save\tCtrl+S"        MENU_GAME_SAVE
         MENUITEM "&Load\tCtrl+L"        MENU_GAME_LOAD
         MENUITEM "&Pause\tSpace"        MENU_GAME_PAUSE
+        POPUP "&Final Phase"
+        BEGIN
+            MENUITEM "1"                MENU_FINAL_PHASE_1
+            MENUITEM "2"                MENU_FINAL_PHASE_2
+#ifdef DEBUG
+            MENUITEM "3"                MENU_FINAL_PHASE_3
+            MENUITEM "4"                MENU_FINAL_PHASE_4
+            MENUITEM "5"                MENU_FINAL_PHASE_5
+            MENUITEM "6"                MENU_FINAL_PHASE_6
+            MENUITEM "7"                MENU_FINAL_PHASE_7
+            MENUITEM "8"                MENU_FINAL_PHASE_8
+            MENUITEM "9"                MENU_FINAL_PHASE_9
+            MENUITEM "10"               MENU_FINAL_PHASE_10
+            MENUITEM "11"               MENU_FINAL_PHASE_11
+            MENUITEM "12"               MENU_FINAL_PHASE_12
+            MENUITEM "13"               MENU_FINAL_PHASE_13
+            MENUITEM "14"               MENU_FINAL_PHASE_14
+            MENUITEM "15"               MENU_FINAL_PHASE_15
+            MENUITEM "16"               MENU_FINAL_PHASE_16
+            MENUITEM "17"               MENU_FINAL_PHASE_17
+            MENUITEM "18"               MENU_FINAL_PHASE_18
+            MENUITEM "19"               MENU_FINAL_PHASE_19
+            MENUITEM "20"               MENU_FINAL_PHASE_20
+            MENUITEM "21"               MENU_FINAL_PHASE_21
+            MENUITEM "22"               MENU_FINAL_PHASE_22
+            MENUITEM "23"               MENU_FINAL_PHASE_23
+            MENUITEM "24"               MENU_FINAL_PHASE_24
+            MENUITEM "25"               MENU_FINAL_PHASE_25
+            MENUITEM "26"               MENU_FINAL_PHASE_26
+            MENUITEM "27"               MENU_FINAL_PHASE_27
+            MENUITEM "28"               MENU_FINAL_PHASE_28
+            MENUITEM "29"               MENU_FINAL_PHASE_29
+#endif
+        END
         MENUITEM SEPARATOR
         POPUP "A&I"
         BEGIN
@@ -30,6 +64,7 @@ BEGIN
             MENUITEM "&AI3 maxblank\tF3"    MENU_AI_3
             MENUITEM "&AI4 nneonneo\tF4"    MENU_AI_4
             MENUITEM "&AI5 U-R-D-L\tF5"     MENU_AI_5
+            MENUITEM "&AI6 \tF5"            MENU_AI_6
         END
         MENUITEM SEPARATOR
         MENUITEM "S&ound"               MENU_OPTION_SOUND
@@ -57,6 +92,7 @@ BEGIN
     VK_F3,  MENU_AI_3,      VIRTKEY,    NOINVERT
     VK_F4,  MENU_AI_4,      VIRTKEY,    NOINVERT
     VK_F5,  MENU_AI_5,      VIRTKEY,    NOINVERT
+    VK_F6,  MENU_AI_6,      VIRTKEY,    NOINVERT
     "^S",   MENU_GAME_SAVE, ASCII,      NOINVERT
     "^L",   MENU_GAME_LOAD, ASCII,      NOINVERT
     "^N",   MENU_NEW_4,     ASCII,      NOINVERT

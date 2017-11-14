@@ -79,8 +79,8 @@ typedef struct OPTION{
 
     // animation
     TILE    tLast;
-    TILE    tMergeForm[10];
-    TILE    tMergeTo[10];
+    TILE    tMergeForm[20];
+    TILE    tMergeTo[20];
     int     iAnimationIndex;
     int     iAnimationSpeed;
 

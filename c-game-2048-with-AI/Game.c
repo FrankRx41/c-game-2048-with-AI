@@ -12,9 +12,23 @@
 int GameWatchMap(LPOPTION lpOption){
 #ifdef _DEBUG
     int (*map)[5] = lpOption->mMap;
-    for(int y=0;y<lpOption->nHeight;y++)
+    for(int x=0;x<lpOption->nHeight;x++)
     {
-        debug("[  %-4.d %-4.d %-4.d %-4.d]",map[y][0],map[y][1],map[y][2],map[y][3]);
+        printf("[  ");
+        for(int y=0;y<lpOption->nWidth;y++)
+        {
+            if(x==lpOption->tLast.x && y==lpOption->tLast.y){
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x02);
+            }
+            //for(int i=0;i<10;i++){
+            //    if(x==lpOption->tMergeTo[i].x && y==lpOption->tMergeTo[i].y && map[x][y]!=0){
+            //        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x01);
+            //    }
+            //}
+            printf("%-4.d ",map[x][y]);
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x07);
+        }
+        printf("]\n");
     }
 #endif
     return 0;
@@ -38,6 +52,7 @@ int GameSave(LPOPTION lpOption){
 }
 
 int GameLoad(LPOPTION lpOption){
+    GameInit(lpOption,4,4);
     FILE * fp = fopen(lpOption->sSaveDate,"rb");
     if(!fp){
         ErrorMsg("Read Save File Error!");
@@ -144,7 +159,7 @@ static int CreatOneTile(LPOPTION lpOption){
     map[x][y] = v;
     lpOption->tLast.x = x;
     lpOption->tLast.y = y;
-    debug("create new (%d) in [%d,%d]",v,x,y);
+    //debug("create new (%d) in [%d,%d]",v,x,y);
 
     // old up score rule
     //lpOption->nCurScore += v;
@@ -276,7 +291,7 @@ int GameDirKey(LPOPTION lpOption,int dir){
     }
 
     lpOption->iAnimationIndex = aIndex;
-    debug("aIndex %d",aIndex+1);
+    //debug("aIndex %d",aIndex+1);
 
     if(fMoved){
         CreatOneTile(lpOption);
@@ -375,12 +390,12 @@ static int GameSetMap(LPOPTION lpOption){
 }
 
 int GameInit(LPOPTION lpOption,int w,int h){
-    debug("game start %d * %d",w,h);
+    //debug("game start %d * %d",w,h);
 
     lpOption->nWidth    = w;
     lpOption->nHeight   = h;
-    lpOption->iLevel    = h-3;
     lpOption->nCurScore = 0;
+    lpOption->iLevel    = h-3;
     lpOption->nStep     = 0;
     lpOption->iCurAI    = 0;
     lpOption->iGameState = GS_RUNNING;
@@ -416,5 +431,208 @@ int GameOver(LPOPTION lpOption){
         SaveOption(lpOption);
     }
     debug("--------------------over--------------------");
+    return 1;
+}
+
+int GameLoadPhase(LPOPTION lpOption,int phase){
+    GameInit(lpOption,4,4);
+
+    int w = lpOption->nWidth = 4;
+    int h = lpOption->nHeight = 4;
+    lpOption->nCurScore = 0;
+    lpOption->iLevel = 1;
+    lpOption->nStep = 0;
+    lpOption->iRandseek = 1024;
+
+    static int map[29][4][4] = {
+        // the final phase of game 
+        {
+            11, 3,  5,  3,
+            10, 6,  3,  1,
+            9,  8,  5,  4,
+            1,  1,  2,  0,
+        },
+        {
+            6,  4,  4,  2,
+            8,  7,  6,  1,
+            10, 8,  4,  0,
+            11, 5,  1,  1,
+        },
+        // test board
+        {
+            3,  2,  0,  0,
+            3,  2,  1,  2,
+            2,  1,  0,  0,
+            2,  0,  0,  0,
+        },
+        {
+            4,  3,  3,  1,
+            3,  2,  1,  0,
+            1,  0,  0,  0,
+            0,  0,  0,  0,
+        },
+        {
+            0,  0,  2,  0,
+            1,  0,  0,  0,
+            2,  1,  2,  0,
+            5,  2,  1,  0,
+        },
+        {
+            0,  0,  0,  1,
+            0,  0,  2,  3,
+            0,  0,  1,  2,
+            0,  3,  7,  8,
+        },
+        {
+            0,  0,  0,  1,
+            3,  1,  0,  0,
+            5,  2,  0,  0,
+            7,  1,  3,  2,
+        },
+        {
+            10, 7,  7,  3,
+            0,  0,  1,  4,
+            0,  0,  0,  0,
+            0,  0,  0,  0,
+        },
+        {
+            10, 8,  7,  6,
+            5,  6,  5,  2,
+            3,  2,  1,  0,
+            2,  1,  0,  0,
+        },
+        {
+            10, 9,  8,  6,
+            5,  6,  3,  2,
+            4,  1,  2,  0,
+            2,  2,  0,  0,
+        },
+        {
+            10, 9,  8,  2,
+            3,  5,  3,  0,
+            1,  3,  0,  0,
+            2,  1,  0,  0,
+        },
+        {
+            5,  4,  2,  0,
+            4,  3,  0,  0,
+            3,  0,  0,  0,
+            1,  0,  0,  0,
+        },
+        {
+            7,  4,  3,  0,
+            5,  3,  2,  0,
+            2,  0,  0,  0,
+            1,  0,  0,  0,
+        },
+        {
+            2,  2,  4,  5,
+            0,  1,  3,  3,
+            0,  0,  0,  1,
+            0,  0,  0,  0,
+        },
+        {
+            0,  0,  0,  0,
+            2,  0,  0,  0,
+            4,  2,  0,  0,
+            6,  3,  2,  1,
+        },
+        {
+            6,  1,  0,  0,
+            5,  3,  0,  0,
+            5,  0,  0,  0,
+            2,  3,  2,  1,
+        },
+        {
+            0,  3,  6,  9,
+            0,  1,  3,  4,
+            0,  0,  2,  3,
+            0,  0,  0,  1,
+        },
+        {
+            2,  4,  8,  9,
+            0,  3,  5,  7,
+            0,  1,  3,  5,
+            1,  0,  0,  3,
+        },
+        {
+            3,  3,  9,  9,
+            4,  7,  0,  1,
+            0,  1,  1,  0,
+            0,  0,  0,  0,
+        },
+        {
+            5,  2,  0,  0,
+            5,  3,  0,  0,
+            1,  3,  0,  0,
+            2,  1,  0,  0,
+        },
+        {
+            0,  0,  1,  1,
+            0,  2,  3,  7,
+            0,  0,  4,  7,
+            1,  3,  1,  10,
+        },
+        {
+            5,  1,  1,  2,
+            0,  2,  2,  4,
+            0,  6,  5,  8,
+            2,  0,  9,  10,
+        },
+        {
+            1,  3,  4,  5,
+            0,  0,  3,  7,
+            0,  0,  2,  7,
+            0,  0,  1,  8,
+        },
+        {
+            5,  3,  1,  0,
+            7,  6,  2,  1,
+            8,  3,  4,  3,
+            11, 2,  1,  2,
+        },
+        {
+            10, 8,  6,  1,
+            8,  7,  5,  2,
+            7,  6,  3,  3,
+            5,  3,  1,  1,
+        },
+        {
+            9,  5,  2,  0,
+            3,  2,  4,  0,
+            1,  4,  0,  0,
+            1,  2,  0,  1,
+        },
+        {
+            9,  4,  3,  2,
+            5,  4,  3,  2,
+            1,  4,  3,  2,
+            1,  5,  2,  1,
+        },
+        {
+            1,  0,  0,  0,
+            0,  0,  0,  2,
+            2,  6,  3,  2,
+            8,  4,  4,  2,
+        },
+        {
+            0,  0,  0,  0,
+            0,  0,  0,  0,
+            0,  0,  0,  0,
+            0,  0,  0,  0,
+        },
+    };
+    lpOption->iAISleep = 300;
+    memset(lpOption->mMap,0,sizeof(lpOption->mMap));
+    forp(x,h)forp(y,w){
+        lpOption->mMap[x][y] = map[phase][x][y];
+    }
+
+
+    // reset window if need
+    GameSetWindow(lpOption,lpOption->nWidth,lpOption->nHeight);
+
+    GameWatchMap(lpOption);
+    lpOption->iGameState = GS_RUNNING;
     return 1;
 }

@@ -3,7 +3,7 @@
 #include "AI.h"
 
 int AI3(int map[5][5],int w,int h){
-    debug("--------------------AI--------------------");
+    //debug("--------------------AI--------------------");
     // min blank
     int x[5] = {0,0,0,0,0};
     int map2[5][5];
@@ -23,10 +23,10 @@ int AI3(int map[5][5],int w,int h){
             maxpoint = x[i];
             dir = i;
         }
-        debug("x[%d] get %d points",i,x[i]);
+        //debug("x[%d] get %d points",i,x[i]);
     }
-    debug("--------------------AI--------------------");
-    return AIDebugPrintDir("",dir);
+    //debug("--------------------AI--------------------");
+    return AIDebugPrintDir("Goto",dir);
 }
 
 

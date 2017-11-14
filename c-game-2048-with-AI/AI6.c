@@ -1,7 +1,7 @@
-#include <assert.h>
+﻿#include <assert.h>
 #include "Macro.h"
 #include "Game.h"
-#include "WeightTable2.h"
+#include "WeightTable6.h"
 #include "AI.h"
 
 #define AICheckInRegion(x,h)        ((x)<(h) && (x)>=0)
@@ -34,6 +34,10 @@ static int AIMax(int a,int b){
     return a>b?a:b;
 }
 
+static int AIMin(int a,int b){
+    return a<b?a:b;
+}
+
 static int AIIsHaveNum(int (*map)[5],int w,int h,int num){
     forp(x,h)forp(y,w){
         if(map[x][y] == num)return 1;
@@ -51,11 +55,11 @@ static int AIFindMaxNum(const int (*map)[5],int w,int h){
     return max;
 }
 
-static int AIFindALLNumXY(const int(*map)[5],int w,int h,int *px,int *py,int max){
+static int AIFindALLNumXY(const int(*map)[5],int w,int h,int *px,int *py,int num){
     int i = 0;
     forp(x,h)forp(y,w){
-        if(map[x][y] == max){
-            max = map[x][y];
+        if(map[x][y] == num){
+            num = map[x][y];
             px[i] = x;
             py[i] = y;
             i++;
@@ -85,7 +89,7 @@ static int AICheckBigNumInCorner(int (*map)[5],int w,int h){
             return max;
         }
     }
-    return -max;
+    return 0;
 }
 
 static int AICheckAllCornerValue(int(*map)[5],int w,int h){
@@ -297,11 +301,33 @@ static int AICheckAllNeighbor(const int(*map)[5],int w,int h){
     int sum = 0;
     forp(x,h)forp(y,w){
         if(map[x][y]!=0 /*&& map[x][y]>2*/){
-            int v =AICheckOneNeighbor(map,w,h,x,y); 
+            int v = AICheckOneNeighbor(map,w,h,x,y); 
             sum += v;
             //if(v)debug("[%d,%d]",x,y);
         }
     }
+    //debug("-");
+    return sum;
+}
+
+static int AICheckAllNeighborNum_helper(const int(*map)[5],int w,int h,int x,int y){
+    int sum = 0;
+    sum += (AICheckInRegion(x-1,h) && map[x-1][y] == map[x][y]) ? 1 : 0;
+    sum += (AICheckInRegion(x+1,h) && map[x+1][y] == map[x][y]) ? 1 : 0;
+    sum += (AICheckInRegion(y-1,w) && map[x][y-1] == map[x][y]) ? 1 : 0;
+    sum += (AICheckInRegion(y+1,w) && map[x][y+1] == map[x][y]) ? 1 : 0;
+    return sum>0 ? 1 : 0;
+}
+static int AICheckAllNeighborNum(const int(*map)[5],int w,int h){
+    int sum = 0;
+    forp(x,h)forp(y,w){
+        if(map[x][y]!=0 /*&& map[x][y]>2*/){
+            int v = AICheckAllNeighborNum_helper(map,w,h,x,y);
+            sum += v;
+            //if(v)debug("[%d,%d]",x,y);
+        }
+    }
+    //debug("-");
     return sum;
 }
 
@@ -953,46 +979,232 @@ static float AICheckDieEnd(const int(*map)[5],int w,int h){
     return -v;
 }
 
+static int AICheckDieNum(const int(*map)[5],int w,int h){
+    int max = AIFindMaxNum(map,w,h);
+    int sum = 0;
+    int board[16] = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,-2,-1};
+    int finder[16] = {0};
+    AICheckALLBoard(x,y,w,h){
+        forp(k,16){
+            if(map[x][y] == board[k]){
+                if(finder[k] > (max/2-finder[k])){
+                    //debug("[%d,%d]",x,y);
+                    int fNear = 0;
+                    int fSim  = 0;
+                    AICheckAround(x,y,w,h){
+                        if(map[x][y] == map[x+i][y+j]){
+                            fNear = 1;
+                        }
+                        if(map[x][y] == map[x+i][y+j]-1){
+                            fSim = 1;
+                        }
+                    }
+                    if(!fNear){
+                        sum += (max-board[k])+finder[k];
+                        finder[k] += 1;
+                    }
+                    if(fSim){
+                        //sum += board[k]-1;
+                    }
+                }
+                else{
+                    finder[k] += 1;
+                }
+            }
+        }
+    }
+    //debug("-%d",sum);
+    return -sum;
+}
+
+/*******************************************************************************
+如果發生了卡位的現象，則扣分
+*******************************************************************************/
+
+static float AIBigBlock(const int(*map)[5],int w,int h){
+    int sum = 0;
+
+    int max = AIFindMaxNum(map,w,h);
+    int X[20],Y[20];
+    int len = 0;
+    int blank = AICheckBlank(map,w,h);
+
+    while(len < (16-blank)/2) {
+        if(max < 3)break;
+        len += AIFindALLNumXY(map,w,h,&X[len],&Y[len],max--);
+    }
+
+    forp(i,len){
+        int x = X[i],y = Y[i];
+        if(AICheckInRegionXY(x-1,y,w,h) && AICheckInRegionXY(x+1,y,w,h)){
+            int one = -1,two = -1;
+            int this = map[x][y];
+            
+            if(map[x-1][y]<map[x][y] && map[x+1][y]<map[x][y]){
+                one = map[x+1][y];
+                two = map[x-1][y];
+            }
+            elif(AICheckInRegionXY(x-2,y,w,h) && map[x-1][y]==map[x][y] && map[x-2][y]<map[x][y] && map[x+1][y]<map[x][y]){
+                one = map[x+1][y];
+                one = map[x-2][y];
+            }
+            elif(AICheckInRegionXY(x+2,y,w,h) && map[x+1][y]==map[x][y] && map[x+2][y]<map[x][y] && map[x-1][y]<map[x][y]){
+                one = map[x+2][y];
+                two = map[x-1][y];
+            }
+
+            if(one != -1 && two != -1){
+                int fBlock = 0;
+                //fBlock = (this-one > this/2) ? this : this-one + (this-two > this/2) ? this : this-two;
+                fBlock = this*2 - one - two;
+                //fBlock *= 1 + (this-max > max/2) + (this==max);
+                sum -= fBlock;
+                //debug("[%d,%d]~%d",x,y,this*2 - one - two);
+            }
+        }
+        if(AICheckInRegionXY(x,y-1,w,h) && AICheckInRegionXY(x,y+1,w,h)){
+            int one = -1,two = -1;
+            int this = map[x][y];
+
+            if(map[x][y-1]<map[x][y] && map[x][y+1]<map[x][y]){
+                one = map[x][y+1];
+                two = map[x][y-1];
+            }
+            elif(AICheckInRegionXY(x,y-2,w,h) && map[x][y-1]==map[x][y] && map[x][y-2]<map[x][y] && map[x][y+1]<map[x][y]){
+                one = map[x][y+1];
+                two = map[x][y-2];
+            }
+            elif(AICheckInRegionXY(x,y+2,w,h) && map[x][y+1]==map[x][y] && map[x][y+2]<map[x][y] && map[x][y-1]<map[x][y]){
+                one = map[x][y+2];
+                two = map[x][y-1];
+            }
+
+            if(one != -1 && two != -1){
+                int fBlock = 0;
+                //fBlock = (this-one > this/2) ? this : this-one + (this-two > this/2) ? this : this-two;
+                fBlock = this*2 - one - two;
+                //fBlock *= (this - max > max/2) ?  2 : 1;
+                //fBlock *= 1 + (this-max > max/2) + (this==max);
+                sum -= fBlock;
+                //debug("[%d,%d]~%d",x,y,this*2 - one - two);
+            }
+        }
+    }
+    //debug("-");
+    return sum;
+}
+/*
 static float AIBigBlock(const int(*map)[5],int w,int h){
     float sum = 0;
     int max = AIFindMaxNum(map,w,h);
     AICheckALLBoard(x,y,w,h){
         if(map[x][y] != 0){
             int fBlock = 0;
-            if(AICheckInRegionXY(x-1,y,w,h) && AICheckInRegionXY(x+1,y,w,h) && 
-               map[x-1][y]<map[x][y] && map[x+1][y]<map[x][y] &&
-               map[x-1][y]!=0 && map[x+1][y]!=0){
-                fBlock += map[x-1][y] + map[x+1][y];
-            }
-            if(AICheckInRegionXY(x,y-1,w,h) && AICheckInRegionXY(x,y+1,w,h) &&
-               map[x][y-1]<map[x][y] && map[x][y+1]<map[x][y] &&
-               map[x][y-1]!=0 && map[x][y+1]!=0){
-                fBlock += map[x][y-1] + map[x][y+1];
+            if(AICheckInRegionXY(x-1,y,w,h) && AICheckInRegionXY(x+1,y,w,h)){
+                int one = -1,two = -1;
+                int this = map[x][y];
+                //map[x-1][y]!=0 && map[x+1][y]!=0
+                if(map[x-1][y]<map[x][y]-1 && map[x+1][y]<map[x][y]-1){
+                    one = map[x+1][y];
+                    two = map[x-1][y];
+                }
+                if(AICheckInRegionXY(x-2,y,w,h) && map[x-1][y]==map[x][y] && map[x-2][y]<map[x][y]-1 && map[x+1][y]<map[x][y]-1){
+                    one = map[x+1][y];
+                    one = map[x-2][y];
+                }
+                if(AICheckInRegionXY(x+2,y,w,h) && map[x+1][y]==map[x][y] && map[x+2][y]<map[x][y]-1 && map[x-1][y]<map[x][y]-1){
+                    one = map[x+2][y];
+                    two = map[x-1][y];
+                }
+                if(one != -1 && two != -1){
+                    fBlock = this*2 - one - two;
+                    fBlock *= map[x][y] / 5 + 1;
+                    //fBlock += this - one - two;
+                    //debug("BLOCK:%d %d",fBlock,this*2 - one - two);
+                    sum -= fBlock;
+                    //sum -= this*2 - one - two;
+                }
             }
 
+            if(AICheckInRegionXY(x,y-1,w,h) && AICheckInRegionXY(x,y+1,w,h)){
+                int one = -1,two = -1;
+                int this = map[x][y];
+                //map[x][y-1]!=0 && map[x][y+1]!=0
+                if(map[x][y-1]<map[x][y] && map[x][y+1]<map[x][y]-1){
+                    one = map[x][y+1];
+                    two = map[x][y-1];
+                }
+                if(AICheckInRegionXY(x,y-2,w,h) && map[x][y-1]==map[x][y] && map[x][y-2]<map[x][y]-1 && map[x][y+1]<map[x][y]-1){
+                    one = map[x][y+1];
+                    two = map[x][y-2];
+                }
+                if(AICheckInRegionXY(x,y+2,w,h) && map[x][y+1]==map[x][y] && map[x][y+2]<map[x][y]-1 && map[x][y-1]<map[x][y]-1){
+                    one = map[x][y+2];
+                    two = map[x][y-1];
+                }
+                if(one != -1 && two != -1){
+                    fBlock = this*2 - one - two;
+                    fBlock *= map[x][y] / 5 + 1;
+                    //fBlock += this;
+                    //fBlock += this - one - two;
+                    sum -= fBlock;
+                    //sum -= this*2 - one - two;
+                }
+            }
+
+
             if(fBlock){
-                sum += fBlock;
+                
+            }
+            else{
+                //sum += map[x][y];
             }
 
         }
     }
-    return -sum/2;
+    return sum;
+}*/
+
+static int AICheckSmallNumAround_helper(const int(*map)[5],int w,int h,int x,int y){
+    int sum = 0;
+    int res = 4;
+    int tmp = 4;
+    int v   = map[x][y];
+
+    for(int i=-4;i<=4;i++){
+        if(i==0)continue;
+        int w = map[x+i][y];
+        if(w==v || w==v-1 || w==v-2){
+            tmp = i>0 ? i : -i;
+        }
+    }
+    for(int j=-4;j<=4;j++){
+        if(j==0)continue;
+        int w = map[x][y+j];
+        if(w==v || w==v-1 || w==v-2){
+            res = j>0 ? j : -j;
+        }
+    }
+
+    return res>tmp ? tmp : res;
 }
 
+/*******************************************************************************
+找小數的周圍，如果該小數位置不好，則扣分
+*******************************************************************************/
 static int AICheckSmallNumAround(const int(*map)[5],int w,int h){
     int sum = 0;
     int max = AIFindMaxNum(map,w,h);
     //debug("%s:(%d)",__FUNCTION__,max/2);
     AICheckALLBoard(x,y,w,h){
-        if(map[x][y] == 2 || map[x][y] == 4){
+        if(map[x][y] == 1 /*|| map[x][y] == 2*/){
             int fHaveBlank = 0;
             AICheckAround(x,y,w,h){
-                if(map[x+i][y+j]==0 || map[x+i][y+j]==map[x][y] || 
-                   map[x+i][y+j]==map[x][y]-1 || map[x+i][y+j]==map[x][y]-2){
+                // 周圍有空白
+                if(map[x+i][y+j]==map[x][y] || map[x+i][y+j]==map[x][y]-1 || map[x+i][y+j]==map[x][y]-2){
                     fHaveBlank = 1;
                 }
             }
-            //debug("[%d,%d] %d",x,y,fHaveBlank);
 
             if(!fHaveBlank){
                 int maxnum = 0;
@@ -1001,8 +1213,10 @@ static int AICheckSmallNumAround(const int(*map)[5],int w,int h){
                         maxnum = map[x+i][y+j];
                     }
                 }
+                //debug("[%d,%d] %d",x,y,maxnum);
                 //debug("[%d,%d]%d %d",x,y,map[x][y],maxnum);
-                sum += maxnum;
+                //sum += maxnum;
+                sum += AICheckSmallNumAround_helper(map,w,h,x,y);
             }
 
         }
@@ -1011,11 +1225,193 @@ static int AICheckSmallNumAround(const int(*map)[5],int w,int h){
     return -sum;
 }
 
+/*******************************************************************************
+找一條路，讓大數之間能夠相互連結
+*******************************************************************************/
+
+static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5][5],int dir){
+    // 路徑長度獎勵
+    if(finder[x][y])return 1;
+    finder[x][y] = 1;
+
+    int sum = 0;
+    int this = map[x][y];
+
+    //for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)
+    //if(AICheckInRegionXY(x+i,y+j,w,h) && !(i==0&&j==0)){
+    int those[4] = {-1,-1,-1,-1};
+
+    //AICheckAround(x,y,w,h){
+    //    int that = map[x+i][y+j];
+    //    if(that==0)continue;
+    //    if((this == that || this == that+1) && that!=0){
+    //        sum += AIFindWay_helper(map,w,h,x+i,y+j,finder);
+    //    }
+    //}
+
+    /*those[0] = AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]<=map[x][y] && map[x-1][y]>=map[x][y]-2 ? map[x-1][y] : -1;
+    those[1] = AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]<=map[x][y] && map[x+1][y]>=map[x][y]-2 ? map[x+1][y] : -1;
+    those[2] = AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]<=map[x][y] && map[x][y-1]>=map[x][y]-2 ? map[x][y-1] : -1;
+    those[3] = AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]<=map[x][y] && map[x][y+1]>=map[x][y]-2 ? map[x][y+1] : -1;*/
+
+
+    // 找最大的數
+    //int max = -1;
+    //int dir = -1;
+    //forp(i,4){
+    //    if(max < those[i]){
+    //        max = those[i];
+    //        dir = i;
+    //    }
+    //}
+    //
+    //switch(dir){
+    //case 0:
+    //    sum += this*2 - those[0] + AIFindWay_helper(map,w,h,x-1,y,finder);
+    //    break;
+    //case 1:
+    //    sum += this*2 - those[1] + AIFindWay_helper(map,w,h,x+1,y,finder);
+    //    break;
+    //case 2:
+    //    sum += this*2 - those[2] + AIFindWay_helper(map,w,h,x,y-1,finder);
+    //    break;
+    //case 3:
+    //    sum += this*2 - those[3] + AIFindWay_helper(map,w,h,x,y+1,finder);
+    //    break;
+    //default:
+    //    break;
+    //}
+
+    those[0] = AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]<=map[x][y] && map[x-1][y]>=map[x][y]/2 && map[x-1][y]>2 ? map[x-1][y] : -1;
+    those[1] = AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]<=map[x][y] && map[x+1][y]>=map[x][y]/2 && map[x+1][y]>2 ? map[x+1][y] : -1;
+    those[2] = AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]<=map[x][y] && map[x][y-1]>=map[x][y]/2 && map[x][y-1]>2 ? map[x][y-1] : -1;
+    those[3] = AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]<=map[x][y] && map[x][y+1]>=map[x][y]/2 && map[x][y+1]>2 ? map[x][y+1] : -1;
+
+    if(dir == 0){
+
+        if(those[0] != -1)
+            those[0] = this*2 - those[0] + AIFindWay_helper(map,w,h,x-1,y,finder,dir+1);
+        if(those[1] != -1)
+            those[1] = this*2 - those[1] + AIFindWay_helper(map,w,h,x+1,y,finder,dir+1);
+        if(those[2] != -1)
+            those[2] = this*2 - those[2] + AIFindWay_helper(map,w,h,x,y-1,finder,dir+1);
+        if(those[3] != -1)
+            those[3] = this*2 - those[3] + AIFindWay_helper(map,w,h,x,y+1,finder,dir+1);
+
+        int max = 0;
+        int d = -1;
+        forp(i,4){
+            if(max < those[i]){
+                max = those[i];
+                d = i;
+            }
+        }
+        switch(d){
+        case 0:
+            finder[x-1][y] = 1;
+            break;
+        case 1:
+            finder[x+1][y] = 1;
+            break;
+        case 2:
+            finder[x][y-1] = 1;
+            break;
+        case 3:
+            finder[x][y+1] = 1;
+            break;
+        default:
+            break;
+        }
+        sum += max;
+
+    }
+    else
+    {
+        if(those[dir-1] != -1){
+            switch(dir-1){
+            case 0:
+                sum += this*2 - those[0] + AIFindWay_helper(map,w,h,x-1,y,finder,dir);
+                finder[x-1][y] = 1;
+                break;
+            case 1:
+                sum += this*2 - those[1] + AIFindWay_helper(map,w,h,x+1,y,finder,dir);
+                finder[x+1][y] = 1;
+                break;
+            case 2:
+                sum += this*2 - those[2] + AIFindWay_helper(map,w,h,x,y-1,finder,dir);
+                finder[x][y-1] = 1;
+                break;
+            case 3:
+                sum += this*2 - those[3] + AIFindWay_helper(map,w,h,x,y+1,finder,dir);
+                finder[x][y+1] = 1;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    //sum += 1;
+
+    finder[x][y] = 0;
+
+    //sum += this;
+    return sum;
+}
+
+static int AIFindWay(const int (*map)[5],int w,int h){
+    int sum = 0;
+
+    int max = AIFindMaxNum(map,w,h);
+    int X[20],Y[20];
+    int len = 0;
+
+    while(len <= 5) {
+        if(max <= 0)break;
+        len += AIFindALLNumXY(map,w,h,&X[len],&Y[len],max--);
+    }
+
+    int sums[20] = {0};
+    char finder[5][5] = {0};
+    forp(i,len){
+        sums[i] = AIFindWay_helper(map,w,h,X[i],Y[i],finder,0);
+        finder[X[i]][Y[i]] = 1;
+    }
+    forp(i,len){
+        if(sum < sums[i])
+            sum = sums[i];
+    }
+
+    //debug("sum:%d",sum);
+    /*AICheckALLBoard(x,y,w,h){
+        if(map[x][y] == 0)continue;
+        AICheckAround(x,y,w,h){
+
+        }
+    }*/
+    return sum;
+}
+
 #define _HUGE_ENUF  (1e+300)
 #define INFINITY   ((float)(_HUGE_ENUF * _HUGE_ENUF))
 #define NAN        ((float)(INFINITY * 0.0F))
 
-int AI2(int mCurMap[5][5],int w,int h){
+/*******************************************************************************
+檢測小數周圍，大數阻攔
+會改變地圖，但是會復原
+*******************************************************************************/
+int AI6_helper(int (*map)[5],int w,int h){
+/*
+    int res = 0;
+    forp(i,len){
+        if(score[i] > res){
+            res = score[i];
+        }
+    }
+    return res;*/
+}
+
+int AI6(int mCurMap[5][5],int w,int h){
     // super stupid AI
     //debug("--------------------AI--------------------");
     float x[5] = {NAN,NAN,NAN,NAN,NAN};
@@ -1023,10 +1419,10 @@ int AI2(int mCurMap[5][5],int w,int h){
     float v[50][5] = {0};
 
     int RuleUsed[] = {
-        WEIGHT_BLANK,WEIGHT_NEIGHBOR,WEIGHT_MAXNUM,WEIGHT_MERGE,
-        WEIGHT_BIG_INCORNER,WEIGHT_BIG_INSIDE,WEIGHT_DIE_END,
-        WEIGHT_BIG_WAVE,WEIGHT_BIG_BLOCK,WEIGHT_BIG_AROUND,
-        WEIGHT_SMALL_AROUND,
+        WEIGHT_BLANK,WEIGHT_MERGE,WEIGHT_NEIGHBOR,WEIGHT_NEIGHBOR_NUM,
+        
+        WEIGHT_BIG_BLOCK,
+        WEIGHT_SMALL_AROUND,WEIGHT_FIND_WAY,WEIGHT_DIE_NUM,
     };
 
     for(int dir=1;dir<=4;dir++){
@@ -1034,14 +1430,23 @@ int AI2(int mCurMap[5][5],int w,int h){
         v[WEIGHT_MERGE][dir] = AICheckIfDir(mNextMap,w,h,dir);
         if(v[WEIGHT_MERGE][dir])
         {
+
             int max = AIFindMaxNum(mNextMap,w,h);
+            int blank = AICheckBlank(mNextMap,w,h);
+            debug("blank: %d",blank);
+
             v[WEIGHT_MERGE][dir] *= WeightTable[WEIGHT_MERGE][max];
 
-            v[WEIGHT_BLANK][dir]    = AICheckBlank(mNextMap,w,h)            * WeightTable[WEIGHT_BLANK][max];
-            v[WEIGHT_NEIGHBOR][dir] = AICheckAllNeighbor(mNextMap,w,h)      * WeightTable[WEIGHT_NEIGHBOR][max];
+            v[WEIGHT_BLANK][dir]    = AICheckBlank(mNextMap,w,h)            * WeightTable[WEIGHT_BLANK][max] * 2;
+            if(blank <= 5){
+                v[WEIGHT_MERGE][dir] *= 3;
+            }else{
+                //v[WEIGHT_MERGE][dir] /= 2;
+            }
+
             v[WEIGHT_MAXNUM][dir]   = AIFindMaxNum(mNextMap,w,h)            * WeightTable[WEIGHT_MAXNUM][max];
-            v[WEIGHT_BLANK_AROUND][dir] = AICheckBlankAround(mNextMap,w,h)  * WeightTable[WEIGHT_BLANK_AROUND][max];
             v[WEIGHT_ALL_NEAR][dir] = AICheckAllNear(mNextMap,w,h)          * WeightTable[WEIGHT_ALL_NEAR][max]; 
+            v[WEIGHT_BLANK_AROUND][dir] = AICheckBlankAround(mNextMap,w,h)  * WeightTable[WEIGHT_BLANK_AROUND][max];
             v[WEIGHT_ALL_TRIANGLE][dir] = AICheckAllTriangle(mNextMap,w,h)  * WeightTable[WEIGHT_ALL_TRIANGLE][max]; 
             v[WEIGHT_ALL_AROUND][dir]   = AICheckAllAround(mNextMap,w,h)    * WeightTable[WEIGHT_ALL_AROUND][max];
             
@@ -1050,19 +1455,76 @@ int AI2(int mCurMap[5][5],int w,int h){
             v[WEIGHT_SIDE_GT_MID][dir]      = AICheckSideGTMid(mNextMap,w,h)        * WeightTable[WEIGHT_SIDE_GT_MID][max];            
             v[WEIGHT_SIDE_LT_CORNER][dir]   = AICheckSideLTCorner(mNextMap,w,h)     * WeightTable[WEIGHT_SIDE_LT_CORNER][max];            
             
-            v[WEIGHT_BIG_AROUND][dir]   = AICheckBigNumAround(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_AROUND][max];
             v[WEIGHT_BIG_INCORNER][dir] = AICheckBigNumInCorner(mNextMap,w,h)   * WeightTable[WEIGHT_BIG_INCORNER][max];
             v[WEIGHT_BIG_INSIDE][dir]   = AICheckBigNumInSide(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_INSIDE][max];
             v[WEIGHT_BIG_NEAR][dir]     = AICheckBigNear(mNextMap,w,h)          * WeightTable[WEIGHT_BIG_NEAR][max];
+            //v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h) * WeightTable[WEIGHT_BIG_BLOCK][max];
+            //v[WEIGHT_SMALL_AROUND][dir] = AICheckSmallNumAround(mNextMap,w,h)   * WeightTable[WEIGHT_SMALL_AROUND][max];
             v[WEIGHT_BIG_LINE_NEIGHBOR][dir] = AICheckBigLineNeighbor(mNextMap,w,h) * WeightTable[WEIGHT_BIG_LINE_NEIGHBOR][max];
-            v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h) * WeightTable[WEIGHT_BIG_BLOCK][max];
 
             v[WEIGHT_CORNER_VALUE][dir] = AICheckAllCornerValue(mNextMap,w,h)   * WeightTable[WEIGHT_CORNER_VALUE][max];
             v[WEIGHT_IN_BIG_SIDE][dir]  = AICheckAllInBigSide(mNextMap,w,h)     * WeightTable[WEIGHT_IN_BIG_SIDE][max];
             v[WEIGHT_WAVE][dir]         = AICheckWave(mNextMap,w,h)             * WeightTable[WEIGHT_WAVE][max];
-            v[WEIGHT_SMALL_AROUND][dir] = AICheckSmallNumAround(mNextMap,w,h)   * WeightTable[WEIGHT_SMALL_AROUND][max];
+            v[WEIGHT_FIND_WAY][dir]     = AIFindWay(mNextMap,w,h)             * WeightTable[WEIGHT_FIND_WAY][max];
 
+            //if(blank <= 1){
+            //    v[WEIGHT_NEIGHBOR][dir] = AICheckAllNeighbor(mNextMap,w,h)      * 10;
+            //}
+            //else{
+            //    v[WEIGHT_NEIGHBOR][dir] = AICheckAllNeighbor(mNextMap,w,h)      * WeightTable[WEIGHT_NEIGHBOR][max];
+            //}
+
+            int X[20],Y[20];
+            int score[50][20] = {0};
+            int len = AIFindALLNumXY(mNextMap,w,h,X,Y,0);
+            forp(i,len){
+                mNextMap[X[i]][Y[i]] = 1;
+
+                score[WEIGHT_NEIGHBOR][i]       = AICheckAllNeighbor(mNextMap,w,h)      * WeightTable[WEIGHT_NEIGHBOR][max];
+                score[WEIGHT_NEIGHBOR_NUM][i]   = AICheckAllNeighborNum(mNextMap,w,h)   * WeightTable[WEIGHT_NEIGHBOR_NUM][max];
+                score[WEIGHT_SMALL_AROUND][i]   = AICheckSmallNumAround(mNextMap,w,h)   * WeightTable[WEIGHT_SMALL_AROUND][max];
+                if(blank <= 2){
+                    score[WEIGHT_NEIGHBOR_NUM][i] *= 3;
+                    //score[WEIGHT_SMALL_AROUND][i] *= 2;
+                    //debug("score[WEIGHT_NEIGHBOR][%d]:%d",i,score[WEIGHT_NEIGHBOR][i]);
+                }else{
+                    //score[WEIGHT_NEIGHBOR_NUM][i] *= 0;
+                }
+                //score[WEIGHT_BIG_AROUND][i]     = AICheckBigNumAround(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_AROUND][max];
+
+                mNextMap[X[i]][Y[i]] = 0;
+            }
+            int res = -10000;
+            int resi = -1;
+            forp(i,len){
+                int s = score[WEIGHT_SMALL_AROUND][i] +
+                        score[WEIGHT_NEIGHBOR][i] +
+                        score[WEIGHT_NEIGHBOR_NUM][i]
+                        ;
+                if(s >= res){
+                    res = s;
+                    resi = i;
+                }
+                //debug("resi:%d res:%d score:%d",resi,res,score[WEIGHT_SMALL_AROUND][i]+score[WEIGHT_NEIGHBOR][i]);
+            }
+            v[WEIGHT_SMALL_AROUND][dir] = score[WEIGHT_SMALL_AROUND][resi];
+            //v[WEIGHT_BIG_BLOCK][dir]    = score[WEIGHT_BIG_BLOCK][resi];
+            v[WEIGHT_NEIGHBOR][dir]     = score[WEIGHT_NEIGHBOR][resi];
+            if(blank <= 5){
+                //v[WEIGHT_MERGE][dir] *= 3;
+            }
+            else{
+                v[WEIGHT_NEIGHBOR][dir] = 0;
+            }
+            v[WEIGHT_NEIGHBOR_NUM][dir] = score[WEIGHT_NEIGHBOR_NUM][resi];
+            v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h)              * WeightTable[WEIGHT_BIG_BLOCK][max];
+            v[WEIGHT_BIG_AROUND][dir]   = score[WEIGHT_BIG_AROUND][resi];
+            
             v[WEIGHT_DIE_END][dir]  = AICheckDieEnd(mNextMap,w,h)       * WeightTable[WEIGHT_DIE_END][max];
+            v[WEIGHT_DIE_NUM][dir]  = AICheckDieNum(mNextMap,w,h)       * WeightTable[WEIGHT_DIE_NUM][max];
+            if(blank < 5){
+                //v[WEIGHT_DIE_NUM][dir] = 0;
+            }
 
             v[WEIGHT_BIG_WAVE][dir] = AICheckBigWave(mNextMap,w,h) * WeightTable[WEIGHT_BIG_WAVE][max];
 
@@ -1081,7 +1543,7 @@ int AI2(int mCurMap[5][5],int w,int h){
     }
 
 #ifdef _DEBUG
-    printf("\t\t\t   �� \t   �� \t   �� \t   �� \n");
+    printf("\t\t\t   ↑ \t   ↓ \t   ← \t   → \n");
     forp(i,WEIGHT_END){
         if(i == WEIGHT_BIG_BLOCK)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x0E);
         forp(j,arraylen(RuleUsed))

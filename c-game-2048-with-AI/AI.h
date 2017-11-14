@@ -1,4 +1,4 @@
-#ifndef _AI_H_
+﻿#ifndef _AI_H_
 #define _AI_H_
 
 int AI1(int map[5][5],int w,int h);
@@ -79,17 +79,18 @@ static int AICheckIfDir(int(*map)[5],int w,int h,int dir){
 static int AIDebugPrintDir(char *str,int dir){
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x0C);
     switch(dir){
+        //
     case DIR_UP:
-        debug("AI %s: Up",str);
+        debug("AI %s: ↑",str);
         break;
     case DIR_DOWN:
-        debug("AI %s: Down",str);
+        debug("AI %s: ↓",str);
         break;
     case DIR_LEFT:
-        debug("AI %s: Left",str);
+        debug("AI %s: ←",str);
         break;
     case DIR_RIGHT:
-        debug("AI %s: Right",str);
+        debug("AI %s: →",str);
         break;
     default:
         debug("AI %s error!",str);

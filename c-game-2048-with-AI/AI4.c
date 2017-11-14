@@ -8,6 +8,7 @@
 
 #include "Macro.h"
 #include "Game.h"
+#include "AI.h"
 
 /*******************************************************************************
 AI beigin
@@ -461,13 +462,13 @@ int AI4(int map[5][5],int w,int h){
 
     board_t b = AIMaptoBoard(map);
 
-    for(int y=0;y<4;y++)
-    {
-        debug("%-4.d%-4.d%-4.d%-4.d",map[y][0],map[y][1],map[y][2],map[y][3]);
-    }
+    //for(int y=0;y<4;y++)
+    //{
+    //    debug("%-4.d%-4.d%-4.d%-4.d",map[y][0],map[y][1],map[y][2],map[y][3]);
+    //}
 
     int dir = find_best_move(b);
     dir += 1;
 
-    return dir;
+    return AIDebugPrintDir("Goto",dir);
 }

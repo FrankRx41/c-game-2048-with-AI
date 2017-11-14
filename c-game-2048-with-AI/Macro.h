@@ -19,7 +19,11 @@ extern __declspec(dllimport) int __cdecl printf(const char * _Format, ...);
 #define MAX     256
 #define strequ(s1,s2)	    (strcmp((s1),(s2))==0)
 
-#define ErrorMsg(str)       MessageBox(NULL,TEXT(str),TEXT("Error"),MB_ICONERROR|MB_OK);
+
+#define _ERROR_MSG_LINE_(str,l) MessageBox(NULL,l": "str,TEXT("Error"),MB_ICONERROR|MB_OK)                             
+#define ErrorMsg(str)           _ERROR_MSG_LINE_(str,"Error")
+
+#define elif    else if
 
 #ifndef _DEBUG
 #define debug(str,...)

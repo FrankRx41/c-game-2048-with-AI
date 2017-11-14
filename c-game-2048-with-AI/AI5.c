@@ -308,8 +308,8 @@ int AI5(int map[5][5],int w,int h)
     static int i = 0;
     i++;
     i%=4;
-    debug("(%d)",v[i]);
-    return v[i];
+    //debug("(%d)",v[i]);
+    return AIDebugPrintDir("Goto",v[i]);
 }
 
 //int AI4(int map[5][5],int w,int h){

@@ -324,7 +324,7 @@ int DrawAnimation(LPOPTION lpOption,HDC srchdc){
         hBmp2 = CreateCompatibleBitmap(srchdc,cxClient,cyClient);
         SelectObject(hdc2,hBmp2);
         BitBlt(hdc2,0,0,cxClient,cyClient,srchdc,0,0,SRCCOPY);
-        debug("DrawAnimation");
+        //debug("DrawAnimation");
     }
     else if(deep <= 0){
         BitBlt(hdc,0,0,cxClient,cyClient,hdc2,0,0,SRCCOPY);
@@ -340,7 +340,7 @@ int DrawAnimation(LPOPTION lpOption,HDC srchdc){
         lpOption->iAnimationIndex = -1;
         lpOption->tLast.x = -1;
         lpOption->tLast.y = -1;
-        debug("End DrawAnimation");
+        //debug("End DrawAnimation");
         return 0;
     }
     else{
@@ -443,6 +443,7 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
         debug("save");
         return 0;
     case MENU_GAME_LOAD:
+        KillTimer(lpOption->hWnd,TIMER_AI);
         GameLoad(lpOption);
         debug("load");
         return 1;
@@ -482,6 +483,7 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
     case MENU_AI_3:
     case MENU_AI_4:
     case MENU_AI_5:
+    case MENU_AI_6:
         wParam = LOWORD(wParam) + 1;
         if(lpOption->iGameState == GS_OVER)return 0;
 
@@ -502,6 +504,38 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
         //debug("AI: %d",LOWORD(wParam) - MENU_AI_0);
         WinCheckAIMenu(lpOption);
         return 1;
+
+    case MENU_FINAL_PHASE_1:
+    case MENU_FINAL_PHASE_2:
+    case MENU_FINAL_PHASE_3:
+    case MENU_FINAL_PHASE_4:
+    case MENU_FINAL_PHASE_5:
+    case MENU_FINAL_PHASE_6:
+    case MENU_FINAL_PHASE_7:
+    case MENU_FINAL_PHASE_8:
+    case MENU_FINAL_PHASE_9:
+    case MENU_FINAL_PHASE_10:
+    case MENU_FINAL_PHASE_11:
+    case MENU_FINAL_PHASE_12:
+    case MENU_FINAL_PHASE_13:
+    case MENU_FINAL_PHASE_14:
+    case MENU_FINAL_PHASE_15:
+    case MENU_FINAL_PHASE_16:
+    case MENU_FINAL_PHASE_17:
+    case MENU_FINAL_PHASE_18:
+    case MENU_FINAL_PHASE_19:
+    case MENU_FINAL_PHASE_20:
+    case MENU_FINAL_PHASE_21:
+    case MENU_FINAL_PHASE_22:
+    case MENU_FINAL_PHASE_23:
+    case MENU_FINAL_PHASE_24:
+    case MENU_FINAL_PHASE_25:
+    case MENU_FINAL_PHASE_26:
+    case MENU_FINAL_PHASE_27:
+    case MENU_FINAL_PHASE_28:
+    case MENU_FINAL_PHASE_29:
+        KillTimer(lpOption->hWnd,TIMER_AI);
+        return GameLoadPhase(lpOption,LOWORD(wParam) - MENU_FINAL_PHASE_1);
 
     case MENU_HELP_ABOUT:
         DialogBox(NULL,TEXT("ABOUTBOX"),lpOption->hWnd,WinAboutDlgProc);
@@ -631,6 +665,12 @@ int WinOnTimerAI(LPOPTION lpOption){
         GameDirKey(
             lpOption,
             AI5(map,lpOption->nWidth,lpOption->nHeight)
+            );
+        break;
+    case 6:
+        GameDirKey(
+            lpOption,
+            AI6(map,lpOption->nWidth,lpOption->nHeight)
             );
         break;
     default:
