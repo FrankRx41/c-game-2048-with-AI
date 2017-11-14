@@ -1025,12 +1025,13 @@ static float AIBigBlock(const int(*map)[5],int w,int h){
     int sum = 0;
 
     int max = AIFindMaxNum(map,w,h);
+    int Max = AIFindMaxNum(map,w,h);
     int X[20],Y[20];
     int len = 0;
     int blank = AICheckBlank(map,w,h);
 
     while(len < (16-blank)/2) {
-        if(max < 3)break;
+        if(max < Max/2)break;
         len += AIFindALLNumXY(map,w,h,&X[len],&Y[len],max--);
     }
 
@@ -1056,7 +1057,7 @@ static float AIBigBlock(const int(*map)[5],int w,int h){
             if(one != -1 && two != -1){
                 int fBlock = 0;
                 //fBlock = (this-one > this/2) ? this : this-one + (this-two > this/2) ? this : this-two;
-                fBlock = this*2 - one - two;
+                fBlock = this;
                 //fBlock *= 1 + (this-max > max/2) + (this==max);
                 sum -= fBlock;
                 //debug("[%d,%d]~%d",x,y,this*2 - one - two);
@@ -1082,7 +1083,7 @@ static float AIBigBlock(const int(*map)[5],int w,int h){
             if(one != -1 && two != -1){
                 int fBlock = 0;
                 //fBlock = (this-one > this/2) ? this : this-one + (this-two > this/2) ? this : this-two;
-                fBlock = this*2 - one - two;
+                fBlock = this;
                 //fBlock *= (this - max > max/2) ?  2 : 1;
                 //fBlock *= 1 + (this-max > max/2) + (this==max);
                 sum -= fBlock;
@@ -1282,21 +1283,54 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
     //    break;
     //}
 
-    those[0] = AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]<=map[x][y] && map[x-1][y]>=map[x][y]/2 && map[x-1][y]>2 ? map[x-1][y] : -1;
-    those[1] = AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]<=map[x][y] && map[x+1][y]>=map[x][y]/2 && map[x+1][y]>2 ? map[x+1][y] : -1;
-    those[2] = AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]<=map[x][y] && map[x][y-1]>=map[x][y]/2 && map[x][y-1]>2 ? map[x][y-1] : -1;
-    those[3] = AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]<=map[x][y] && map[x][y+1]>=map[x][y]/2 && map[x][y+1]>2 ? map[x][y+1] : -1;
+    int board[17] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+    int have[17] = {0};
+    AICheckALLBoard(x,y,w,h){
+        forp(k,16){
+            if(map[x][y] == board[k]){
+                have[k] += 1;
+                break;
+            }
+        }
+    }
+
+    int one = map[x][y]-1;
+    int i = 1;
+    while(1){
+        if(have[map[x][y]-i]){
+            one = map[x][y]-i;
+            break;
+        }
+        i++;
+        if(i == map[x][y]){
+            one = 0;
+            break;
+        }
+    }
+    debug("one %d",one);
+
+    those[0] = (AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]<=map[x][y] && map[x-1][y]>=one && map[x-1][y]>2) ? map[x-1][y] : -1;
+    those[1] = (AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]<=map[x][y] && map[x+1][y]>=one && map[x+1][y]>2) ? map[x+1][y] : -1;
+    those[2] = (AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]<=map[x][y] && map[x][y-1]>=one && map[x][y-1]>2) ? map[x][y-1] : -1;
+    those[3] = (AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]<=map[x][y] && map[x][y+1]>=one && map[x][y+1]>2) ? map[x][y+1] : -1;
+    
+    debug("%d %d %d %d (%d)",map[x-1][y],map[x+1][y],map[x][y-1],map[x][y+1],map[x][y]);
+    debug("%d %d %d %d (%d)",those[0],those[1],those[2],those[3],dir);
 
     if(dir == 0){
 
-        if(those[0] != -1)
-            those[0] = this*2 - those[0] + AIFindWay_helper(map,w,h,x-1,y,finder,dir+1);
-        if(those[1] != -1)
-            those[1] = this*2 - those[1] + AIFindWay_helper(map,w,h,x+1,y,finder,dir+1);
-        if(those[2] != -1)
-            those[2] = this*2 - those[2] + AIFindWay_helper(map,w,h,x,y-1,finder,dir+1);
-        if(those[3] != -1)
-            those[3] = this*2 - those[3] + AIFindWay_helper(map,w,h,x,y+1,finder,dir+1);
+        if(those[0] != -1){
+            those[0] = AIFindWay_helper(map,w,h,x-1,y,finder,1);
+        }
+        if(those[1] != -1){
+            those[1] = AIFindWay_helper(map,w,h,x+1,y,finder,2);
+        }
+        if(those[2] != -1){
+            those[2] = AIFindWay_helper(map,w,h,x,y-1,finder,3);
+        }
+        if(those[3] != -1){
+            those[3] = AIFindWay_helper(map,w,h,x,y+1,finder,4);
+        }
 
         int max = 0;
         int d = -1;
@@ -1328,22 +1362,22 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
     else
     {
         if(those[dir-1] != -1){
-            switch(dir-1){
-            case 0:
-                sum += this*2 - those[0] + AIFindWay_helper(map,w,h,x-1,y,finder,dir);
-                finder[x-1][y] = 1;
-                break;
+            switch(dir){
             case 1:
-                sum += this*2 - those[1] + AIFindWay_helper(map,w,h,x+1,y,finder,dir);
-                finder[x+1][y] = 1;
+                sum += AIFindWay_helper(map,w,h,x-1,y,finder,dir);
+                //finder[x-1][y] = 1;
                 break;
             case 2:
-                sum += this*2 - those[2] + AIFindWay_helper(map,w,h,x,y-1,finder,dir);
-                finder[x][y-1] = 1;
+                sum += AIFindWay_helper(map,w,h,x+1,y,finder,dir);
+                //finder[x+1][y] = 1;
                 break;
             case 3:
-                sum += this*2 - those[3] + AIFindWay_helper(map,w,h,x,y+1,finder,dir);
-                finder[x][y+1] = 1;
+                sum += AIFindWay_helper(map,w,h,x,y-1,finder,dir);
+                //finder[x][y-1] = 1;
+                break;
+            case 4:
+                sum += AIFindWay_helper(map,w,h,x,y+1,finder,dir);
+                //finder[x][y+1] = 1;
                 break;
             default:
                 break;
@@ -1355,7 +1389,8 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
 
     finder[x][y] = 0;
 
-    //sum += this;
+    sum += this;
+    debug("[%d,%d] ret: %d",x,y,sum);
     return sum;
 }
 
@@ -1389,6 +1424,7 @@ static int AIFindWay(const int (*map)[5],int w,int h){
 
         }
     }*/
+    //debug("--");
     return sum;
 }
 
@@ -1483,11 +1519,13 @@ int AI6(int mCurMap[5][5],int w,int h){
                 score[WEIGHT_NEIGHBOR][i]       = AICheckAllNeighbor(mNextMap,w,h)      * WeightTable[WEIGHT_NEIGHBOR][max];
                 score[WEIGHT_NEIGHBOR_NUM][i]   = AICheckAllNeighborNum(mNextMap,w,h)   * WeightTable[WEIGHT_NEIGHBOR_NUM][max];
                 score[WEIGHT_SMALL_AROUND][i]   = AICheckSmallNumAround(mNextMap,w,h)   * WeightTable[WEIGHT_SMALL_AROUND][max];
-                if(blank <= 2){
+                if(blank <= 3){
                     score[WEIGHT_NEIGHBOR_NUM][i] *= 3;
+                    score[WEIGHT_SMALL_AROUND][i] = 0;
                     //score[WEIGHT_SMALL_AROUND][i] *= 2;
                     //debug("score[WEIGHT_NEIGHBOR][%d]:%d",i,score[WEIGHT_NEIGHBOR][i]);
                 }else{
+                    score[WEIGHT_NEIGHBOR][i]   /= 2;
                     //score[WEIGHT_NEIGHBOR_NUM][i] *= 0;
                 }
                 //score[WEIGHT_BIG_AROUND][i]     = AICheckBigNumAround(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_AROUND][max];
@@ -1511,13 +1549,14 @@ int AI6(int mCurMap[5][5],int w,int h){
             //v[WEIGHT_BIG_BLOCK][dir]    = score[WEIGHT_BIG_BLOCK][resi];
             v[WEIGHT_NEIGHBOR][dir]     = score[WEIGHT_NEIGHBOR][resi];
             if(blank <= 5){
-                //v[WEIGHT_MERGE][dir] *= 3;
+                //v[WEIGHT_NEIGHBOR][dir] *= 3;
+                //v[WEIGHT_SMALL_AROUND][dir] *= 2;
             }
             else{
-                v[WEIGHT_NEIGHBOR][dir] = 0;
+                //v[WEIGHT_NEIGHBOR][dir] /= 2;
             }
             v[WEIGHT_NEIGHBOR_NUM][dir] = score[WEIGHT_NEIGHBOR_NUM][resi];
-            v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h)              * WeightTable[WEIGHT_BIG_BLOCK][max];
+            v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h)              * WeightTable[WEIGHT_BIG_BLOCK][max] * 2;
             v[WEIGHT_BIG_AROUND][dir]   = score[WEIGHT_BIG_AROUND][resi];
             
             v[WEIGHT_DIE_END][dir]  = AICheckDieEnd(mNextMap,w,h)       * WeightTable[WEIGHT_DIE_END][max];
