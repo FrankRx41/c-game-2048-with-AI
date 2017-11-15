@@ -310,6 +310,20 @@ static int AICheckAllNeighbor(const int(*map)[5],int w,int h){
     return sum;
 }
 
+static int AICheckAllNeighbor2(const int(*map)[5],int w,int h){
+    int sum = 0;
+    int max = AIFindMaxNum(map,w,h);
+    forp(x,h)forp(y,w){
+        if(map[x][y]!=0 /*&& map[x][y]>2*/){
+            int v = AICheckOneNeighbor(map,w,h,x,y);
+            sum += max-v;
+            //if(v)debug("[%d,%d]",x,y);
+        }
+    }
+    //debug("-");
+    return sum;
+}
+
 static int AICheckAllNeighborNum_helper(const int(*map)[5],int w,int h,int x,int y){
     int sum = 0;
     sum += (AICheckInRegion(x-1,h) && map[x-1][y] == map[x][y]) ? 1 : 0;
@@ -987,7 +1001,7 @@ static int AICheckDieNum(const int(*map)[5],int w,int h){
     AICheckALLBoard(x,y,w,h){
         forp(k,16){
             if(map[x][y] == board[k]){
-                if(finder[k] > (max/2-finder[k])){
+                if(finder[k] > (max/2-board[k])){
                     //debug("[%d,%d]",x,y);
                     int fNear = 0;
                     int fSim  = 0;
@@ -1000,11 +1014,11 @@ static int AICheckDieNum(const int(*map)[5],int w,int h){
                         }
                     }
                     if(!fNear){
-                        sum += (max-board[k])+finder[k];
+                        sum -= (max-board[k])+finder[k];
                         finder[k] += 1;
                     }
                     if(fSim){
-                        //sum += board[k]-1;
+                        //sum += max-board[k];
                     }
                 }
                 else{
@@ -1013,8 +1027,8 @@ static int AICheckDieNum(const int(*map)[5],int w,int h){
             }
         }
     }
-    //debug("-%d",sum);
-    return -sum;
+    //debug("%d",sum);
+    return sum;
 }
 
 /*******************************************************************************
@@ -1202,6 +1216,30 @@ static int AICheckSmallNumAround(const int(*map)[5],int w,int h){
             int fHaveBlank = 0;
             AICheckAround(x,y,w,h){
                 // 周圍有空白
+                if(map[x+i][y+j]==map[x][y] || map[x+i][y+j]==0){
+                    fHaveBlank = 1;
+                }
+            }
+
+            if(!fHaveBlank){
+                sum -= AICheckSmallNumAround_helper(map,w,h,x,y);
+            }
+
+        }
+    }
+    //debug("--");
+    return sum;
+}
+
+static int AICheckSmallNumAround2(const int(*map)[5],int w,int h){
+    int sum = 0;
+    int max = AIFindMaxNum(map,w,h);
+    //debug("%s:(%d)",__FUNCTION__,max/2);
+    AICheckALLBoard(x,y,w,h){
+        if(map[x][y] == 1 || map[x][y] == 2){
+            int fHaveBlank = 0;
+            AICheckAround(x,y,w,h){
+                // 周圍有空白
                 if(map[x+i][y+j]==map[x][y] || map[x+i][y+j]==map[x][y]-1 || map[x+i][y+j]==map[x][y]-2){
                     fHaveBlank = 1;
                 }
@@ -1216,14 +1254,38 @@ static int AICheckSmallNumAround(const int(*map)[5],int w,int h){
                 }
                 //debug("[%d,%d] %d",x,y,maxnum);
                 //debug("[%d,%d]%d %d",x,y,map[x][y],maxnum);
-                //sum += maxnum;
-                sum += AICheckSmallNumAround_helper(map,w,h,x,y);
+                sum -= maxnum;
+            }
+        }
+    }
+    //debug("--");
+    return sum;
+}
+
+static int AICheckSmallNumAround3(const int(*map)[5],int w,int h){
+    int sum = 0;
+    int max = AIFindMaxNum(map,w,h);
+    //debug("%s:(%d)",__FUNCTION__,max/2);
+    AICheckALLBoard(x,y,w,h){
+        if(map[x][y] == 1 || map[x][y] == 2){
+            int fFit = 0;
+            AICheckAround(x,y,w,h){
+                // 周圍有合適的格子
+                if(map[x+i][y+j]==map[x][y] || map[x+i][y+j]==map[x][y]-1 || map[x+i][y+j]==map[x][y]-2){
+                    fFit = 1;
+                }
+            }
+
+            if(fFit){
+                sum += map[x][y];
+            }else{
+                sum -= max/2-map[x][y];
             }
 
         }
     }
     //debug("--");
-    return -sum;
+    return sum;
 }
 
 /*******************************************************************************
@@ -1232,8 +1294,8 @@ static int AICheckSmallNumAround(const int(*map)[5],int w,int h){
 
 static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5][5],int dir){
     // 路徑長度獎勵
-    if(finder[x][y])return 1;
-    finder[x][y] = 1;
+    //if(finder[x][y])return 1;
+    //finder[x][y] = 1;
 
     int sum = 0;
     int this = map[x][y];
@@ -1307,29 +1369,37 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
             break;
         }
     }
-    debug("one %d",one);
+    //debug("one %d",one);
 
-    those[0] = (AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]<=map[x][y] && map[x-1][y]>=one && map[x-1][y]>2) ? map[x-1][y] : -1;
-    those[1] = (AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]<=map[x][y] && map[x+1][y]>=one && map[x+1][y]>2) ? map[x+1][y] : -1;
-    those[2] = (AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]<=map[x][y] && map[x][y-1]>=one && map[x][y-1]>2) ? map[x][y-1] : -1;
-    those[3] = (AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]<=map[x][y] && map[x][y+1]>=one && map[x][y+1]>2) ? map[x][y+1] : -1;
+    those[0] = (AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]<=map[x][y] && map[x-1][y]>=one && map[x-1][y]) ? map[x-1][y] : -1;
+    those[1] = (AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]<=map[x][y] && map[x+1][y]>=one && map[x+1][y]) ? map[x+1][y] : -1;
+    those[2] = (AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]<=map[x][y] && map[x][y-1]>=one && map[x][y-1]) ? map[x][y-1] : -1;
+    those[3] = (AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]<=map[x][y] && map[x][y+1]>=one && map[x][y+1]) ? map[x][y+1] : -1;
     
-    debug("%d %d %d %d (%d)",map[x-1][y],map[x+1][y],map[x][y-1],map[x][y+1],map[x][y]);
-    debug("%d %d %d %d (%d)",those[0],those[1],those[2],those[3],dir);
+    //debug("%d %d %d %d (%d)",map[x-1][y],map[x+1][y],map[x][y-1],map[x][y+1],map[x][y]);
+    //debug("%d %d %d %d (%d)",those[0],those[1],those[2],those[3],dir);
 
     if(dir == 0){
 
-        if(those[0] != -1){
-            those[0] = AIFindWay_helper(map,w,h,x-1,y,finder,1);
+        if(those[0] != -1 && !finder[x-1][y]){
+            finder[x-1][y] = 1;
+            those[0] = this + AIFindWay_helper(map,w,h,x-1,y,finder,0);
+            //finder[x-1][y] = 0;
         }
-        if(those[1] != -1){
-            those[1] = AIFindWay_helper(map,w,h,x+1,y,finder,2);
+        if(those[1] != -1 && !finder[x+1][y]){
+            finder[x+1][y] = 1;
+            those[1] = this + AIFindWay_helper(map,w,h,x+1,y,finder,0);
+            //finder[x+1][y] = 0;
         }
-        if(those[2] != -1){
-            those[2] = AIFindWay_helper(map,w,h,x,y-1,finder,3);
+        if(those[2] != -1 && !finder[x][y-1]){
+            finder[x][y-1] = 1;
+            those[2] = this + AIFindWay_helper(map,w,h,x,y-1,finder,0);
+            //finder[x][y-1] = 0;
         }
-        if(those[3] != -1){
-            those[3] = AIFindWay_helper(map,w,h,x,y+1,finder,4);
+        if(those[3] != -1 && !finder[x][y+1]){
+            finder[x][y+1] = 1;
+            those[3] = this + AIFindWay_helper(map,w,h,x,y+1,finder,0);
+            //finder[x][y+1] = 0;
         }
 
         int max = 0;
@@ -1342,16 +1412,12 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
         }
         switch(d){
         case 0:
-            finder[x-1][y] = 1;
             break;
         case 1:
-            finder[x+1][y] = 1;
             break;
         case 2:
-            finder[x][y-1] = 1;
             break;
         case 3:
-            finder[x][y+1] = 1;
             break;
         default:
             break;
@@ -1364,20 +1430,20 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
         if(those[dir-1] != -1){
             switch(dir){
             case 1:
-                sum += AIFindWay_helper(map,w,h,x-1,y,finder,dir);
-                //finder[x-1][y] = 1;
+                finder[x-1][y] = 1;
+                sum += AIFindWay_helper(map,w,h,x-1,y,finder,1);
                 break;
             case 2:
-                sum += AIFindWay_helper(map,w,h,x+1,y,finder,dir);
-                //finder[x+1][y] = 1;
+                finder[x+1][y] = 1;
+                sum += AIFindWay_helper(map,w,h,x+1,y,finder,2);
                 break;
             case 3:
-                sum += AIFindWay_helper(map,w,h,x,y-1,finder,dir);
-                //finder[x][y-1] = 1;
+                finder[x][y-1] = 1;
+                sum += AIFindWay_helper(map,w,h,x,y-1,finder,3);
                 break;
             case 4:
-                sum += AIFindWay_helper(map,w,h,x,y+1,finder,dir);
-                //finder[x][y+1] = 1;
+                finder[x][y+1] = 1;
+                sum += AIFindWay_helper(map,w,h,x,y+1,finder,4);
                 break;
             default:
                 break;
@@ -1387,10 +1453,10 @@ static int AIFindWay_helper(int (*map)[5],int w,int h,int x,int y,char finder[5]
 
     //sum += 1;
 
-    finder[x][y] = 0;
+    //finder[x][y] = 0;
 
-    sum += this;
-    debug("[%d,%d] ret: %d",x,y,sum);
+    //sum += this;
+    //debug("[%d,%d] ret: %d",x,y,sum);
     return sum;
 }
 
@@ -1401,7 +1467,7 @@ static int AIFindWay(const int (*map)[5],int w,int h){
     int X[20],Y[20];
     int len = 0;
 
-    while(len <= 5) {
+    while(len < 3) {
         if(max <= 0)break;
         len += AIFindALLNumXY(map,w,h,&X[len],&Y[len],max--);
     }
@@ -1409,13 +1475,21 @@ static int AIFindWay(const int (*map)[5],int w,int h){
     int sums[20] = {0};
     char finder[5][5] = {0};
     forp(i,len){
-        sums[i] = AIFindWay_helper(map,w,h,X[i],Y[i],finder,0);
-        finder[X[i]][Y[i]] = 1;
+        if(!finder[X[i]][Y[i]]){
+            finder[X[i]][Y[i]] = 1;
+            sums[i] = AIFindWay_helper(map,w,h,X[i],Y[i],finder,0);
+        }
+        //finder[X[i]][Y[i]] = 0;
     }
     forp(i,len){
-        if(sum < sums[i])
-            sum = sums[i];
+        //if(sum < sums[i])
+            sum += sums[i];
     }
+
+    //forp(i,len){
+    //    sum += AIFindWay_helper(map,w,h,X[i],Y[i],finder,0);
+    //    finder[X[i]][Y[i]] = 1;
+    //}
 
     //debug("sum:%d",sum);
     /*AICheckALLBoard(x,y,w,h){
@@ -1426,6 +1500,86 @@ static int AIFindWay(const int (*map)[5],int w,int h){
     }*/
     //debug("--");
     return sum;
+}
+
+static int AIFindSmallWay_helper(int(*map)[5],int w,int h,int x,int y,char finder[5][5],int dir){
+
+    int sum = 0;
+    int this = map[x][y];
+
+    int those[4] = {-1,-1,-1,-1};
+
+    int one = map[x][y];
+
+    //debug("one %d",one);
+
+    those[0] = (AICheckInRegionXY(x-1,y,w,h) && map[x-1][y]>=map[x][y] && map[x-1][y]<=one && map[x-1][y]<4) ? map[x-1][y] : -1;
+    those[1] = (AICheckInRegionXY(x+1,y,w,h) && map[x+1][y]>=map[x][y] && map[x+1][y]<=one && map[x+1][y]<4) ? map[x+1][y] : -1;
+    those[2] = (AICheckInRegionXY(x,y-1,w,h) && map[x][y-1]>=map[x][y] && map[x][y-1]<=one && map[x][y-1]<4) ? map[x][y-1] : -1;
+    those[3] = (AICheckInRegionXY(x,y+1,w,h) && map[x][y+1]>=map[x][y] && map[x][y+1]<=one && map[x][y+1]<4) ? map[x][y+1] : -1;
+
+    if(those[0] != -1 && !finder[x-1][y]){
+        finder[x-1][y] = 1;
+        those[0] = AIFindSmallWay_helper(map,w,h,x-1,y,finder,0);
+        //finder[x-1][y] = 0;
+    }
+    if(those[1] != -1 && !finder[x+1][y]){
+        finder[x+1][y] = 1;
+        those[1] = AIFindSmallWay_helper(map,w,h,x+1,y,finder,0);
+        //finder[x+1][y] = 0;
+    }
+    if(those[2] != -1 && !finder[x][y-1]){
+        finder[x][y-1] = 1;
+        those[2] = AIFindSmallWay_helper(map,w,h,x,y-1,finder,0);
+        //finder[x][y-1] = 0;
+    }
+    if(those[3] != -1 && !finder[x][y+1]){
+        finder[x][y+1] = 1;
+        those[3] = AIFindSmallWay_helper(map,w,h,x,y+1,finder,0);
+        //finder[x][y+1] = 0;
+    }
+
+    int max = 0;
+    int d = -1;
+    forp(i,4){
+        if(max < those[i]){
+            max = those[i];
+            d = i;
+        }
+    }
+    sum += max;
+    sum += this;
+
+    //debug("[%d,%d] ret: %d",x,y,sum);
+    return sum;
+}
+
+static int AIFindSmallWay(const int (*map)[5],int w,int h){
+    int sum = 0;
+
+    int min = 1;
+    int X[20],Y[20];
+    int len = 0;
+
+    while(len < 5){
+        if(min > 4)break;
+        len += AIFindALLNumXY(map,w,h,&X[len],&Y[len],min++);
+    }
+
+    int sums[20] = {0};
+    char finder[5][5] = {0};
+    forp(i,len){
+        if(!finder[X[i]][Y[i]]){
+            finder[X[i]][Y[i]] = 1;
+            sum += AIFindSmallWay_helper(map,w,h,X[i],Y[i],finder,0);
+        }
+    }
+
+    return sum;
+}
+
+static int AICheckMergeNum(const int (*mNextMap)[5],const int (*mCurMap)[5],int w,int h){
+    return AICheckBlank(mNextMap,w,h)-AICheckBlank(mCurMap,w,h);
 }
 
 #define _HUGE_ENUF  (1e+300)
@@ -1455,30 +1609,41 @@ int AI6(int mCurMap[5][5],int w,int h){
     float v[50][5] = {0};
 
     int RuleUsed[] = {
-        WEIGHT_BLANK,WEIGHT_MERGE,WEIGHT_NEIGHBOR,WEIGHT_NEIGHBOR_NUM,
+        //WEIGHT_BLANK,WEIGHT_MERGE,WEIGHT_MERGE_NUM,WEIGHT_NEIGHBOR,WEIGHT_NEIGHBOR2,WEIGHT_NEIGHBOR_NUM,
         
-        WEIGHT_BIG_BLOCK,
-        WEIGHT_SMALL_AROUND,WEIGHT_FIND_WAY,WEIGHT_DIE_NUM,
+        //WEIGHT_BIG_BLOCK,
+        //WEIGHT_SMALL_AROUND,WEIGHT_SMALL_AROUND2,WEIGHT_SMALL_WAY,WEIGHT_SMALL_AROUND3,
+        WEIGHT_FIND_WAY,
+        //WEIGHT_DIE_NUM,
     };
 
-    for(int dir=1;dir<=4;dir++){
+    for(int dir=0;dir<=4;dir++){
         memcpy(mNextMap,mCurMap,sizeof(mNextMap));
-        v[WEIGHT_MERGE][dir] = AICheckIfDir(mNextMap,w,h,dir);
+        if(dir){
+            v[WEIGHT_MERGE][dir] = AICheckIfDir(mNextMap,w,h,dir);
+        }else{
+            v[WEIGHT_MERGE][dir] = 1;
+        }
         if(v[WEIGHT_MERGE][dir])
         {
 
             int max = AIFindMaxNum(mNextMap,w,h);
             int blank = AICheckBlank(mNextMap,w,h);
-            debug("blank: %d",blank);
+            //debug("blank: %d",blank);
 
             v[WEIGHT_MERGE][dir] *= WeightTable[WEIGHT_MERGE][max];
 
             v[WEIGHT_BLANK][dir]    = AICheckBlank(mNextMap,w,h)            * WeightTable[WEIGHT_BLANK][max] * 2;
             if(blank <= 5){
-                v[WEIGHT_MERGE][dir] *= 3;
+                v[WEIGHT_MERGE_NUM][dir] = AICheckMergeNum(mNextMap,mCurMap,w,h) * WeightTable[WEIGHT_MERGE_NUM][max] * 3;
+                //v[WEIGHT_MERGE][dir] *= 3;
+                v[WEIGHT_MERGE_NUM][dir] *= 6;
             }else{
                 //v[WEIGHT_MERGE][dir] /= 2;
             }
+
+            
+
 
             v[WEIGHT_MAXNUM][dir]   = AIFindMaxNum(mNextMap,w,h)            * WeightTable[WEIGHT_MAXNUM][max];
             v[WEIGHT_ALL_NEAR][dir] = AICheckAllNear(mNextMap,w,h)          * WeightTable[WEIGHT_ALL_NEAR][max]; 
@@ -1501,7 +1666,6 @@ int AI6(int mCurMap[5][5],int w,int h){
             v[WEIGHT_CORNER_VALUE][dir] = AICheckAllCornerValue(mNextMap,w,h)   * WeightTable[WEIGHT_CORNER_VALUE][max];
             v[WEIGHT_IN_BIG_SIDE][dir]  = AICheckAllInBigSide(mNextMap,w,h)     * WeightTable[WEIGHT_IN_BIG_SIDE][max];
             v[WEIGHT_WAVE][dir]         = AICheckWave(mNextMap,w,h)             * WeightTable[WEIGHT_WAVE][max];
-            v[WEIGHT_FIND_WAY][dir]     = AIFindWay(mNextMap,w,h)             * WeightTable[WEIGHT_FIND_WAY][max];
 
             //if(blank <= 1){
             //    v[WEIGHT_NEIGHBOR][dir] = AICheckAllNeighbor(mNextMap,w,h)      * 10;
@@ -1514,18 +1678,47 @@ int AI6(int mCurMap[5][5],int w,int h){
             int score[50][20] = {0};
             int len = AIFindALLNumXY(mNextMap,w,h,X,Y,0);
             forp(i,len){
+                //int allblank = 1;
+                //int x = X[i],y=Y[i];
+                //AICheckAround(x,y,w,h)
+                //{
+                //    if(mNextMap[x+i][y+j] != 0){
+                //        allblank = 0;
+                //    }
+                //}
+                //if(allblank){
+                //    debug("allblank");
+                //    continue;
+                //}
                 mNextMap[X[i]][Y[i]] = 1;
 
                 score[WEIGHT_NEIGHBOR][i]       = AICheckAllNeighbor(mNextMap,w,h)      * WeightTable[WEIGHT_NEIGHBOR][max];
                 score[WEIGHT_NEIGHBOR_NUM][i]   = AICheckAllNeighborNum(mNextMap,w,h)   * WeightTable[WEIGHT_NEIGHBOR_NUM][max];
                 score[WEIGHT_SMALL_AROUND][i]   = AICheckSmallNumAround(mNextMap,w,h)   * WeightTable[WEIGHT_SMALL_AROUND][max];
-                if(blank <= 3){
-                    score[WEIGHT_NEIGHBOR_NUM][i] *= 3;
-                    score[WEIGHT_SMALL_AROUND][i] = 0;
-                    //score[WEIGHT_SMALL_AROUND][i] *= 2;
+                score[WEIGHT_SMALL_AROUND2][i]  = AICheckSmallNumAround2(mNextMap,w,h)  * WeightTable[WEIGHT_SMALL_AROUND2][max];
+                
+                score[WEIGHT_SMALL_WAY][i]      = AIFindSmallWay(mNextMap,w,h)          * WeightTable[WEIGHT_SMALL_WAY][max];
+                if(blank < 5){
+                    if(blank < 2){
+                        //score[WEIGHT_NEIGHBOR][i]     *= 2;
+                        score[WEIGHT_NEIGHBOR_NUM][i] *= 3;
+                        //score[WEIGHT_SMALL_AROUND3][i] *= 2;
+                        score[WEIGHT_SMALL_AROUND3][i]  = AICheckSmallNumAround3(mNextMap,w,h)  * WeightTable[WEIGHT_SMALL_AROUND3][max];
+                        //score[WEIGHT_NEIGHBOR2][i]      = AICheckAllNeighbor2(mNextMap,w,h) * WeightTable[WEIGHT_NEIGHBOR2][max] / 6;
+                        score[WEIGHT_NEIGHBOR][i]       = 0;
+                    }
+                    //score[WEIGHT_SMALL_WAY][i]    *= 2;
+                    //score[WEIGHT_SMALL_WAY][i] *= 2;
+                    //score[WEIGHT_NEIGHBOR_NUM][i] *= 3;
+                    //score[WEIGHT_NEIGHBOR][i]     *= 2;
+                    //score[WEIGHT_SMALL_AROUND][i] = 0;
+                    //score[WEIGHT_SMALL_AROUND][i]   *= 2;
+                    score[WEIGHT_SMALL_AROUND2][i]  = 0;
+                    score[WEIGHT_NEIGHBOR_NUM][i] = 0;
                     //debug("score[WEIGHT_NEIGHBOR][%d]:%d",i,score[WEIGHT_NEIGHBOR][i]);
                 }else{
-                    score[WEIGHT_NEIGHBOR][i]   /= 2;
+                    score[WEIGHT_NEIGHBOR][i] /= 2;
+                    //score[WEIGHT_SMALL_WAY][i]    /= 2;
                     //score[WEIGHT_NEIGHBOR_NUM][i] *= 0;
                 }
                 //score[WEIGHT_BIG_AROUND][i]     = AICheckBigNumAround(mNextMap,w,h)     * WeightTable[WEIGHT_BIG_AROUND][max];
@@ -1535,9 +1728,13 @@ int AI6(int mCurMap[5][5],int w,int h){
             int res = -10000;
             int resi = -1;
             forp(i,len){
-                int s = score[WEIGHT_SMALL_AROUND][i] +
-                        score[WEIGHT_NEIGHBOR][i] +
-                        score[WEIGHT_NEIGHBOR_NUM][i]
+                int s = score[WEIGHT_SMALL_AROUND][i]   +
+                        score[WEIGHT_SMALL_AROUND2][i]  +
+                        score[WEIGHT_SMALL_AROUND3][i]      +
+                        score[WEIGHT_NEIGHBOR][i]       +
+                        score[WEIGHT_NEIGHBOR2][i]      +
+                        score[WEIGHT_NEIGHBOR_NUM][i]   +
+                        score[WEIGHT_SMALL_WAY][i]      
                         ;
                 if(s >= res){
                     res = s;
@@ -1545,24 +1742,41 @@ int AI6(int mCurMap[5][5],int w,int h){
                 }
                 //debug("resi:%d res:%d score:%d",resi,res,score[WEIGHT_SMALL_AROUND][i]+score[WEIGHT_NEIGHBOR][i]);
             }
-            v[WEIGHT_SMALL_AROUND][dir] = score[WEIGHT_SMALL_AROUND][resi];
-            //v[WEIGHT_BIG_BLOCK][dir]    = score[WEIGHT_BIG_BLOCK][resi];
-            v[WEIGHT_NEIGHBOR][dir]     = score[WEIGHT_NEIGHBOR][resi];
+            v[WEIGHT_SMALL_AROUND][dir]     = score[WEIGHT_SMALL_AROUND][resi];
+            v[WEIGHT_SMALL_AROUND2][dir]    = score[WEIGHT_SMALL_AROUND2][resi];
+            v[WEIGHT_SMALL_AROUND3][dir]    = score[WEIGHT_SMALL_AROUND3][resi];
+            //v[WEIGHT_BIG_BLOCK][dir]        = score[WEIGHT_BIG_BLOCK][resi];
+            v[WEIGHT_NEIGHBOR][dir]         = score[WEIGHT_NEIGHBOR][resi];
+            v[WEIGHT_NEIGHBOR2][dir]        = score[WEIGHT_NEIGHBOR2][resi];
+            v[WEIGHT_SMALL_WAY][dir]        = score[WEIGHT_SMALL_WAY][resi];
+            v[WEIGHT_NEIGHBOR_NUM][dir]     = score[WEIGHT_NEIGHBOR_NUM][resi];
+
+
+            v[WEIGHT_FIND_WAY][dir]     = AIFindWay(mNextMap,w,h)       * WeightTable[WEIGHT_FIND_WAY][max];
+            v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h)      * WeightTable[WEIGHT_BIG_BLOCK][max] * 3.5;
             if(blank <= 5){
+                //v[WEIGHT_BIG_BLOCK][dir] /= 2;
                 //v[WEIGHT_NEIGHBOR][dir] *= 3;
                 //v[WEIGHT_SMALL_AROUND][dir] *= 2;
+                //v[WEIGHT_BIG_BLOCK][dir] /= 3;
+                //v[WEIGHT_FIND_WAY][dir] /= 2;
             }
             else{
-                //v[WEIGHT_NEIGHBOR][dir] /= 2;
             }
-            v[WEIGHT_NEIGHBOR_NUM][dir] = score[WEIGHT_NEIGHBOR_NUM][resi];
-            v[WEIGHT_BIG_BLOCK][dir]    = AIBigBlock(mNextMap,w,h)              * WeightTable[WEIGHT_BIG_BLOCK][max] * 2;
-            v[WEIGHT_BIG_AROUND][dir]   = score[WEIGHT_BIG_AROUND][resi];
+            //v[WEIGHT_BIG_AROUND][dir]   = score[WEIGHT_BIG_AROUND][resi];
             
             v[WEIGHT_DIE_END][dir]  = AICheckDieEnd(mNextMap,w,h)       * WeightTable[WEIGHT_DIE_END][max];
-            v[WEIGHT_DIE_NUM][dir]  = AICheckDieNum(mNextMap,w,h)       * WeightTable[WEIGHT_DIE_NUM][max];
-            if(blank < 5){
+            v[WEIGHT_DIE_NUM][dir]  = AICheckDieNum(mNextMap,w,h)       * WeightTable[WEIGHT_DIE_NUM][max] * 1;
+            if(blank <= 5){
                 //v[WEIGHT_DIE_NUM][dir] = 0;
+                //v[WEIGHT_BIG_BLOCK][dir] *= 2;
+                //v[WEIGHT_DIE_NUM][dir]  *= 2;
+                if(blank <= 2){
+                    //v[WEIGHT_DIE_NUM][dir] /= 2;
+                    //v[WEIGHT_FIND_WAY][dir] = 0;
+                    //v[WEIGHT_DIE_NUM][dir]  = 0;
+                    //v[WEIGHT_BIG_BLOCK][dir] = 0;
+                }
             }
 
             v[WEIGHT_BIG_WAVE][dir] = AICheckBigWave(mNextMap,w,h) * WeightTable[WEIGHT_BIG_WAVE][max];
@@ -1582,7 +1796,7 @@ int AI6(int mCurMap[5][5],int w,int h){
     }
 
 #ifdef _DEBUG
-    printf("\t\t\t   ↑ \t   ↓ \t   ← \t   → \n");
+    printf("\t\t\t\t   ↑ \t   ↓ \t   ← \t   → \n");
     forp(i,WEIGHT_END){
         if(i == WEIGHT_BIG_BLOCK)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x0E);
         forp(j,arraylen(RuleUsed))
@@ -1591,7 +1805,7 @@ int AI6(int mCurMap[5][5],int w,int h){
             if(i==RuleUsed[j])
             {
                 printf("%-16s",WeightTableName[i]);
-                for(int k=1;k<=4;k++){
+                for(int k=0;k<=4;k++){
                     if(v[i][k]!=0){
                         printf("\t%6.2f",v[i][k]);
                     }
@@ -1607,9 +1821,9 @@ int AI6(int mCurMap[5][5],int w,int h){
     loop(12)printf("-");
     printf("\n");
     printf("%-16s","Total");
-    for(int i=1;i<=4;i++){
-        if(x[i]==x[i]){
-            printf("\t%6.2f",x[i]);
+    for(int k=0;k<=4;k++){
+        if(x[k]==x[k]){
+            printf("\t%6.2f",x[k]);
         }else{
             printf("\t%s"," ");
         }

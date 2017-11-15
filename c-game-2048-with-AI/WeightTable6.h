@@ -4,9 +4,11 @@ static enum{
     // normal rule
     WEIGHT_BLANK,
     WEIGHT_NEIGHBOR,
+    WEIGHT_NEIGHBOR2,
     WEIGHT_NEIGHBOR_NUM,
     WEIGHT_MAXNUM,
     WEIGHT_MERGE,
+    WEIGHT_MERGE_NUM,
     WEIGHT_BLANK_AROUND,
     WEIGHT_WAVE,        // smooth, I not sure it is useful and I have to FIX IT
 
@@ -30,6 +32,9 @@ static enum{
     WEIGHT_BIG_BLOCK,
 
     WEIGHT_SMALL_AROUND,
+    WEIGHT_SMALL_AROUND2,
+    WEIGHT_SMALL_AROUND3,
+    WEIGHT_SMALL_WAY,
 
     WEIGHT_IN_BIG_SIDE,
 
@@ -44,9 +49,11 @@ static enum{
 static char *WeightTableName[] = {
     "blank",
     "neighbor",
+    "neighbor2",
     "neighbor num",
     "maxnum",
     "merge",
+    "merge num",
     "blank around",
     "wave",
 
@@ -70,6 +77,9 @@ static char *WeightTableName[] = {
     "big block",
 
     "small around",
+    "small around2",
+    "small around3",
+    "small way",
 
     "in big side",
     "die end",
@@ -88,9 +98,11 @@ static float WeightTable[][WEIGHT_LEN] = {
     //  0       2       4       8       16      32      64      128     256     512     1024    2048    4096
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BLANK
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      0,      },  // NEIGHBOR 
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // NEIGHBOR2 
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // NEIGHBOR NUM
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MAXNUMBER
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MERGE 
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // MERGE_NUM
     {   0.0,    0.0,    0.0,    .25,    .25,    .25,    .25,    .25,    .25,    .50,    .75,    .85,    .95,    },  // BLANK_NEAR_2_OR_4 
     {   .25,    .25,    .25,    .25,    .25,    .20,    .15,    .10,    .10,    .05,    .05,    .01,    .25,    },  // WAVE
 
@@ -114,6 +126,9 @@ static float WeightTable[][WEIGHT_LEN] = {
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // BIG_BLOCK
 
     {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // SMALL_AROUND
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // SMALL_AROUND2
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // SMALL_AROUND3
+    {   1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      1,      },  // SMALL_WAY
 
     {   .25,    .25,    .25,    .25,    .55,    .55,    .55,    .55,    .55,    .55,    .55,    .55,    .55,    },  // INBIGSIDE
 

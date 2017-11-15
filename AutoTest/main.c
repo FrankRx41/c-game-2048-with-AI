@@ -41,8 +41,10 @@ int ReadWeight(){
 int PlayGame(int ai){
     OPTION Option = {0};
     LPOPTION lpOption = &Option;
+    
+    static int time = 1;
+    lpOption->iRandseek = time++;
 
-    lpOption->iRandseek = time(NULL)+rand();
     GameInit(lpOption,4,4);
 
     while(lpOption->iGameState != GS_OVER){

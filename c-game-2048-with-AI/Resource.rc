@@ -22,13 +22,27 @@ BEGIN
         MENUITEM "&Save\tCtrl+S"        MENU_GAME_SAVE
         MENUITEM "&Load\tCtrl+L"        MENU_GAME_LOAD
         MENUITEM "&Pause\tSpace"        MENU_GAME_PAUSE
+        MENUITEM SEPARATOR
         POPUP "&Final Phase"
         BEGIN
             MENUITEM "1"                MENU_FINAL_PHASE_1
             MENUITEM "2"                MENU_FINAL_PHASE_2
-#ifdef DEBUG
             MENUITEM "3"                MENU_FINAL_PHASE_3
             MENUITEM "4"                MENU_FINAL_PHASE_4
+#ifdef DEBUG
+            POPUP "Test"
+            BEGIN
+                MENUITEM "40"               MENU_FINAL_PHASE_40
+                MENUITEM "41"               MENU_FINAL_PHASE_41
+                MENUITEM "42"               MENU_FINAL_PHASE_42
+                MENUITEM "43"               MENU_FINAL_PHASE_43
+                MENUITEM "44"               MENU_FINAL_PHASE_44
+                MENUITEM "45"               MENU_FINAL_PHASE_45
+                MENUITEM "46"               MENU_FINAL_PHASE_46
+                MENUITEM "47"               MENU_FINAL_PHASE_47
+                MENUITEM "48"               MENU_FINAL_PHASE_48
+                MENUITEM "49"               MENU_FINAL_PHASE_49
+            END
             MENUITEM "5"                MENU_FINAL_PHASE_5
             MENUITEM "6"                MENU_FINAL_PHASE_6
             MENUITEM "7"                MENU_FINAL_PHASE_7
@@ -54,9 +68,17 @@ BEGIN
             MENUITEM "27"               MENU_FINAL_PHASE_27
             MENUITEM "28"               MENU_FINAL_PHASE_28
             MENUITEM "29"               MENU_FINAL_PHASE_29
+            MENUITEM "30"               MENU_FINAL_PHASE_30
+            MENUITEM "31"               MENU_FINAL_PHASE_31
+            MENUITEM "32"               MENU_FINAL_PHASE_32
+            MENUITEM "33"               MENU_FINAL_PHASE_33
+            MENUITEM "34"               MENU_FINAL_PHASE_34
+            MENUITEM "35"               MENU_FINAL_PHASE_35
+            MENUITEM "36"               MENU_FINAL_PHASE_36
+            MENUITEM "37"               MENU_FINAL_PHASE_37
+            MENUITEM "38"               MENU_FINAL_PHASE_38
 #endif
         END
-        MENUITEM SEPARATOR
         POPUP "A&I"
         BEGIN
             MENUITEM "&AI1 random\tF1"      MENU_AI_1
@@ -67,6 +89,17 @@ BEGIN
             MENUITEM "&AI6 \tF5"            MENU_AI_6
         END
         MENUITEM SEPARATOR
+        POPUP "&Theme"
+        BEGIN
+            MENUITEM "default"          MENU_THEME_DEFAULT
+            MENUITEM "red"              MENU_THEME_RED
+            MENUITEM "blue"             MENU_THEME_BLUE
+            MENUITEM "green"            MENU_THEME_GREEN
+            MENUITEM "yellow"           MENU_THEME_YELLOW
+            MENUITEM "purple"           MENU_THEME_PURPLE
+            MENUITEM "orange"           MENU_THEME_ORANGE
+            MENUITEM "cyanine"          MENU_THEME_CYANINE
+        END
         MENUITEM "S&ound"               MENU_OPTION_SOUND
         //MENUITEM "&Fullscreen"          MENU_OPTION_FULLSCREEN
         //MENUITEM "S&uggestion"          MENU_OPTION_SUGGESTION

@@ -534,8 +534,39 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
     case MENU_FINAL_PHASE_27:
     case MENU_FINAL_PHASE_28:
     case MENU_FINAL_PHASE_29:
+    case MENU_FINAL_PHASE_30:
+    case MENU_FINAL_PHASE_31:
+    case MENU_FINAL_PHASE_32:
+    case MENU_FINAL_PHASE_33:
+    case MENU_FINAL_PHASE_34:
+    case MENU_FINAL_PHASE_35:
+    case MENU_FINAL_PHASE_36:
+    case MENU_FINAL_PHASE_37:
+    case MENU_FINAL_PHASE_38:
+    case MENU_FINAL_PHASE_39:
+    case MENU_FINAL_PHASE_40:
+    case MENU_FINAL_PHASE_41:
+    case MENU_FINAL_PHASE_42:
+    case MENU_FINAL_PHASE_43:
+    case MENU_FINAL_PHASE_44:
+    case MENU_FINAL_PHASE_45:
+    case MENU_FINAL_PHASE_46:
+    case MENU_FINAL_PHASE_47:
+    case MENU_FINAL_PHASE_48:
+    case MENU_FINAL_PHASE_49:
         KillTimer(lpOption->hWnd,TIMER_AI);
         return GameLoadPhase(lpOption,LOWORD(wParam) - MENU_FINAL_PHASE_1);
+
+    case MENU_THEME_DEFAULT:
+    case MENU_THEME_BLUE:
+    case MENU_THEME_PURPLE:
+    case MENU_THEME_RED:
+    case MENU_THEME_GREEN:
+    case MENU_THEME_ORANGE:
+    case MENU_THEME_CYANINE:
+    case MENU_THEME_YELLOW:
+        WinSetTheme(lpOption,LOWORD(wParam));
+        return 1;
 
     case MENU_HELP_ABOUT:
         DialogBox(NULL,TEXT("ABOUTBOX"),lpOption->hWnd,WinAboutDlgProc);
@@ -545,6 +576,128 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
         ErrorMsg("UnDefine Menu Message!");
         return -1;
     }
+}
+
+int WinSetTheme(LPOPTION lpOption,int theme){
+    int fR,fG,fB;
+    int tR,tG,tB;
+
+
+    switch(theme)
+    {
+    case MENU_THEME_DEFAULT:
+        fR = 0x75;
+        fG = 0x64;
+        fB = 0x10;
+
+        tR = 0xED;
+        tG = 0x12;
+        tB = 0x5E;
+        lpOption->nTextColor = 0x9A9C9B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_BLUE:
+        //4088ff
+        fR = 0x40;
+        fG = 0x88;
+        fB = 0xFF;
+        //00df41
+        tR = 0x00;
+        tG = 0xdf;
+        tB = 0x41;
+        lpOption->nTextColor = 0x4A4C4B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_PURPLE:
+        fR = 0x99;
+        fG = 0x7f;
+        fB = 0xb5;
+
+        tR = 0xFF;
+        tG = 0x39;
+        tB = 0x95;
+        lpOption->nTextColor = 0x4A4C4B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_RED:        
+        //e83229
+        fR = 0xE8;
+        fG = 0x32;
+        fB = 0x29;
+        //77007f
+        tR = 0x77;
+        tG = 0x00;
+        tB = 0x7F;
+        lpOption->nTextColor = 0x9A9C9B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_GREEN:
+        //1cdf00
+        //fR = 0x50;
+        //fG = 0x99;
+        //fB = 0x7f;
+        fR = 0x1C;
+        fG = 0xDF;
+        fB = 0x00;
+        //f3ec3e
+        tR = 0xF3;
+        tG = 0xEC;
+        tB = 0x3E;
+        lpOption->nTextColor = 0x9A9C9B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_ORANGE:
+        //e94619
+        fR = 0xff;
+        fG = 0xbe;
+        fB = 0x20;
+
+        tR = 0xE9;
+        tG = 0x46;
+        tB = 0x19;
+        lpOption->nTextColor = 0x9A9C9B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_CYANINE:
+        fR = 0x01;
+        fG = 0xBA;
+        fB = 0xB1;
+        //18ff00
+        tR = 0x18;
+        tG = 0xFF;
+        tB = 0x00;
+        lpOption->nTextColor = 0x4A4C4B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    case MENU_THEME_YELLOW:
+        //00
+        //8a8000
+        tR = 0xef;
+        tG = 0xff;
+        tB = 0x20;
+
+        fR = 0xAA;
+        fG = 0x80;
+        fB = 0x20;
+        lpOption->nTextColor = 0x9A9C9B;
+        lpOption->nColorTable[0] = 0X1A2A3A;
+        break;
+    default:
+        debug("error theme");
+        break;
+    }
+    int sR,sG,sB;
+    sR = (tR - fR) / 16;
+    sG = (tG - fG) / 16;
+    sB = (tB - fB) / 16;
+
+    forp(i,17){
+        if(i==0)continue;
+        lpOption->nColorTable[i] = RGB(fR+sR*i,fG+sG*i,fB+sB*i);
+        debug("%08X",RGB(fR+sR*i,fG+sG*i,fB+sB*i));
+    }
+    
+    return 1;
 }
 
 int WinMenuReset(LPOPTION lpOption){
