@@ -6,6 +6,8 @@ int AI2(int map[5][5],int w,int h);
 int AI3(int map[5][5],int w,int h);
 int AI4(int map[5][5],int w,int h);
 int AI5(int map[5][5],int w,int h);
+int AI6(int map[5][5],int w,int h);
+int AI7(int map[5][5],int w,int h);
 
 #include "Macro.h"
 

@@ -2,13 +2,24 @@
 #include <Windows.h>
 #include <time.h>
 
+#include "..\c-game-2048-with-AI\Game.h"
+#include "..\c-game-2048-with-AI\Macro.h"
+#include "..\c-game-2048-with-AI\AI.h"
+
 #include "..\c-game-2048-with-AI\AI1.c"
-//#include "..\c-game-2048-with-AI\AI2.c"
 #include "..\c-game-2048-with-AI\AI3.c"
 #include "..\c-game-2048-with-AI\AI4.c"
 #include "..\c-game-2048-with-AI\AI5.c"
-#include "..\c-game-2048-with-AI\AI6.c"
+//#include "..\c-game-2048-with-AI\AI6.c"
+#include "..\c-game-2048-with-AI\AI7.c"
 
+//extern int AI1(int map[5][5],int w,int h);
+//extern int AI2(int map[5][5],int w,int h);
+//extern int AI3(int map[5][5],int w,int h);
+//extern int AI4(int map[5][5],int w,int h);
+//extern int AI5(int map[5][5],int w,int h);
+//extern int AI6(int map[5][5],int w,int h);
+//extern int AI7(int map[5][5],int w,int h);
 
 //int ShowWeight(){
 //    forp(j,arraylen(WeightTable)){
@@ -67,7 +78,10 @@ int PlayGame(int ai,int seek){
             GameDirKey(lpOption,AI5(map,4,4));
             break;
         case 6:
-            GameDirKey(lpOption,AI6(map,4,4));
+            //GameDirKey(lpOption,AI6(map,4,4));
+            break;
+        case 7:
+            GameDirKey(lpOption,AI7(map,4,4));
             break;
         default:
             printf("AI (%d) error!\n",ai);
@@ -80,11 +94,11 @@ int PlayGame(int ai,int seek){
 }
 
 #define MAX_HIGH_SCORE  15
-#define TOTAL_RUN       100
+#define TOTAL_RUN       250
 
 int ShowStatist(int *v){
     forp(i,MAX_HIGH_SCORE){
-        if(i<8)continue;
+        if(i<7)continue;
         printf("%-5d %4d  (%5.1f%% )\n",1<<i,v[i],(double)v[i]/TOTAL_RUN*100);
         //if(i%4==3)printf("\n");
     }
@@ -104,10 +118,10 @@ int main(){
     //system("pause");
 
     
-    for(int ai=1;ai<=6;ai++){
+    for(int ai=1;ai<=7;ai++){
         //if(ai==1 || ai==3 || ai==5)continue;
         //if(ai != 6)continue;
-        if(ai==2 || ai==3 || ai==5)continue;
+        if(ai==-1 || ai==2 || ai==3 || ai==-4 || ai==5 || ai==6 || ai==-7)continue;
         unsigned __int64 time = GetTickCount();
         printf("In AI %d statist, total play %d times.\n(00%%)",ai,TOTAL_RUN);
         
@@ -122,7 +136,7 @@ int main(){
         }
         printf("\b\b\b\b\b\b\b\b\b\b\b\b(100.0%%)  ");
 
-        printf("%lld(ms) used.\n",(GetTickCount()-time));
+        printf("%lld(s) used.\n",(GetTickCount()-time)/1000);
 
         ShowStatist(v);
 

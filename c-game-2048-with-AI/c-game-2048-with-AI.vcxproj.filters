@@ -51,6 +51,9 @@
     <ClCompile Include="AI6.c">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
+    <ClCompile Include="AI7.c">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

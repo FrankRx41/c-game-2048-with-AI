@@ -83,7 +83,7 @@ static int AICheckIfDir1(int(*map)[5], int w, int h, int dir) {
 	return fHadmove;
 }
 
-static int isfirstrun = 0;
+static int isfirstrun = 1;
 static int whichweightmat = 0;
 static int res[26] = { 0 };
 static int pmat[25][5][5] = { 0 };
@@ -271,9 +271,9 @@ int AI1(int mCurMap[5][5], int w, int h) {
 	int mNextMap1[5][5] = { 0 };
 	int v = 0;
 
-	if (!isfirstrun) {
+	if (isfirstrun) {
 		GiveValuesToWeightMats();
-		isfirstrun = 1;
+		isfirstrun = 0;
 	}
 
 	for (int dir = 1; dir <= 4; dir++) {

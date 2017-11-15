@@ -112,7 +112,8 @@ BEGIN
             MENUITEM "&AI3 maxblank\tF3"    MENU_AI_3
             MENUITEM "&AI4 nneonneo\tF4"    MENU_AI_4
             MENUITEM "&AI5 U-R-D-L\tF5"     MENU_AI_5
-            MENUITEM "&AI6 Frankrx41\tF6"   MENU_AI_6
+            MENUITEM "&AI6 Frank (30%)\tF6" MENU_AI_6
+            MENUITEM "&AI7 Frank (45%)\tF6" MENU_AI_7
         END
         MENUITEM SEPARATOR
         POPUP "&Theme"
@@ -153,6 +154,7 @@ BEGIN
     VK_F4,  MENU_AI_4,      VIRTKEY,    NOINVERT
     VK_F5,  MENU_AI_5,      VIRTKEY,    NOINVERT
     VK_F6,  MENU_AI_6,      VIRTKEY,    NOINVERT
+    VK_F7,  MENU_AI_7,      VIRTKEY,    NOINVERT
     "^S",   MENU_GAME_SAVE, ASCII,      NOINVERT
     "^L",   MENU_GAME_LOAD, ASCII,      NOINVERT
     "^N",   MENU_NEW_4,     ASCII,      NOINVERT

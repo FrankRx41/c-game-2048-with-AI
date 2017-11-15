@@ -795,7 +795,7 @@ int AI6(int mCurMap[5][5],int w,int h){
 #ifdef _DEBUG
     printf("\t\t\t\t   ↑ \t   ↓ \t   ← \t   → \n");
     forp(i,WEIGHT_END){
-        if(i == WEIGHT_BIG_BLOCK)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x0E);
+        //if(i == WEIGHT_BIG_BLOCK)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x0E);
         forp(j,arraylen(RuleUsed))
         {
             //debug("(%d %d) %d",j,RuleUsed[j],i);

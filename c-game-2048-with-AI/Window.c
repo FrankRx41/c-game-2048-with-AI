@@ -490,6 +490,7 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
     case MENU_AI_4:
     case MENU_AI_5:
     case MENU_AI_6:
+    case MENU_AI_7:
         wParam = LOWORD(wParam) + 1;
         if(lpOption->iGameState == GS_OVER)return 0;
 
@@ -840,6 +841,12 @@ int WinOnTimerAI(LPOPTION lpOption){
         GameDirKey(
             lpOption,
             AI6(map,lpOption->nWidth,lpOption->nHeight)
+            );
+        break;
+    case 7:
+        GameDirKey(
+            lpOption,
+            AI7(map,lpOption->nWidth,lpOption->nHeight)
             );
         break;
     default:
