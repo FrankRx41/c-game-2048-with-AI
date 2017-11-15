@@ -23,7 +23,6 @@ static int AICheckIfDir(int(*map)[5],int w,int h,int dir){
 
                 for(int k=j+1;k<h;k++){
                     S = &map[k][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",j,i,map[j][i],k,i,map[k][i]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -37,7 +36,6 @@ static int AICheckIfDir(int(*map)[5],int w,int h,int dir){
 
                 for(int i=x-1;i>=0;i--){
                     S = &map[i][y];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -51,7 +49,6 @@ static int AICheckIfDir(int(*map)[5],int w,int h,int dir){
 
                 for(int i=y+1;i<w;i++){
                     S = &map[x][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
                     GameBlockUnite(F,S);
                 }
             }
@@ -65,7 +62,6 @@ static int AICheckIfDir(int(*map)[5],int w,int h,int dir){
 
                 for(int i=y-1;i>=0;i--){
                     S = &map[x][i];
-                    //debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
                     GameBlockUnite(F,S);
                 }
             }

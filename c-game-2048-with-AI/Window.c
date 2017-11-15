@@ -7,6 +7,13 @@
 #include "resource.h"
 #include "Macro.h"
 
+// Animation deep (1->begin 0->end)
+// when you just change some state need update but whitout anime (e.g. pause), 
+// you should set it to 1 make it stop update the screen.
+// I used this way fix some time "pause" info cover by it.
+// may be have a better way?
+static float deep = 1;
+
 // return 1 mean window need update
 int WinKeyHandle(LPOPTION lpOption,int key){
     // system key
@@ -27,6 +34,8 @@ int WinKeyHandle(LPOPTION lpOption,int key){
     }
     else if(key == lpOption->vKeyPause)
     {
+        deep = 1;
+        KillTimer(lpOption->hWnd,TIMER_ANIMATION);
         GamePause(lpOption);
         WinMenuReset(lpOption);
         return 1;
@@ -296,7 +305,6 @@ static int DrawTilesMerge(LPOPTION lpOption,TILE from[],TILE to[],int index,floa
     }
 }
 
-static float deep = 1;
 int DrawAnimation(LPOPTION lpOption,HDC srchdc){
     int cxClient = lpOption->cxClient,cyClient = lpOption->cyClient;
     HDC hdc;
@@ -388,8 +396,6 @@ int WinDraw(LPOPTION lpOption,HDC srchdc){
 
     if(lpOption->fAnimation && lpOption->iGameState & GS_RUNNING){
         //deep = 1;
-        //DrawAnimation(lpOption,hdc);
-        //DrawAnimation(lpOption,srchdc);
         if(!(lpOption->iCurAI != 0 && lpOption->iAISleep < 200)){
             SetTimer(lpOption->hWnd,TIMER_ANIMATION,lpOption->iAnimationSpeed,NULL);
         }
@@ -504,7 +510,7 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
         //debug("AI: %d",LOWORD(wParam) - MENU_AI_0);
         WinCheckAIMenu(lpOption);
         return 1;
-
+    case MENU_FINAL_PHASE_0:
     case MENU_FINAL_PHASE_1:
     case MENU_FINAL_PHASE_2:
     case MENU_FINAL_PHASE_3:
@@ -554,6 +560,16 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
     case MENU_FINAL_PHASE_47:
     case MENU_FINAL_PHASE_48:
     case MENU_FINAL_PHASE_49:
+    case MENU_FINAL_PHASE_50:
+    case MENU_FINAL_PHASE_51:
+    case MENU_FINAL_PHASE_52:
+    case MENU_FINAL_PHASE_53:
+    case MENU_FINAL_PHASE_54:
+    case MENU_FINAL_PHASE_55:
+    case MENU_FINAL_PHASE_56:
+    case MENU_FINAL_PHASE_57:
+    case MENU_FINAL_PHASE_58:
+    case MENU_FINAL_PHASE_59:
         KillTimer(lpOption->hWnd,TIMER_AI);
         return GameLoadPhase(lpOption,LOWORD(wParam) - MENU_FINAL_PHASE_1);
 
@@ -582,7 +598,7 @@ int WinSetTheme(LPOPTION lpOption,int theme){
     int fR,fG,fB;
     int tR,tG,tB;
 
-
+    // TODO: restructure this
     switch(theme)
     {
     case MENU_THEME_DEFAULT:

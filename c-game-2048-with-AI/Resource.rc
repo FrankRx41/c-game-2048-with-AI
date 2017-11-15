@@ -28,65 +28,91 @@ BEGIN
             MENUITEM "1"                MENU_FINAL_PHASE_1
             MENUITEM "2"                MENU_FINAL_PHASE_2
             MENUITEM "3"                MENU_FINAL_PHASE_3
-            MENUITEM "4"                MENU_FINAL_PHASE_4
-#ifdef DEBUG
-            POPUP "Test"
+            MENUITEM "4"            MENU_FINAL_PHASE_4
+#if 0
+            POPUP "?-9"
             BEGIN
-                MENUITEM "40"               MENU_FINAL_PHASE_40
-                MENUITEM "41"               MENU_FINAL_PHASE_41
-                MENUITEM "42"               MENU_FINAL_PHASE_42
-                MENUITEM "43"               MENU_FINAL_PHASE_43
-                MENUITEM "44"               MENU_FINAL_PHASE_44
-                MENUITEM "45"               MENU_FINAL_PHASE_45
-                MENUITEM "46"               MENU_FINAL_PHASE_46
-                MENUITEM "47"               MENU_FINAL_PHASE_47
-                MENUITEM "48"               MENU_FINAL_PHASE_48
-                MENUITEM "49"               MENU_FINAL_PHASE_49
+                MENUITEM "5"            MENU_FINAL_PHASE_5
+                MENUITEM "6"            MENU_FINAL_PHASE_6
+                MENUITEM "7"            MENU_FINAL_PHASE_7
+                MENUITEM "8"            MENU_FINAL_PHASE_8
+                MENUITEM "9"            MENU_FINAL_PHASE_9
             END
-            MENUITEM "5"                MENU_FINAL_PHASE_5
-            MENUITEM "6"                MENU_FINAL_PHASE_6
-            MENUITEM "7"                MENU_FINAL_PHASE_7
-            MENUITEM "8"                MENU_FINAL_PHASE_8
-            MENUITEM "9"                MENU_FINAL_PHASE_9
-            MENUITEM "10"               MENU_FINAL_PHASE_10
-            MENUITEM "11"               MENU_FINAL_PHASE_11
-            MENUITEM "12"               MENU_FINAL_PHASE_12
-            MENUITEM "13"               MENU_FINAL_PHASE_13
-            MENUITEM "14"               MENU_FINAL_PHASE_14
-            MENUITEM "15"               MENU_FINAL_PHASE_15
-            MENUITEM "16"               MENU_FINAL_PHASE_16
-            MENUITEM "17"               MENU_FINAL_PHASE_17
-            MENUITEM "18"               MENU_FINAL_PHASE_18
-            MENUITEM "19"               MENU_FINAL_PHASE_19
-            MENUITEM "20"               MENU_FINAL_PHASE_20
-            MENUITEM "21"               MENU_FINAL_PHASE_21
-            MENUITEM "22"               MENU_FINAL_PHASE_22
-            MENUITEM "23"               MENU_FINAL_PHASE_23
-            MENUITEM "24"               MENU_FINAL_PHASE_24
-            MENUITEM "25"               MENU_FINAL_PHASE_25
-            MENUITEM "26"               MENU_FINAL_PHASE_26
-            MENUITEM "27"               MENU_FINAL_PHASE_27
-            MENUITEM "28"               MENU_FINAL_PHASE_28
-            MENUITEM "29"               MENU_FINAL_PHASE_29
-            MENUITEM "30"               MENU_FINAL_PHASE_30
-            MENUITEM "31"               MENU_FINAL_PHASE_31
-            MENUITEM "32"               MENU_FINAL_PHASE_32
-            MENUITEM "33"               MENU_FINAL_PHASE_33
-            MENUITEM "34"               MENU_FINAL_PHASE_34
-            MENUITEM "35"               MENU_FINAL_PHASE_35
-            MENUITEM "36"               MENU_FINAL_PHASE_36
-            MENUITEM "37"               MENU_FINAL_PHASE_37
-            MENUITEM "38"               MENU_FINAL_PHASE_38
+
+            POPUP "10-19"
+            BEGIN
+                MENUITEM "10"           MENU_FINAL_PHASE_10
+                MENUITEM "11"           MENU_FINAL_PHASE_11
+                MENUITEM "12"           MENU_FINAL_PHASE_12
+                MENUITEM "13"           MENU_FINAL_PHASE_13
+                MENUITEM "14"           MENU_FINAL_PHASE_14
+                MENUITEM "15"           MENU_FINAL_PHASE_15
+                MENUITEM "16"           MENU_FINAL_PHASE_16
+                MENUITEM "17"           MENU_FINAL_PHASE_17
+                MENUITEM "18"           MENU_FINAL_PHASE_18
+                MENUITEM "19"           MENU_FINAL_PHASE_19
+            END
+            POPUP "20-29"
+            BEGIN
+                MENUITEM "20"           MENU_FINAL_PHASE_20
+                MENUITEM "21"           MENU_FINAL_PHASE_21
+                MENUITEM "22"           MENU_FINAL_PHASE_22
+                MENUITEM "23"           MENU_FINAL_PHASE_23
+                MENUITEM "24"           MENU_FINAL_PHASE_24
+                MENUITEM "25"           MENU_FINAL_PHASE_25
+                MENUITEM "26"           MENU_FINAL_PHASE_26
+                MENUITEM "27"           MENU_FINAL_PHASE_27
+                MENUITEM "28"           MENU_FINAL_PHASE_28
+                MENUITEM "29"           MENU_FINAL_PHASE_29
+            END
+            POPUP "30-39"
+            BEGIN
+                MENUITEM "30"           MENU_FINAL_PHASE_30
+                MENUITEM "31"           MENU_FINAL_PHASE_31
+                MENUITEM "32"           MENU_FINAL_PHASE_32
+                MENUITEM "33"           MENU_FINAL_PHASE_33
+                MENUITEM "34"           MENU_FINAL_PHASE_34
+                MENUITEM "35"           MENU_FINAL_PHASE_35
+                MENUITEM "36"           MENU_FINAL_PHASE_36
+                MENUITEM "37"           MENU_FINAL_PHASE_37
+                MENUITEM "38"           MENU_FINAL_PHASE_38
+            END
+            POPUP "40-49"
+            BEGIN
+                MENUITEM "40"           MENU_FINAL_PHASE_40
+                MENUITEM "41"           MENU_FINAL_PHASE_41
+                MENUITEM "42"           MENU_FINAL_PHASE_42
+                MENUITEM "43"           MENU_FINAL_PHASE_43
+                MENUITEM "44"           MENU_FINAL_PHASE_44
+                MENUITEM "45"           MENU_FINAL_PHASE_45
+                MENUITEM "46"           MENU_FINAL_PHASE_46
+                MENUITEM "47"           MENU_FINAL_PHASE_47
+                MENUITEM "48"           MENU_FINAL_PHASE_48
+                MENUITEM "49"           MENU_FINAL_PHASE_59
+            END
+            //POPUP "50-59"
+            //BEGIN
+            //    MENUITEM "50"           MENU_FINAL_PHASE_50
+            //    MENUITEM "51"           MENU_FINAL_PHASE_51
+            //    MENUITEM "52"           MENU_FINAL_PHASE_52
+            //    MENUITEM "53"           MENU_FINAL_PHASE_53
+            //    MENUITEM "54"           MENU_FINAL_PHASE_54
+            //    MENUITEM "55"           MENU_FINAL_PHASE_55
+            //    MENUITEM "56"           MENU_FINAL_PHASE_56
+            //    MENUITEM "57"           MENU_FINAL_PHASE_57
+            //    MENUITEM "58"           MENU_FINAL_PHASE_58
+            //    MENUITEM "59"           MENU_FINAL_PHASE_59
+            //END
 #endif
         END
         POPUP "A&I"
         BEGIN
-            MENUITEM "&AI1 random\tF1"      MENU_AI_1
+            MENUITEM "&AI1 WalkerShu\tF1"   MENU_AI_1
             MENUITEM "&AI2 stupid AI\tF2"   MENU_AI_2
             MENUITEM "&AI3 maxblank\tF3"    MENU_AI_3
             MENUITEM "&AI4 nneonneo\tF4"    MENU_AI_4
             MENUITEM "&AI5 U-R-D-L\tF5"     MENU_AI_5
-            MENUITEM "&AI6 \tF5"            MENU_AI_6
+            MENUITEM "&AI6 Frankrx41\tF6"   MENU_AI_6
         END
         MENUITEM SEPARATOR
         POPUP "&Theme"
@@ -99,6 +125,7 @@ BEGIN
             MENUITEM "purple"           MENU_THEME_PURPLE
             MENUITEM "orange"           MENU_THEME_ORANGE
             MENUITEM "cyanine"          MENU_THEME_CYANINE
+            MENUITEM "view color"       MENU_FINAL_PHASE_0
         END
         MENUITEM "S&ound"               MENU_OPTION_SOUND
         //MENUITEM "&Fullscreen"          MENU_OPTION_FULLSCREEN
@@ -142,7 +169,7 @@ BEGIN
     // FIXME:
     //ICON            "2048GAMEWITHAI.co",IDC_STATIC,    7,7,21,20
     CTEXT           "2048 game with AI",IDC_STATIC, 40,12,100,8
-    CTEXT           "Version 0.44",IDC_STATIC,      7,40,166,8
+    CTEXT           "Version 0.81",IDC_STATIC,      7,40,166,8
     CTEXT           "(c) EiSnow, 2017",IDC_STATIC,  7,52,166,8
     DEFPUSHBUTTON   "OK",IDOK,                      66,81,50,14
 END

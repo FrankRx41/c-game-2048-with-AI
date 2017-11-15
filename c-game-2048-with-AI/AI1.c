@@ -1,23 +1,11 @@
-﻿#include "Macro.h"
+﻿/*******************************************************************************
+author: 	WalkerShu
+date:		2017.11.15
+*******************************************************************************/
+
+#include "Macro.h"
 #include "Game.h"
 #include "AI.h"
-
-// https://www.zhihu.com/question/54217135
-/*
-三个权值矩阵如下：
-16,15,14,13
-9 ,10,11,12
-8 ,7 ,6 ,5 
-1 ,2 ,3 ,4 
-16,15,12,4 
-14,13,11,3
-10,9 ,8 ,2 
-7 ,6 ,5 ,1
-16,15,14,4
-13,12,11,3
-10,9 ,8 ,2
-7 ,6 ,5 ,1
-*/
 
 #define GameBlockUnite(F,S) if(*S != 0){                    \
                                 if(*F == 0){                \
@@ -35,31 +23,7 @@
                                 else break;                 \
                             }
 
-
-static int AIDebugPrintDir0(char *str, int dir) {
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x0C);
-	switch (dir) {
-	case DIR_UP:
-		debug("AI %s: Up", str);
-		break;
-	case DIR_DOWN:
-		debug("AI %s: Down", str);
-		break;
-	case DIR_LEFT:
-		debug("AI %s: Left", str);
-		break;
-	case DIR_RIGHT:
-		debug("AI %s: Right", str);
-		break;
-	default:
-		debug("AI %s error!", str);
-		break;
-	}
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0x07);
-	return dir;
-}
-
-static int AICheckIfDir0(int(*map)[5], int w, int h, int dir) {
+static int AICheckIfDir1(int(*map)[5], int w, int h, int dir) {
 	int fHadmove = 0;
 	int fUniting = 0;
 	switch (dir) {
@@ -71,7 +35,6 @@ static int AICheckIfDir0(int(*map)[5], int w, int h, int dir) {
 
 				for (int k = j + 1; k<h; k++) {
 					S = &map[k][i];
-					//debug("(map[%d][%d]: %d)find map[%d][%d]: %d",j,i,map[j][i],k,i,map[k][i]);
 					GameBlockUnite(F, S);
 				}
 			}
@@ -85,7 +48,6 @@ static int AICheckIfDir0(int(*map)[5], int w, int h, int dir) {
 
 				for (int i = x - 1; i >= 0; i--) {
 					S = &map[i][y];
-					//debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
 					GameBlockUnite(F, S);
 				}
 			}
@@ -99,7 +61,6 @@ static int AICheckIfDir0(int(*map)[5], int w, int h, int dir) {
 
 				for (int i = y + 1; i<w; i++) {
 					S = &map[x][i];
-					//debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
 					GameBlockUnite(F, S);
 				}
 			}
@@ -113,7 +74,6 @@ static int AICheckIfDir0(int(*map)[5], int w, int h, int dir) {
 
 				for (int i = y - 1; i >= 0; i--) {
 					S = &map[x][i];
-					//debug("(map[%d][%d]: %d)find map[%d][%d]: %d",x,y,map[x][y],i,y,map[i][y]);
 					GameBlockUnite(F, S);
 				}
 			}
@@ -123,68 +83,15 @@ static int AICheckIfDir0(int(*map)[5], int w, int h, int dir) {
 	return fHadmove;
 }
 
-static int AIFindMaxNum0(const int(*map)[5], int w, int h) {
-	int max = 0;
-	forp(x, h)forp(y, w) {
-		if (map[x][y] > max) {
-			max = map[x][y];
-		}
-	}
-	return max;
-}
+static int isfirstrun = 0;
+static int whichweightmat = 0;
+static int res[26] = { 0 };
+static int pmat[25][5][5] = { 0 };
 
 
 
-int MapWeight[5][5] = { 0 };
-int NumWeight[20] = { 0 };
-int BetweenNumsWeight[20][20] = { 0 };
-int BestMapWeight[5][5] = { 0 };
-int BestNumWeight[20] = { 0 };
-int BestBetweenNumsWeight[20][20] = { 0 };
-int highestscores = -999;
-
-
-int MapWay1Weight1[5][5] =
-{ 16,15,14,13,0,
-9 ,10,11,12,0,
-8 , 7 ,6 ,5,0,
-1 , 2 ,3 ,4 };
-int MapWay1Weight2[5][5] = { 0 };
-int MapWay1Weight3[5][5] = { 0 };
-int MapWay1Weight4[5][5] = { 0 };
-int MapWay1Weight5[5][5] = { 0 };
-int MapWay1Weight6[5][5] = { 0 };
-int MapWay1Weight7[5][5] = { 0 };
-int MapWay1Weight8[5][5] = { 0 };
-
-int MapWay2Weight1[5][5] =
-{ 16,15,12,4,0,
-14,13,11,3,0,
-10,9 ,8 ,2,0,
-7 ,6 ,5 ,1 };
-int MapWay2Weight2[5][5] = { 0 };
-int MapWay2Weight3[5][5] = { 0 };
-int MapWay2Weight4[5][5] = { 0 };
-int MapWay2Weight5[5][5] = { 0 };
-int MapWay2Weight6[5][5] = { 0 };
-int MapWay2Weight7[5][5] = { 0 };
-int MapWay2Weight8[5][5] = { 0 };
-
-int MapWay3Weight1[5][5] =
-{ 16,15,14,4,0,
-13,12,11,3,0,
-10,9 ,8 ,2,0,
-7 ,6 ,5 ,1 };
-int MapWay3Weight2[5][5] = { 0 };
-int MapWay3Weight3[5][5] = { 0 };
-int MapWay3Weight4[5][5] = { 0 };
-int MapWay3Weight5[5][5] = { 0 };
-int MapWay3Weight6[5][5] = { 0 };
-int MapWay3Weight7[5][5] = { 0 };
-int MapWay3Weight8[5][5] = { 0 };
-
-int findArrMax(int arr[], int n) {
-	int max = -999;
+static int FindMaxNumInArr(int arr[], int n) {
+	int max = -0xffff;
 	for (int i = 0; i < n; i++) {
 		if (max < arr[i]) {
 			max = arr[i];
@@ -192,225 +99,219 @@ int findArrMax(int arr[], int n) {
 	}
 	return max;
 }
-int ArrSum(int arr[], int n) {
-	int sum = 0;
-	for (int i = 0; i < n; i++) {
-		sum += arr[i];
-	}
-	return sum;
-}
-int outmap(int map[5][5]) {
-	printf("\n---------------\n");
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			printf("%d\t", map[i][j]);
+
+static void RotateMat(int map1[5][5], int map2[5][5]) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			map2[i][j] = map1[4 - 1 - j][i];
 		}
-		printf("\n");
 	}
-	printf("\n---------------\n");
 }
-void CicleMap(int map1[5][5], int map2[5][5], int w, int h) {
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			map2[i][j] = map1[w - 1 - j][i];
+static void SymmetricMat(int map1[5][5], int map2[5][5]) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			map2[i][j] = map1[i][4 - 1 - j];
 		}
 	}
 }
 
-
-void SymmetricMap(int map1[5][5], int map2[5][5], int w, int h) {
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			map2[i][j] = map1[i][w - 1 - j];
-		}
+static int GiveValueToMat(int values[16], int pmat[5][5]) {
+	for (int i = 0; i < 4; i++) {
+		pmat[0][i] = values[i];
+		pmat[1][i] = values[i + 4];
+		pmat[2][i] = values[i + 8];
+		pmat[3][i] = values[i + 12];
 	}
+	return 1;
 }
-int mapweight(int mapweight) {
-	int weight[20] = { 0 };
+static void GiveValuesToWeightMats() {
+	int matvalues1[16] = {
+		16,15,14,13,
+		9 ,10,11,12,
+		8 , 7 ,6 ,5,
+		1 , 2 ,3 ,4
+	};
+	int matvalues2[16] = {
+		16,15,12,4,
+		14,13,11,3,
+		10,9 ,8 ,2,
+		7 ,6 ,5 ,1
+	};
+	int matvalues3[16] = {
+		16,15,14,4,
+		13,12,11,3,
+		10,9 ,8 ,2,
+		7 ,6 ,5 ,1
+	};
+
+	GiveValueToMat(matvalues1, pmat[0]);
+	RotateMat(pmat[0], pmat[1]);
+	RotateMat(pmat[1], pmat[2]);
+	RotateMat(pmat[2], pmat[3]);
+	SymmetricMat(pmat[0], pmat[4]);
+	RotateMat(pmat[4], pmat[5]);
+	RotateMat(pmat[5], pmat[6]);
+	RotateMat(pmat[6], pmat[7]);
+
+	GiveValueToMat(matvalues2, pmat[0 + 8]);
+	RotateMat(pmat[0 + 8], pmat[1 + 8]);
+	RotateMat(pmat[1 + 8], pmat[2 + 8]);
+	RotateMat(pmat[2 + 8], pmat[3 + 8]);
+	SymmetricMat(pmat[0 + 8], pmat[4 + 8]);
+	RotateMat(pmat[4 + 8], pmat[5 + 8]);
+	RotateMat(pmat[5 + 8], pmat[6 + 8]);
+	RotateMat(pmat[6 + 8], pmat[7 + 8]);
+
+	GiveValueToMat(matvalues3, pmat[0 + 16]);
+	RotateMat(pmat[0 + 16], pmat[1 + 16]);
+	RotateMat(pmat[1 + 16], pmat[2 + 16]);
+	RotateMat(pmat[2 + 16], pmat[3 + 16]);
+	SymmetricMat(pmat[0 + 16], pmat[4 + 16]);
+	RotateMat(pmat[4 + 16], pmat[5 + 16]);
+	RotateMat(pmat[5 + 16], pmat[6 + 16]);
+	RotateMat(pmat[6 + 16], pmat[7 + 16]);
+
+}
+
+static int TheWeightOfMap(int mapweight) {
+	int weight[25] = { 0 };
 	weight[0] = 1;
-	//for (int i = 0; i < 19; i++) weight[i + 1] = 3 * weight[i] + 10;//512
 	for (int i = 0; i < 19; i++) weight[i + 1] = 2 * weight[i] + 1;
-	//	for (int i = 9; i < 19; i++) weight[i + 1] = 2 * weight[i] + 100;
 
 	return weight[mapweight];
 }
-int numweight(int num) {
-	int weight[20] = { 0 };
+static int TheWeightOfNumber(int num) {
+	int weight[25] = { 0 };
 	weight[0] = 1;
-	//for (int i = 0; i < 19; i++) weight[i + 1] = weight[i] * weight[i] + 2;//512
 	for (int i = 0; i < 19; i++) weight[i + 1] = 2 * weight[i] + 2;
-	//for (int i = 9; i < 19; i++) weight[i + 1] = 2 * weight[i] + 100;
-
 	return weight[num];
 }
-void GiveMapWeight() {
-	/*debug("\n=============giveweight_begin=============\n");
-	debug("\n---------wei1------------\n");*/
-	CicleMap(MapWay1Weight1, MapWay1Weight2, 4, 4);
-	CicleMap(MapWay1Weight2, MapWay1Weight3, 4, 4);
-	CicleMap(MapWay1Weight3, MapWay1Weight4, 4, 4);
-	SymmetricMap(MapWay1Weight1, MapWay1Weight5, 4, 4);
-	CicleMap(MapWay1Weight5, MapWay1Weight6, 4, 4);
-	CicleMap(MapWay1Weight6, MapWay1Weight7, 4, 4);
-	CicleMap(MapWay1Weight7, MapWay1Weight8, 4, 4);
-
-	/*outmap(MapWay1Weight1); outmap(MapWay1Weight2);
-	outmap(MapWay1Weight3); outmap(MapWay1Weight4);
-	outmap(MapWay1Weight5); outmap(MapWay1Weight6);
-	outmap(MapWay1Weight7); outmap(MapWay1Weight8);*/
-
-
-	//debug("\n---------wei2--------------\n");
-
-	CicleMap(MapWay2Weight1, MapWay2Weight2, 4, 4);
-	CicleMap(MapWay2Weight2, MapWay2Weight3, 4, 4);
-	CicleMap(MapWay2Weight3, MapWay2Weight4, 4, 4);
-	SymmetricMap(MapWay2Weight1, MapWay2Weight5, 4, 4);
-	CicleMap(MapWay2Weight5, MapWay2Weight6, 4, 4);
-	CicleMap(MapWay2Weight6, MapWay2Weight7, 4, 4);
-	CicleMap(MapWay2Weight7, MapWay2Weight8, 4, 4);
-
-	/*outmap(MapWay2Weight1); outmap(MapWay2Weight2);
-	outmap(MapWay2Weight3); outmap(MapWay2Weight4);
-	outmap(MapWay2Weight5); outmap(MapWay2Weight6);
-	outmap(MapWay2Weight7); outmap(MapWay2Weight8);*/
-
-	//debug("\n---------wei3--------------\n");
-
-	CicleMap(MapWay3Weight1, MapWay3Weight2, 4, 4);
-	CicleMap(MapWay3Weight2, MapWay3Weight3, 4, 4);
-	CicleMap(MapWay3Weight3, MapWay3Weight4, 4, 4);
-	SymmetricMap(MapWay3Weight1, MapWay3Weight5, 4, 4);
-	CicleMap(MapWay3Weight5, MapWay3Weight6, 4, 4);
-	CicleMap(MapWay3Weight6, MapWay3Weight7, 4, 4);
-	CicleMap(MapWay3Weight7, MapWay3Weight8, 4, 4);
-
-	//outmap(MapWay3Weight1); outmap(MapWay3Weight2);
-	//outmap(MapWay3Weight3); outmap(MapWay3Weight4);
-	//outmap(MapWay3Weight5); outmap(MapWay3Weight6);
-	//outmap(MapWay3Weight7); outmap(MapWay3Weight8);
-	//debug("===============giveweight_end================\n");
-}
-int AICheckMapWayWeight(int map[5][5], int w, int h, int mapwayweight[5][5]) {
+static int CheckWeightsSum(int map[5][5], int mapwayweight[5][5]) {
 	int sum = 0;
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			sum += (mapweight(mapwayweight[i][j]) * numweight(map[i][j]));
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			sum += (TheWeightOfMap(mapwayweight[i][j]) * TheWeightOfNumber(map[i][j]));
 		}
 	}
+
 	return sum;
 }
+static int WorstBlock(int map[5][5], int weight[5][5]) {
+	int big = 16;
+	while (big) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (big == weight[i][j] && map[i][j] == 0) {
+					map[i][j] = 1;
+					return 1;
+				}
+			}
+		}
+		big--;
+	}
+	return 0;
+}
 
+static int AICheckWeightMat1(int map[5][5]) {
+	int v[8] = { 0 };
 
-int AICheckAllMapWay1Weight(int map[5][5], int w, int h) {
-	int v[8] = { 0 };
-	v[0] = AICheckMapWayWeight(map, w, h, MapWay1Weight1);
-	v[1] = AICheckMapWayWeight(map, w, h, MapWay1Weight2);
-	v[2] = AICheckMapWayWeight(map, w, h, MapWay1Weight3);
-	v[3] = AICheckMapWayWeight(map, w, h, MapWay1Weight4);
-	v[4] = AICheckMapWayWeight(map, w, h, MapWay1Weight5);
-	v[5] = AICheckMapWayWeight(map, w, h, MapWay1Weight6);
-	v[6] = AICheckMapWayWeight(map, w, h, MapWay1Weight7);
-	v[7] = AICheckMapWayWeight(map, w, h, MapWay1Weight8);
-	return findArrMax(v, 8);
+	for (int i = 0; i <= 7; i++) {
+		v[i] = CheckWeightsSum(map, pmat[i]);
+		res[i] = v[i];
+	}
+	return FindMaxNumInArr(v, 8);
 }
-int AICheckAllMapWay2Weight(int map[5][5], int w, int h) {
+static int AICheckWeightMat2(int map[5][5]) {
 	int v[8] = { 0 };
-	v[0] = AICheckMapWayWeight(map, w, h, MapWay2Weight1);
-	v[1] = AICheckMapWayWeight(map, w, h, MapWay2Weight2);
-	v[2] = AICheckMapWayWeight(map, w, h, MapWay2Weight3);
-	v[3] = AICheckMapWayWeight(map, w, h, MapWay2Weight4);
-	v[4] = AICheckMapWayWeight(map, w, h, MapWay2Weight5);
-	v[5] = AICheckMapWayWeight(map, w, h, MapWay2Weight6);
-	v[6] = AICheckMapWayWeight(map, w, h, MapWay2Weight7);
-	v[7] = AICheckMapWayWeight(map, w, h, MapWay2Weight8);
-	return findArrMax(v, 8);
+
+	for (int i = 0; i <= 7; i++) {
+		v[i] = CheckWeightsSum(map, pmat[i + 8]);
+		res[i + 8] = v[i];
+	}
+	return FindMaxNumInArr(v, 8);
 }
-int AICheckAllMapWay3Weight(int map[5][5], int w, int h) {
+static int AICheckWeightMat3(int map[5][5]) {
 	int v[8] = { 0 };
-	v[0] = AICheckMapWayWeight(map, w, h, MapWay3Weight1);
-	v[1] = AICheckMapWayWeight(map, w, h, MapWay3Weight2);
-	v[2] = AICheckMapWayWeight(map, w, h, MapWay3Weight3);
-	v[3] = AICheckMapWayWeight(map, w, h, MapWay3Weight4);
-	v[4] = AICheckMapWayWeight(map, w, h, MapWay3Weight5);
-	v[5] = AICheckMapWayWeight(map, w, h, MapWay3Weight6);
-	v[6] = AICheckMapWayWeight(map, w, h, MapWay3Weight7);
-	v[7] = AICheckMapWayWeight(map, w, h, MapWay3Weight8);
-	return findArrMax(v, 8);
+
+	for (int i = 0; i <= 7; i++) {
+		v[i] = CheckWeightsSum(map, pmat[i + 16]);
+		res[i + 16] = v[i];
+	}
+	return FindMaxNumInArr(v, 8);
 }
-int AICheckAllMapWaysWeight(int map[5][5], int w, int h) {
+static int AICheckAllWeightMats(int map[5][5]) {
 	int v[4] = { 0 };
 
-	v[0] = AICheckAllMapWay1Weight(map, w, h);
-	v[1] = AICheckAllMapWay2Weight(map, w, h);
-	v[2] = AICheckAllMapWay3Weight(map, w, h);
+	v[0] = AICheckWeightMat1(map);
+	v[1] = AICheckWeightMat2(map);
+	v[2] = AICheckWeightMat3(map);
+	int max = FindMaxNumInArr(v, 3);
 
-	return findArrMax(v, 3);
+	for (int i = 0; i <= 23; i++) {
+		if (max == res[i]) {
+			whichweightmat = i;
+		}
+	}
+	return max;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-int AICheckAll0(const int(*mNextMap)[5], int w, int h) {
-
-	//int max = AIFindMaxNum(mNextMap, w, h);
-
-	int sum = 0;
-	//sum += AICheckAllRandWeight(mNextMap, w, h);
-	sum += AICheckAllMapWaysWeight(mNextMap, w, h);
-	//debug("WEIGHT_BLANK: %g", v);
-
-	return sum;
-}
 
 int AI1(int mCurMap[5][5], int w, int h) {
 
-	int x[5][5] =
-	{ -0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,
-		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF ,
+	float tree[5][5] =
+	{   
+        -0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,
 		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,
-		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF ,
-		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF };
+		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,
+		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,
+		-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,-0xFFFF,
+    };
 
-	int mNextMap[5][5]; int mNextMap1[5][5];
+	int mNextMap[5][5]  = { 0 };
+	int mNextMap1[5][5] = { 0 };
 	int v = 0;
-	GiveMapWeight();
+
+	if (!isfirstrun) {
+		GiveValuesToWeightMats();
+		isfirstrun = 1;
+	}
 
 	for (int dir = 1; dir <= 4; dir++) {
+
 		memcpy(mNextMap, mCurMap, sizeof(mNextMap));
-		v = AICheckIfDir0(mNextMap, w, h, dir);
+		v = AICheckIfDir1(mNextMap, w, h, dir);
 		if (v) {
-			x[dir][0] += AICheckAll0(mNextMap, w, h);//x[1-4][0]
+            //第一层结果保存在x[1-4][0]
+			tree[dir][0] += AICheckAllWeightMats(mNextMap);
+			WorstBlock(mNextMap, pmat[whichweightmat]);
 
 			for (int dir1 = 1; dir1 <= 4; dir1++) {
+
 				memcpy(mNextMap1, mNextMap, sizeof(mNextMap1));
-				v = AICheckIfDir0(mNextMap1, w, h, dir1);
-				x[dir][dir1] += AICheckAll0(mNextMap1, w, h);//x[1-4][1-4]
+				v = AICheckIfDir1(mNextMap1, w, h, dir1);
+				if (v) {
+                    //第二层结果在x[1-4][1-4]
+					tree[dir][dir1] += AICheckAllWeightMats(mNextMap1, w, h);
+				}
 			}
 		}
-
 	}
+
 	int max = -0xFFFF;
 	for (int i = 1; i <= 4; i++) {
-		if (x[i][0] == -0xFFFF) {
-			continue;
-		}
+		if (tree[i][0] != -0xFFFF) {
 
-		max = -0xFFFF;
-		for (int j = 1; j <= 4; j++) {
-			if (max < x[i][j]) {
-				max = x[i][j];
+			max = -0xFFFF;
+			for (int j = 1; j <= 4; j++) {
+				if (max < tree[i][j]) {
+					max = tree[i][j];
+				}
+			}
+			if (max != -0xFFFF) {
+                //第二层结果最大值与第一层结果相加，保存在第一层作为最终结果
+				tree[i][0] += max;
 			}
 		}
-		x[i][0] += max;
 
 	}
 
@@ -418,13 +319,14 @@ int AI1(int mCurMap[5][5], int w, int h) {
 	int dir = 0;
 
 	for (int i = 1; i <= 4; i++) {
-		if (x[i][0] == -0xFFFF) {
+		if (tree[i][0] == -0xFFFF) {
 			continue;
 		}
-		if (maxpoint < x[i][0]) {
-			maxpoint = x[i][0];
+		if (maxpoint < tree[i][0]) {
+			maxpoint = tree[i][0];
 			dir = i;
 		}
+
 	}
 
 	return AIDebugPrintDir("Goto",dir);

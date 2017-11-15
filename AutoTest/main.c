@@ -1,7 +1,6 @@
 #include <stdio.h>
-//#include "..\c-game-2048-with-AI\Game.h"
-//#include "..\c-game-2048-with-AI\WeightTable.h"
-//#include "..\c-game-2048-with-AI\Game.c"
+#include <Windows.h>
+#include <time.h>
 
 #include "..\c-game-2048-with-AI\AI1.c"
 //#include "..\c-game-2048-with-AI\AI2.c"
@@ -11,39 +10,39 @@
 #include "..\c-game-2048-with-AI\AI6.c"
 
 
-int ShowWeight(){
-    forp(j,arraylen(WeightTable)){
-        forp(i,WEIGHT_LEN){
-            printf("%-5g ",WeightTable[j][i]);
-        }
-        printf("\n");
-    }
-}
+//int ShowWeight(){
+//    forp(j,arraylen(WeightTable)){
+//        forp(i,WEIGHT_LEN){
+//            printf("%-5g ",WeightTable[j][i]);
+//        }
+//        printf("\n");
+//    }
+//}
+//
+//int ReadWeight(){
+//    FILE *fp = fopen("WeightTable.txt","r");
+//    if(fp == 0){
+//        perror("Open file Error:");
+//        return 0;
+//    }else{
+//        int j = 0;
+//        while(!feof(fp)){
+//            forp(i,WEIGHT_LEN){
+//                fscanf(fp,"%f",&WeightTable[j][i]);
+//            }
+//            j++;
+//        }
+//        fclose(fp);
+//    }
+//    return 1;
+//}
 
-int ReadWeight(){
-    FILE *fp = fopen("WeightTable.txt","r");
-    if(fp == 0){
-        perror("Open file Error:");
-        return 0;
-    }else{
-        int j = 0;
-        while(!feof(fp)){
-            forp(i,WEIGHT_LEN){
-                fscanf(fp,"%f",&WeightTable[j][i]);
-            }
-            j++;
-        }
-        fclose(fp);
-    }
-    return 1;
-}
 
-int PlayGame(int ai){
+int PlayGame(int ai,int seek){
     OPTION Option = {0};
     LPOPTION lpOption = &Option;
     
-    static int time = 1;
-    lpOption->iRandseek = time++;
+    lpOption->iRandseek = seek+time(NULL);
 
     GameInit(lpOption,4,4);
 
@@ -81,11 +80,13 @@ int PlayGame(int ai){
 }
 
 #define MAX_HIGH_SCORE  15
-#define TOTAL_RUN       250
+#define TOTAL_RUN       100
 
 int ShowStatist(int *v){
     forp(i,MAX_HIGH_SCORE){
-        printf("%-3d %4d (%5.1f%% )\n",i,v[i],(double)v[i]/TOTAL_RUN*100);
+        if(i<8)continue;
+        printf("%-5d %4d  (%5.1f%% )\n",1<<i,v[i],(double)v[i]/TOTAL_RUN*100);
+        //if(i%4==3)printf("\n");
     }
 }
 
@@ -94,7 +95,7 @@ int ShowStatist(int *v){
 #endif
 
 int main(){
-    printf("NOTICE: Use Release Mode to build this project to hide debug info\n");
+    //printf("NOTICE: Use Release Mode to build this project to hide debug info\n");
     //printf("Weight Table:\n");
     //if(!ReadWeight()){
     //    return 0;
@@ -104,21 +105,33 @@ int main(){
 
     
     for(int ai=1;ai<=6;ai++){
-        if(ai==1 || ai==3 || ai==5)continue;
-        if(ai != 6)continue;
-        printf("Now in AI %d play, total play %d times\n",ai,TOTAL_RUN);
+        //if(ai==1 || ai==3 || ai==5)continue;
+        //if(ai != 6)continue;
+        if(ai==2 || ai==3 || ai==5)continue;
+        unsigned __int64 time = GetTickCount();
+        printf("In AI %d statist, total play %d times.\n(00%%)",ai,TOTAL_RUN);
         
         int v[MAX_HIGH_SCORE] = {0};
 
-        printf("Now in statist, please wait (00%%)");
         forp(i,TOTAL_RUN){
+            
+            printf("\b\b\b\b\b\b\b\b\b");
+            printf("(%.1f%%)",(float)(i*100.0/TOTAL_RUN));
 
-            printf("\b\b\b\b%02d%%)",(int)(i*100/TOTAL_RUN));
-
-            v[PlayGame(ai)]++;
+            v[PlayGame(ai,i)]++;
         }
-        printf("\b\b\b\b\b(100%%)\n");
+        printf("\b\b\b\b\b\b\b\b\b\b\b\b(100.0%%)  ");
+
+        printf("%lld(ms) used.\n",(GetTickCount()-time));
+
         ShowStatist(v);
+
+        int total = 0;
+        forp(i,MAX_HIGH_SCORE){
+            if(i>10)total += v[i];
+        }
+        printf("2048: (%5.1f%% )",(double)total/TOTAL_RUN*100);
+        printf("\n\n");
         //system("pause");
     }
 

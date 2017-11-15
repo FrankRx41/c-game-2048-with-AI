@@ -100,9 +100,6 @@
     <ClInclude Include="Macro.h" />
     <ClInclude Include="Option.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="uthash.h" />
-    <ClInclude Include="WeightTable2.h" />
-    <ClInclude Include="WeightTable6.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
