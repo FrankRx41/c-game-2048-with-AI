@@ -106,9 +106,14 @@ static int DrawOneTile(LPOPTION lpOption,RECT rt,int x,int y,float deep,HDC hdc)
     r = GetRValue(bg) - GetRValue(fg);
     g = GetGValue(bg) - GetGValue(fg);
     b = GetBValue(bg) - GetBValue(fg);
-    hBrush = CreateSolidBrush(RGB(  ((int)(r*deep)+GetRValue(fg)),
-                                    ((int)(g*deep)+GetGValue(fg)),
-                                    ((int)(b*deep)+GetBValue(fg))));
+    if(lpOption->fEgg){
+        hBrush = CreateSolidBrush(RGB(0xFF,0xFF,0x00));
+    }
+    else{
+        hBrush = CreateSolidBrush(RGB(  ((int)(r*deep)+GetRValue(fg)),
+                                        ((int)(g*deep)+GetGValue(fg)),
+                                        ((int)(b*deep)+GetBValue(fg))));
+    }
 
     //hBrush = CreateSolidBrush(GetTableColor(lpOption,map[x][y]));
 
@@ -496,7 +501,7 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
 
         // stop AI
         if(lpOption->iCurAI == LOWORD(wParam) - MENU_AI_1){
-            lpOption->iCurAI = -1;
+            lpOption->iCurAI = 0;
             lpOption->iGameState -= GS_AIPLAY;
             KillTimer(lpOption->hWnd,0);
             debug("stop AI: %d",LOWORD(wParam) - MENU_AI_1);

@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 author: 	WalkerShu
-date:		2017.11.15
+date:		2017.11.16
 *******************************************************************************/
 
 #include "Macro.h"
@@ -87,8 +87,8 @@ static int isfirstrun = 1;
 static int whichweightmat = 0;
 static int res[26] = { 0 };
 static int pmat[25][5][5] = { 0 };
-
-
+static int mapweight[25] = { 0 };
+static int numweight[25] = { 0 };
 
 static int FindMaxNumInArr(int arr[], int n) {
 	int max = -0xffff;
@@ -173,24 +173,20 @@ static void GiveValuesToWeightMats() {
 
 }
 
-static int TheWeightOfMap(int mapweight) {
-	int weight[25] = { 0 };
-	weight[0] = 1;
-	for (int i = 0; i < 19; i++) weight[i + 1] = 2 * weight[i] + 1;
-
-	return weight[mapweight];
+static void GiveMapWeight() {
+	mapweight[0] = 1;
+	for (int i = 0; i < 19; i++) mapweight[i + 1] = 2 * mapweight[i] + 1;
 }
-static int TheWeightOfNumber(int num) {
-	int weight[25] = { 0 };
-	weight[0] = 1;
-	for (int i = 0; i < 19; i++) weight[i + 1] = 2 * weight[i] + 2;
-	return weight[num];
+
+static void GiveNumWeight() {
+	numweight[0] = 1;
+	for (int i = 0; i < 19; i++) numweight[i + 1] = 2 *numweight[i] + 2;
 }
 static int CheckWeightsSum(int map[5][5], int mapwayweight[5][5]) {
 	int sum = 0;
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			sum += (TheWeightOfMap(mapwayweight[i][j]) * TheWeightOfNumber(map[i][j]));
+			sum += (mapweight[mapwayweight[i][j]] * numweight[map[i][j]]);
 		}
 	}
 
@@ -272,6 +268,8 @@ int AI1(int mCurMap[5][5], int w, int h) {
 	int v = 0;
 
 	if (isfirstrun) {
+		GiveMapWeight();
+		GiveNumWeight();
 		GiveValuesToWeightMats();
 		isfirstrun = 0;
 	}

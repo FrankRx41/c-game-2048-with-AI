@@ -175,6 +175,19 @@ static int CreatOneTile(LPOPTION lpOption){
     return 1;
 }
 
+int GameEgg(LPOPTION lpOption){
+    static int egged = 0;
+    lpOption->fEgg = 0;
+    if(egged)return 0;
+    forp(x,lpOption->nHeight)forp(y,lpOption->nHeight){
+        if(lpOption->mMap[x][y] == 10){
+            lpOption->fEgg = 1;
+            egged = 1;
+        }
+    }
+    return 1;
+}
+
 #define GameBlockUnite(F,S) if(*S != 0){                    \
                                 if(*F == 0){                \
                                     *F = *S;                \
@@ -293,18 +306,20 @@ int GameDirKey(LPOPTION lpOption,int dir){
     lpOption->iAnimationIndex = aIndex;
     //debug("aIndex %d",aIndex+1);
 
+    GameEgg(lpOption);
+
     if(fMoved){
         CreatOneTile(lpOption);
         lpOption->nStep++;
         if(lpOption->fSound){
-            if(!(lpOption->iCurAI != 0 && lpOption->iAISleep < 200)){
-            if(fMerge){
-                //debug("playsound");
-                PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
-            }else{
-                //PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
-                PlaySound(TEXT("CREATSOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
-            }
+            if(lpOption->iCurAI == 0 || (lpOption->iCurAI != 0 && lpOption->iAISleep > 200)){
+                if(fMerge){
+                    //debug("playsound");
+                    PlaySound(TEXT("MERGESOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
+                }else{
+                    //PlaySound(TEXT("3.wav"),0,SND_FILENAME|SND_ASYNC);
+                    PlaySound(TEXT("CREATSOUND"),GetModuleHandle("resource.rc"),SND_RESOURCE|SND_ASYNC);
+                }
             }
         }
     }
@@ -399,6 +414,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     lpOption->nStep     = 0;
     lpOption->iCurAI    = 0;
     lpOption->iGameState = GS_RUNNING;
+    lpOption->fEgg      = 0;
 
     GameSetWindow(lpOption);
     GameSetMap(lpOption);

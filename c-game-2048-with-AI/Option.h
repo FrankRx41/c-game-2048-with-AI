@@ -84,6 +84,8 @@ typedef struct OPTION{
     int     iAnimationIndex;
     int     iAnimationSpeed;
 
+    int fEgg;
+
 }* LPOPTION, OPTION;
 
 int PrintOption(LPOPTION lpOption);
