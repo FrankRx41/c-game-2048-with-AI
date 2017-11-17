@@ -113,7 +113,7 @@ BEGIN
             MENUITEM "&AI4 nneonneo\tF4"    MENU_AI_4
             MENUITEM "&AI5 U-R-D-L\tF5"     MENU_AI_5
             MENUITEM "&AI6 Frank (30%)\tF6" MENU_AI_6
-            MENUITEM "&AI7 Frank (45%)\tF6" MENU_AI_7
+            MENUITEM "&AI7 Frank (45%)\tF7" MENU_AI_7
         END
         MENUITEM SEPARATOR
         POPUP "&Theme"

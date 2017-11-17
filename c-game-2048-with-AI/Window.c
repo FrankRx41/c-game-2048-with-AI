@@ -24,11 +24,13 @@ int WinKeyHandle(LPOPTION lpOption,int key){
     }
     else if(key == lpOption->vKeyAISpeedDown)
     {
+        deep = 1;
         lpOption->iAISleep -= (lpOption->iAISleep>0) ? 150 : 0;
         return 1;
     }
     else if(key == lpOption->vKeyAISpeedUp)
     {
+        deep = 1;
         lpOption->iAISleep += 150;
         return 1;
     }
