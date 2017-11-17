@@ -11,6 +11,7 @@ static int fHaveSeek    = 1;
 int PrintOption(LPOPTION lpOption){
     debug("--------------------Option--------------------");
     debug("GameState:%04X",lpOption->iGameState);
+    debug("Randseek: %d",lpOption->iRandseek);
     debug("Sound:%d   FullScreen:%d   Suggestion:%d   GaryMode:%d",lpOption->fSound,lpOption->fFullScreen,lpOption->fSuggestion,lpOption->fGaryMode);
     debug("Width:%d   Height:%d   Level:%d",lpOption->nWidth,lpOption->nHeight,lpOption->iLevel);
     debug("Score:%d   %d   %d",lpOption->nScore[0],lpOption->nScore[1],lpOption->nScore[2]);
@@ -19,9 +20,9 @@ int PrintOption(LPOPTION lpOption){
     //    debug("[%d] 0x%06X\t",1<<i,lpOption->nColorTable[i]);
     //}
     //debug("BgColor:0x%X",lpOption->nBgColor);
-    debug("FontName:%s   FontSize:%d\n",lpOption->hFontName,lpOption->iFontSize);
-    debug("Animation sleep:%d\n",lpOption->iAnimationSpeed);
-    debug("AI: %d AI sleep:%d\n",lpOption->iCurAI,lpOption->iAISleep);
+    debug("FontName:%s   FontSize:%d",lpOption->hFontName,lpOption->iFontSize);
+    debug("Animation sleep:%d",lpOption->iAnimationSpeed);
+    debug("AI: %d AI sleep:%d",lpOption->iCurAI,lpOption->iAISleep);
     debug("--------------------Option--------------------");
     return lpOption->iGameState;
 }
@@ -145,8 +146,7 @@ static int WriteComment(char *str){
 
 static int CreateRandSeek(LPOPTION lpOption){
     fHaveSeek = 0;
-    srand(time(NULL));
-    int x = rand();
+    int x = time(NULL)+rand()%10000;
     debug("old random seek: %d\nnew random seek: %d",lpOption->iRandseek,x);
     lpOption->iRandseek = x;
     return x;

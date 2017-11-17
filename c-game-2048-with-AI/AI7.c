@@ -1729,7 +1729,7 @@ int AI7(int mCurMap[5][5],int w,int h){
         }
     }
 
-#ifdef _DEBUG
+#ifdef _DEBUG1
     printf("\t\t\t   ↑ \t   ↓ \t   ← \t   → \n");
     forp(i,WEIGHT_END){
         //if(i == WEIGHT_BIG_BLOCK)SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),0x0E);

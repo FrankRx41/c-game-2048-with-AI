@@ -7,11 +7,12 @@
 #include "..\c-game-2048-with-AI\AI.h"
 
 #include "..\c-game-2048-with-AI\AI1.c"
+//#include "..\c-game-2048-with-AI\AI2.c"
 #include "..\c-game-2048-with-AI\AI3.c"
 #include "..\c-game-2048-with-AI\AI4.c"
 #include "..\c-game-2048-with-AI\AI5.c"
-//#include "..\c-game-2048-with-AI\AI6.c"
-#include "..\c-game-2048-with-AI\AI7.c"
+#include "..\c-game-2048-with-AI\AI6.c"
+//#include "..\c-game-2048-with-AI\AI7.c"
 
 //extern int AI1(int map[5][5],int w,int h);
 //extern int AI2(int map[5][5],int w,int h);
@@ -78,10 +79,10 @@ int PlayGame(int ai,int seek){
             GameDirKey(lpOption,AI5(map,4,4));
             break;
         case 6:
-            //GameDirKey(lpOption,AI6(map,4,4));
+            GameDirKey(lpOption,AI6(map,4,4));
             break;
         case 7:
-            GameDirKey(lpOption,AI7(map,4,4));
+            //GameDirKey(lpOption,AI7(map,4,4));
             break;
         default:
             printf("AI (%d) error!\n",ai);
@@ -94,7 +95,7 @@ int PlayGame(int ai,int seek){
 }
 
 #define MAX_HIGH_SCORE  15
-#define TOTAL_RUN       250
+#define TOTAL_RUN       10000
 
 int ShowStatist(int *v){
     forp(i,MAX_HIGH_SCORE){
@@ -121,7 +122,7 @@ int main(){
     for(int ai=1;ai<=7;ai++){
         //if(ai==1 || ai==3 || ai==5)continue;
         //if(ai != 6)continue;
-        if(ai==-1 || ai==2 || ai==3 || ai==-4 || ai==5 || ai==6 || ai==-7)continue;
+        if(ai==1 || ai==2 || ai==3 || ai==4 || ai==5 || ai==-6 || ai==-7)continue;
         unsigned __int64 time = GetTickCount();
         printf("In AI %d statist, total play %d times.\n(00%%)",ai,TOTAL_RUN);
         

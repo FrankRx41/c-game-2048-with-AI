@@ -71,6 +71,8 @@ int GameLoad(LPOPTION lpOption){
     // reset window if need
     GameSetWindow(lpOption,lpOption->nWidth,lpOption->nHeight);
 
+    lpOption->fEgged = 1;
+
     GameWatchMap(lpOption);
     lpOption->iGameState = GS_RUNNING;
     return 1;
@@ -176,13 +178,12 @@ static int CreatOneTile(LPOPTION lpOption){
 }
 
 int GameEgg(LPOPTION lpOption){
-    static int egged = 0;
     lpOption->fEgg = 0;
-    if(egged)return 0;
+    if(lpOption->fEgged)return 0;
     forp(x,lpOption->nHeight)forp(y,lpOption->nHeight){
         if(lpOption->mMap[x][y] == 10){
             lpOption->fEgg = 1;
-            egged = 1;
+            lpOption->fEgged = 1;
         }
     }
     return 1;
@@ -425,6 +426,7 @@ int GameInit(LPOPTION lpOption,int w,int h){
     lpOption->tLast.y = -1;
     lpOption->iAnimationIndex   = -1;
 
+    SaveOption(lpOption);
     debug("--------------------init--------------------");
 }
 
@@ -452,13 +454,14 @@ int GameOver(LPOPTION lpOption){
 
 int GameLoadPhase(LPOPTION lpOption,int phase){
     GameInit(lpOption,4,4);
-
+    lpOption->fEgged = 1;
     int w = lpOption->nWidth = 4;
     int h = lpOption->nHeight = 4;
     lpOption->nCurScore = 0;
     lpOption->iLevel = 1;
     lpOption->nStep = 0;
-    lpOption->iRandseek = 1024;
+    lpOption->iRandseek = 1023;
+    srand(lpOption->iRandseek);
 
     phase += 1;
     static int map[61][4][4] = {

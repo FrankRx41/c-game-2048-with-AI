@@ -577,6 +577,7 @@ int WinOnMenu(LPOPTION lpOption,WPARAM wParam){
     case MENU_FINAL_PHASE_58:
     case MENU_FINAL_PHASE_59:
         KillTimer(lpOption->hWnd,TIMER_AI);
+        KillTimer(lpOption->hWnd,TIMER_ANIMATION);
         return GameLoadPhase(lpOption,LOWORD(wParam) - MENU_FINAL_PHASE_1);
 
     case MENU_THEME_DEFAULT:
@@ -786,6 +787,7 @@ int WinMenuReset(LPOPTION lpOption){
 int WinSysInit(LPOPTION lpOption,HWND hWnd){
     lpOption->hWnd = hWnd;
     lpOption->iGameState = GS_RUNNING;
+    lpOption->fEgged = 0;
     ReadOption(lpOption);
     WinMenuReset(lpOption);
     if(lpOption->nWinPosX!=-1 && lpOption->nWinPosY!=-1){
